@@ -2,17 +2,17 @@ package org.nextprot.pipeline.statement;
 
 
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.pipes.PipedFilter;
+import org.nextprot.pipeline.statement.pipes.BaseFilter;
 import org.nextprot.pipeline.statement.ports.PipedInputPort;
 import org.nextprot.pipeline.statement.ports.PipedOutputPort;
 
 import java.io.IOException;
 
 /**
- * This filter just transmit statements from PipedInputPort to PipedInputPort
+ * This filter just transmit statements from PipedInputPort to PipedOutputPort
  * and take a nap
  */
-class NarcolepticFilter extends PipedFilter {
+class NarcolepticFilter extends BaseFilter {
 
 	private static int COUNT = 0;
 

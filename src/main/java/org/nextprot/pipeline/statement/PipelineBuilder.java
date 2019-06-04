@@ -1,7 +1,7 @@
 package org.nextprot.pipeline.statement;
 
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.pipes.PipedSource;
+import org.nextprot.pipeline.statement.pipes.Sink;
 
 import java.io.IOException;
 import java.util.function.Function;
@@ -22,7 +22,7 @@ public class PipelineBuilder implements Pipeline.StartStep {
 		@Override
 		public Pipeline.FilterStep source(Pump<Statement> pump) {
 
-			final PipedSource source = new PipedSource(pump);
+			final org.nextprot.pipeline.statement.pipes.Source source = new org.nextprot.pipeline.statement.pipes.Source(pump);
 			dataCollector.setSource(source);
 
 			return new FilterStep(source);

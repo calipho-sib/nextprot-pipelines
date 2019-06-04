@@ -17,11 +17,11 @@ import java.util.List;
  * but cannot serve as a receiver for any other Pipe: it must always be at the beginning,
  * or "source" of the pipe.
  **/
-public class PipedSource extends BasePipe {
+public class Source extends BasePipe {
 
 	protected Pump<Statement> pump;
 
-	public PipedSource(Pump<Statement> pump) {
+	public Source(Pump<Statement> pump) {
 
 		super(pump.capacity());
 		this.pump = pump;

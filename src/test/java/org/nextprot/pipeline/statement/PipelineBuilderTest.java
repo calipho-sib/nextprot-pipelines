@@ -4,7 +4,7 @@ package org.nextprot.pipeline.statement;
 import org.junit.Test;
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.pipes.NxFlatTableSink;
-import org.nextprot.pipeline.statement.pipes.PipedSource;
+import org.nextprot.pipeline.statement.pipes.Source;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -18,7 +18,7 @@ public class PipelineBuilderTest {
 
 		URL url = new URL("http://kant.sib.swiss:9001/glyconnect/2019-01-22/all-entries.json");
 		Reader reader = new InputStreamReader(url.openStream());
-		Pump<Statement> pump = new PipedSource.StatementPump(reader, 10);
+		Pump<Statement> pump = new Source.StatementPump(reader, 10);
 
 		Pipeline pipeline = new PipelineBuilder()
 				.start()

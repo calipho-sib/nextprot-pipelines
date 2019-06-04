@@ -8,11 +8,11 @@ import org.nextprot.pipeline.statement.ports.PipedInputPort;
 import java.io.IOException;
 
 
-public abstract class PipedFilter extends BasePipe implements Filter {
+public abstract class BaseFilter extends BasePipe implements Filter {
 
 	private final ThreadLocal<Boolean> endOfFlow;
 
-	protected PipedFilter(int sectionWidth) {
+	protected BaseFilter(int sectionWidth) {
 
 		super(sectionWidth, new PipedInputPort(sectionWidth));
 		endOfFlow = ThreadLocal.withInitial(() -> false);

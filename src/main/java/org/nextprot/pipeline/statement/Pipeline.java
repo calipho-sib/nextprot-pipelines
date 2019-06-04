@@ -1,7 +1,8 @@
 package org.nextprot.pipeline.statement;
 
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.pipes.PipedSource;
+import org.nextprot.pipeline.statement.pipes.Sink;
+import org.nextprot.pipeline.statement.pipes.Source;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -10,7 +11,7 @@ import java.util.function.Function;
 
 public class Pipeline {
 
-	private PipedSource source;
+	private Source source;
 	private List<Thread> threads;
 	private final Monitorable monitorable;
 
@@ -84,14 +85,14 @@ public class Pipeline {
 
 	static class DataCollector {
 
-		private PipedSource source;
+		private Source source;
 		private Monitorable monitorable;
 
-		public PipedSource getSource() {
+		public Source getSource() {
 			return source;
 		}
 
-		public void setSource(PipedSource source) {
+		public void setSource(Source source) {
 			this.source = source;
 		}
 
