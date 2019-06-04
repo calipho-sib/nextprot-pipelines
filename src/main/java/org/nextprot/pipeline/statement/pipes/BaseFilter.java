@@ -23,7 +23,7 @@ public abstract class BaseFilter extends BasePipe implements Filter {
 
 		while (!endOfFlow.get()) {
 
-			endOfFlow.set(filter(in, out));
+			endOfFlow.set(filter(inputPort, outputPort));
 		}
 	}
 }

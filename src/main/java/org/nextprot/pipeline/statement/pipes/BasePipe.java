@@ -23,8 +23,8 @@ abstract class BasePipe implements Pipe, Runnable {
 	private boolean hasStarted;
 
 	private final int sectionWidth;
-	protected PipedOutputPort out = null;
-	protected PipedInputPort in;
+	protected PipedOutputPort outputPort;
+	protected PipedInputPort inputPort;
 
 	private Pipe receiver = null;
 
@@ -34,7 +34,7 @@ abstract class BasePipe implements Pipe, Runnable {
 
 	public BasePipe(int sectionWidth, PipedInputPort inputPort) {
 		this(sectionWidth);
-		this.in = inputPort;
+		this.inputPort = inputPort;
 	}
 
 	/**
@@ -46,8 +46,8 @@ abstract class BasePipe implements Pipe, Runnable {
 	public void connect(Pipe receiver) throws IOException {
 
 		this.receiver = receiver;
-		out = new PipedOutputPort();
-		out.connect(receiver.getInputPort());
+		outputPort = new PipedOutputPort();
+		outputPort.connect(receiver.getInputPort());
 	}
 
 	@Override
@@ -61,7 +61,7 @@ abstract class BasePipe implements Pipe, Runnable {
 	 * a PipedInputPort thread so that another Pipe thread can connect to it.
 	 **/
 	public PipedInputPort getInputPort() {
-		return in;
+		return inputPort;
 	}
 
 	public void openPipe(List<Thread> collector) {
@@ -107,12 +107,12 @@ abstract class BasePipe implements Pipe, Runnable {
 	public void closePipe() throws IOException {
 
 		try {
-			if (in != null) {
-				in.close();
+			if (inputPort != null) {
+				inputPort.close();
 				System.out.println(Thread.currentThread().getName() + ": input port closed");
 			}
-			if (out != null) {
-				out.close();
+			if (outputPort != null) {
+				outputPort.close();
 				System.out.println(Thread.currentThread().getName() + ": output port closed");
 			}
 		} catch (IOException e) {

@@ -55,34 +55,7 @@ public class PipedInputPort {
 	}
 
 	/**
-	 * Causes this piped reader to be connected
-	 * to the piped  writer <code>src</code>.
-	 * If this object is already connected to some
-	 * other piped writer, an <code>IOException</code>
-	 * is thrown.
-	 * <p>
-	 * If <code>src</code> is an
-	 * unconnected piped writer and <code>snk</code>
-	 * is an unconnected piped reader, they
-	 * may be connected by either the call:
-	 *
-	 * <pre><code>snk.connect(src)</code> </pre>
-	 * <p>
-	 * or the call:
-	 *
-	 * <pre><code>src.connect(snk)</code> </pre>
-	 * <p>
-	 * The two calls have the same effect.
-	 *
-	 * @param      src   The piped writer to connect to.
-	 * @exception  IOException  if an I/O error occurs.
-	 */
-	public void connect(PipedOutputPort src) throws IOException {
-		src.connect(this);
-	}
-
-	/**
-	 * Receives a statement of data. This method will block if no input is
+	 * Receives a statement. This method will block if no input is
 	 * available.
 	 */
 	synchronized void receive(Statement statement) throws IOException {
@@ -125,7 +98,7 @@ public class PipedInputPort {
 	}
 
 	/**
-	 * Notifies all waiting threads that the last statement of data has been
+	 * Notifies all waiting threads that the last statement has been
 	 * received.
 	 */
 	synchronized void receivedLast() {
@@ -134,18 +107,16 @@ public class PipedInputPort {
 	}
 
 	/**
-	 * Reads the next statement of data from this piped stream.
+	 * Reads the next statement from this piped stream.
 	 * If no statement is available because the end of the stream
 	 * has been reached, the value <code>null</code> is returned.
 	 * This method blocks until input data is available, the end of
 	 * the stream is detected, or an exception is thrown.
 	 *
-	 * @return     the next statement of data, or <code>null</code> if the end of the
+	 * @return     the next statement, or <code>null</code> if the end of the
 	 *             stream is reached.
 	 * @exception  IOException  if the pipe is
-	 *          <a href=PipedInputStream.html#BROKEN> <code>broken</code></a>,
-	 *          {@link #connect(PipedOutputPort) unconnected}, closed,
-	 *          or an I/O error occurs.
+	 *          <code>broken</code></a>, PipedOutputPort unconnected}, closed or an I/O error occurs.
 	 */
 	public synchronized Statement read() throws IOException {
 
@@ -181,7 +152,7 @@ public class PipedInputPort {
 	}
 
 	/**
-	 * Reads up to <code>len</code> statements of data from this piped
+	 * Reads up to <code>len</code> statements from this piped
 	 * stream into an array of statements. Less than <code>len</code> statements
 	 * will be read if the end of the data stream is reached or if
 	 * <code>len</code> exceeds the pipe's buffer size. This method
@@ -195,8 +166,7 @@ public class PipedInputPort {
 	 *             the stream has been reached.
 	 * @exception  IOException  if the pipe is
 	 *                  <a href=PipedInputStream.html#BROKEN> <code>broken</code></a>,
-	 *                  {@link #connect(PipedOutputPort) unconnected}, closed,
-	 *                  or an I/O error occurs.
+	 *                  PipedOutputPort unconnected}, closed, or an I/O error occurs.
 	 */
 	public synchronized int read(Statement[] sbuf, int off, int len)  throws IOException {
 
@@ -236,7 +206,7 @@ public class PipedInputPort {
 	 *
 	 * @exception  IOException  if the pipe is
 	 *                  <a href=PipedInputStream.html#BROKEN> <code>broken</code></a>,
-	 *                  {@link #connect(PipedOutputPort) unconnected}, or closed.
+	 *                  PipedOutputPort unconnected}, or closed.
 	 */
 	public synchronized boolean ready() throws IOException {
 

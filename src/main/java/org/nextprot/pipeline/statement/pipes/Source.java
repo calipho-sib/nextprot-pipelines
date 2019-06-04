@@ -37,12 +37,12 @@ public class Source extends BasePipe {
 			System.out.println(Thread.currentThread().getName()
 					+ ": about to spill "+ stmtsRead + " statements...");
 
-			out.write(collector, 0, stmtsRead);
+			outputPort.write(collector, 0, stmtsRead);
 
 			collector.clear();
 		}
 
-		out.write(END_OF_FLOW_TOKEN);
+		outputPort.write(END_OF_FLOW_TOKEN);
 	}
 
 	@Override

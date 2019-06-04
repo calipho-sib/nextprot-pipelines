@@ -31,7 +31,7 @@ public class NxFlatTableSink extends Sink {
 		Statement statement;
 
 		int i = 0;
-		while ((statement = in.read()) != null) {
+		while ((statement = inputPort.read()) != null) {
 			System.out.println(Thread.currentThread().getName() + ": write statement " + statement.getStatementId()
 					+ " in table " + table);
 			i++;
