@@ -16,7 +16,7 @@ import java.util.List;
  * It connects its PipedOutputPort stream to a corresponding PipedInputPort
  * stream in the receiver.
  **/
-abstract class ConcurrentPipe implements Pipe, Runnable {
+abstract class BasePipe implements Pipe, Runnable {
 
 	public static final Statement END_OF_FLOW_TOKEN = null;
 
@@ -26,15 +26,15 @@ abstract class ConcurrentPipe implements Pipe, Runnable {
 	protected PipedOutputPort out = null;
 	protected PipedInputPort in;
 
-	// the 2 followings should go to pipeline, the creation of thread also
 	private Pipe receiver = null;
 
-	/**
-	 * Create a Pipe and connect it to the specified Pipe
-	 **/
-	public ConcurrentPipe(int sectionWidth) {
+	public BasePipe(int sectionWidth) {
 		this.sectionWidth = sectionWidth;
-		this.in = new PipedInputPort(sectionWidth);
+	}
+
+	public BasePipe(int sectionWidth, PipedInputPort inputPort) {
+		this(sectionWidth);
+		this.in = inputPort;
 	}
 
 	/**
