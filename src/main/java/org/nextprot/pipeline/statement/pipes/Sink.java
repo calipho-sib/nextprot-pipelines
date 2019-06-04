@@ -6,9 +6,9 @@ import org.nextprot.pipeline.statement.ports.PipedInputPort;
 
 public abstract class Sink extends BasePipe {
 
-	protected Sink(int sectionWidth) {
+	protected Sink(int capacity) {
 
-		super(sectionWidth, new PipedInputPort(sectionWidth));
+		super(capacity, new PipedInputPort(capacity));
 	}
 
 	@Override

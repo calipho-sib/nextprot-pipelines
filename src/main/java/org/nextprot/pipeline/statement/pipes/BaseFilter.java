@@ -12,9 +12,9 @@ public abstract class BaseFilter extends BasePipe implements Filter {
 
 	private final ThreadLocal<Boolean> endOfFlow;
 
-	protected BaseFilter(int sectionWidth) {
+	protected BaseFilter(int capacity) {
 
-		super(sectionWidth, new PipedInputPort(sectionWidth));
+		super(capacity, new PipedInputPort(capacity));
 		endOfFlow = ThreadLocal.withInitial(() -> false);
 	}
 

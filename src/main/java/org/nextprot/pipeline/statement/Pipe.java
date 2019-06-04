@@ -11,5 +11,5 @@ public interface Pipe {
 	void closePipe() throws IOException;
 	void connect(Pipe receiver) throws IOException;
 	PipedInputPort getInputPort();
-	int getSectionWidth();
+	int getCapacity();
 }

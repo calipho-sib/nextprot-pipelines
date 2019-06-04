@@ -22,18 +22,18 @@ abstract class BasePipe implements Pipe, Runnable {
 
 	private boolean hasStarted;
 
-	private final int sectionWidth;
+	private final int capacity;
 	protected PipedOutputPort outputPort;
 	protected PipedInputPort inputPort;
 
 	private Pipe receiver = null;
 
-	public BasePipe(int sectionWidth) {
-		this.sectionWidth = sectionWidth;
+	public BasePipe(int capacity) {
+		this.capacity = capacity;
 	}
 
-	public BasePipe(int sectionWidth, PipedInputPort inputPort) {
-		this(sectionWidth);
+	public BasePipe(int capacity, PipedInputPort inputPort) {
+		this(capacity);
 		this.inputPort = inputPort;
 	}
 
@@ -51,9 +51,9 @@ abstract class BasePipe implements Pipe, Runnable {
 	}
 
 	@Override
-	public int getSectionWidth() {
+	public int getCapacity() {
 
-		return sectionWidth;
+		return capacity;
 	}
 
 	/**
@@ -71,7 +71,7 @@ abstract class BasePipe implements Pipe, Runnable {
 			Thread thread = new Thread(this, getName());
 			thread.start();
 			collector.add(thread);
-			System.out.println("Pipe "+getName()+": opened (section width="+sectionWidth+")");
+			System.out.println("Pipe "+getName()+": opened (section width="+ capacity +")");
 		}
 
 		if (receiver != null) {

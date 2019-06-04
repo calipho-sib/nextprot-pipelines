@@ -19,14 +19,14 @@ class NarcolepticFilter extends BaseFilter {
 	private final int takeANapInMillis;
 	private final int id;
 
-	public NarcolepticFilter(int sectionWidth) {
+	public NarcolepticFilter(int capacity) {
 
-		this(sectionWidth, -1);
+		this(capacity, -1);
 	}
 
-	public NarcolepticFilter(int sectionWidth, int takeANapInMillis) {
+	public NarcolepticFilter(int capacity, int takeANapInMillis) {
 
-		super(sectionWidth);
+		super(capacity);
 		this.takeANapInMillis = takeANapInMillis;
 
 		id = ++COUNT;
@@ -41,9 +41,9 @@ class NarcolepticFilter extends BaseFilter {
 	@Override
 	public boolean filter(PipedInputPort in, PipedOutputPort out) throws IOException {
 
-		Statement[] buffer = new Statement[getSectionWidth()];
+		Statement[] buffer = new Statement[getCapacity()];
 
-		int numOfStatements = in.read(buffer, 0, getSectionWidth());
+		int numOfStatements = in.read(buffer, 0, getCapacity());
 
 		for (int i=0 ; i<numOfStatements ; i++) {
 
