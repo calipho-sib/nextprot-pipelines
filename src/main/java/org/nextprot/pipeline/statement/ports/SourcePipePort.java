@@ -12,11 +12,15 @@ import java.util.List;
  */
 public class SourcePipePort {
 
+	private final int capacity;
 	private SinkPipePort sink;
 
 	private boolean closed = false;
 
-	public SourcePipePort() { }
+	public SourcePipePort(int capacity) {
+
+		this.capacity = capacity;
+	}
 
 	public synchronized void connect(SinkPipePort snk) throws IOException {
 
@@ -64,21 +68,24 @@ public class SourcePipePort {
 	 * stream, but the thread is no longer alive, then an
 	 * <code>IOException</code> is thrown.
 	 *
-	 * @param      buffer  the data.
-	 * @param      off   the start offset in the data.
+	 * @param      buffer the data.
+	 * @param      offset the start offset in the data.
 	 * @param      len   the number of statements to write.
 	 * @exception  IOException  if the pipe is
 	 *          <a href=PipedOutputStream.html#BROKEN> <code>broken</code></a>,
 	 *          {@link #connect(SinkPipePort) unconnected}, closed
 	 *          or an I/O error occurs.
 	 */
-	public void write(List<Statement> buffer, int off, int len) throws IOException {
+	public void write(List<Statement> buffer, int offset, int len) throws IOException {
+
+		int length = (len < capacity) ? len : capacity;
+
 		if (sink == null) {
 			throw new IOException("Pipe not connected");
-		} else if ((off | len | (off + len) | (buffer.size() - (off + len))) < 0) {
+		} else if ((offset | length | (offset + length) | (buffer.size() - (offset + length))) < 0) {
 			throw new IndexOutOfBoundsException();
 		}
-		sink.receive(buffer, off, len);
+		sink.receive(buffer, offset, length);
 	}
 
 	/**
@@ -97,6 +104,11 @@ public class SourcePipePort {
 				sink.notifyAll();
 			}
 		}
+	}
+
+	public boolean isConnected() {
+
+		return sink != null;
 	}
 
 	/**
