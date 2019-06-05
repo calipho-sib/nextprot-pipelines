@@ -47,9 +47,9 @@ public class NarcolepticFilter extends BaseFilter {
 	@Override
 	public boolean filter(SinkPipePort in, SourcePipePort out) throws IOException {
 
-		Statement[] buffer = new Statement[getCapacity()];
+		Statement[] buffer = new Statement[in.capacity()];
 
-		int numOfStatements = in.read(buffer, 0, getCapacity());
+		int numOfStatements = in.read(buffer, 0, in.capacity());
 
 		for (int i=0 ; i<numOfStatements ; i++) {
 

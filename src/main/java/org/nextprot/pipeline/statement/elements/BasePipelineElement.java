@@ -63,12 +63,6 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 		return nextElement;
 	}
 
-	@Override
-	public int getCapacity() {
-
-		return capacity;
-	}
-
 	/**
 	 * This protected method requests a Pipe threads to create and return
 	 * a PipedInputPort thread so that another Pipe thread can connect to it.

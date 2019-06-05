@@ -51,9 +51,9 @@ public class PipelineBuilder implements Pipeline.StartStep {
 		}
 
 		@Override
-		public Pipeline.FilterStep demux(DuplicableElement element, int duplication) throws IOException {
+		public Pipeline.FilterStep demux(DuplicableElement element, int sourcePipePortCount) throws IOException {
 
-			Demultiplexer demux = new Demultiplexer(element.getCapacity(), duplication);
+			Demultiplexer demux = new Demultiplexer(element.getSinkPipePort(), sourcePipePortCount);
 			demux.pipe(element);
 
 			return null;

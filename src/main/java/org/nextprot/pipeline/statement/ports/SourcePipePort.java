@@ -70,7 +70,7 @@ public class SourcePipePort {
 	 *
 	 * @param      buffer the data.
 	 * @param      offset the start offset in the data.
-	 * @param      len   the number of statements to write.
+	 * @param      len   the number of statements to write (with a maximum capacity)
 	 * @exception  IOException  if the pipe is
 	 *          <a href=PipedOutputStream.html#BROKEN> <code>broken</code></a>,
 	 *          {@link #connect(SinkPipePort) unconnected}, closed
@@ -123,5 +123,9 @@ public class SourcePipePort {
 		if (sink != null) {
 			sink.receivedLast();
 		}
+	}
+
+	public int capacity() {
+		return capacity;
 	}
 }

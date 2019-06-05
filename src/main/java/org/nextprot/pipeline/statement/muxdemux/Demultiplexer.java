@@ -21,19 +21,17 @@ public class Demultiplexer implements PipelineElement<DuplicableElement>, Runnab
 
 	private boolean hasStarted;
 
-	private final int capacity;
 	private final SinkPipePort sinkPipePort;
 	private final CircularList<SourcePipePort> sourcePipePorts;
 	private final List<DuplicableElement> nextElements;
 
 	public AtomicInteger incrementer = new AtomicInteger (0);
 
-	public Demultiplexer(int capacity, int duplication) {
+	public Demultiplexer(SinkPipePort sinkPipePort, int sourcePipePortCount) {
 
-		this.capacity = capacity;
-		this.sinkPipePort = new SinkPipePort(capacity);
+		this.sinkPipePort = sinkPipePort;
 		this.nextElements = new ArrayList<>();
-		this.sourcePipePorts = createSourcePipePorts(capacity, duplication);
+		this.sourcePipePorts = createSourcePipePorts(sinkPipePort.capacity(), sourcePipePortCount);
 
 		if (sourcePipePorts.isEmpty()) {
 
@@ -41,13 +39,13 @@ public class Demultiplexer implements PipelineElement<DuplicableElement>, Runnab
 		}
 	}
 
-	private final CircularList<SourcePipePort> createSourcePipePorts(int capacity, int duplication) {
+	private final CircularList<SourcePipePort> createSourcePipePorts(int capacity, int sourcePipePortCount) {
 
 		CircularList<SourcePipePort> spp = new CircularList<>();
 
-		int newCapacity = capacity / duplication;
+		int newCapacity = capacity / sourcePipePortCount;
 
-		for (int i=0 ; i<duplication ; i++) {
+		for (int i=0 ; i<sourcePipePortCount ; i++) {
 
 			spp.add(new SourcePipePort(newCapacity));
 		}
@@ -81,7 +79,7 @@ public class Demultiplexer implements PipelineElement<DuplicableElement>, Runnab
 
 			// copy elements until sink
 			List<DuplicableElement> copiedElements = duplicablePipeline.stream()
-					.map(elt -> elt.duplicate(elt.getCapacity()))
+					.map(elt -> elt.duplicate(port.capacity()))
 					.collect(Collectors.toList());
 
 			if (! (copiedElements.get(copiedElements.size()-1) instanceof Sink) ) {
@@ -132,7 +130,7 @@ public class Demultiplexer implements PipelineElement<DuplicableElement>, Runnab
 			Thread thread = new Thread(this, getName());
 			thread.start();
 			collector.add(thread);
-			System.out.println(getName() + ": opened (capacity=" + capacity + ")");
+			System.out.println(getName() + ": opened (capacity=" + sinkPipePort.capacity() + ")");
 		}
 
 		for (PipelineElement pipelineElement : nextElements) {
@@ -164,9 +162,9 @@ public class Demultiplexer implements PipelineElement<DuplicableElement>, Runnab
 
 		try {
 			// 1. get input
-			Statement[] buffer = new Statement[getCapacity()];
+			Statement[] buffer = new Statement[sinkPipePort.capacity()];
 
-			int numOfStatements = sinkPipePort.read(buffer, 0, getCapacity());
+			int numOfStatements = sinkPipePort.read(buffer, 0, sinkPipePort.capacity());
 
 			int j = 0;
 			for (int i = 0; i < numOfStatements; i++) {
@@ -204,11 +202,6 @@ public class Demultiplexer implements PipelineElement<DuplicableElement>, Runnab
 	public SourcePipePort getSourcePipePort() {
 
 		return null;
-	}
-
-	@Override
-	public int getCapacity() {
-		return capacity;
 	}
 
 	@Override

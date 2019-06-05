@@ -8,6 +8,7 @@ import org.nextprot.pipeline.statement.Pump;
 import org.nextprot.pipeline.statement.elements.NxFlatTableSink;
 import org.nextprot.pipeline.statement.elements.Sink;
 import org.nextprot.pipeline.statement.elements.Source;
+import org.nextprot.pipeline.statement.ports.SinkPipePort;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -26,7 +27,7 @@ public class DemultiplexerTest {
 		Pump<Statement> pump = new Source.StatementPump(reader, 10);
 
 		Source source = new Source(pump);
-		Demultiplexer demux = new Demultiplexer(10, 2);
+		Demultiplexer demux = new Demultiplexer(new SinkPipePort(10), 2);
 		Sink sink = new NxFlatTableSink(NxFlatTableSink.Table.entry_mapped_statements);
 		Filter filter = new NarcolepticFilter(10);
 

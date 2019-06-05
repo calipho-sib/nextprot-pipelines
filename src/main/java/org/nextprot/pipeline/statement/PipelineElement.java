@@ -6,13 +6,16 @@ import org.nextprot.pipeline.statement.ports.SourcePipePort;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * This class represent an element of the pipeline
+ * @param <E> the type of the next element to pipe into
+ */
 public interface PipelineElement<E extends PipelineElement> {
 
 	String getName();
-	void start(List<Thread> collector);
-	boolean hasStarted();
-	void stop() throws IOException;
-	void pipe(E element) throws IOException;
+
+	/** Pipe the next element into this element */
+	void pipe(E nextElement) throws IOException;
 
 	/** @return the sink pipe port or null */
 	SinkPipePort getSinkPipePort();
@@ -20,7 +23,17 @@ public interface PipelineElement<E extends PipelineElement> {
 	/** @return the source pipe port or null */
 	SourcePipePort getSourcePipePort();
 
-	int getCapacity();
-
+	/**
+	 * @return the next element connected to this element
+	 */
 	E nextElement();
+
+	/** Start the processing */
+	void start(List<Thread> collector);
+
+	/** Stop the processing */
+	void stop() throws IOException;
+
+	/** @return true if has started*/
+	boolean hasStarted();
 }

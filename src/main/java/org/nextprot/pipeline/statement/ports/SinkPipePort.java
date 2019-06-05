@@ -54,6 +54,11 @@ public class SinkPipePort {
 		buffer = new Statement[capacity];
 	}
 
+	public int capacity() {
+
+		return buffer.length;
+	}
+
 	/**
 	 * Receives a statement. This method will block if no input is
 	 * available.
@@ -160,7 +165,7 @@ public class SinkPipePort {
 	 *
 	 * @param      sbuf  the buffer into which the data is read.
 	 * @param      off   the start offset of the data.
-	 * @param      len   the maximum number of statements read.
+	 * @param      len   the maximum number of statements read (maximum length capacity).
 	 * @return     the total number of statements read into the buffer, or
 	 *             <code>-1</code> if there is no more data because the end of
 	 *             the stream has been reached.
@@ -170,12 +175,14 @@ public class SinkPipePort {
 	 */
 	public synchronized int read(Statement[] sbuf, int off, int len)  throws IOException {
 
+		int length = (len < buffer.length) ? len : buffer.length;
+
 		checkPipes();
 
-		if ((off < 0) || (off > sbuf.length) || (len < 0) ||
-				((off + len) > sbuf.length) || ((off + len) < 0)) {
+		if ((off < 0) || (off > sbuf.length) || (length < 0) ||
+				((off + length) > sbuf.length) || ((off + length) < 0)) {
 			throw new IndexOutOfBoundsException();
-		} else if (len == 0) {
+		} else if (length == 0) {
 			return 0;
 		}
 
@@ -186,7 +193,7 @@ public class SinkPipePort {
 		}
 		sbuf[off] =  statement;
 		int rlen = 1;
-		while ((in >= 0) && (--len > 0)) {
+		while ((in >= 0) && (--length > 0)) {
 			sbuf[off + rlen] = buffer[out++];
 			rlen++;
 			if (out >= buffer.length) {
