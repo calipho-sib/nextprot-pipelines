@@ -37,7 +37,7 @@ public abstract class BasePipelineElement implements PipelineElement, Runnable {
 
 		this.capacity = capacity;
 		this.sinkPipePort = new SinkPipePort(capacity);
-		this.sourcePipePort = new SourcePipePort();
+		this.sourcePipePort = new SourcePipePort(capacity);
 	}
 
 	/**
