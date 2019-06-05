@@ -3,8 +3,8 @@ package org.nextprot.pipeline.statement;
 
 import org.junit.Test;
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.pipes.NxFlatTableSink;
-import org.nextprot.pipeline.statement.pipes.Source;
+import org.nextprot.pipeline.statement.elements.NxFlatTableSink;
+import org.nextprot.pipeline.statement.elements.Source;
 
 import java.io.IOException;
 import java.io.InputStreamReader;

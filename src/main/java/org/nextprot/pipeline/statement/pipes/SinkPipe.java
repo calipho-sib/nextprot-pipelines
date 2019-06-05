@@ -1,4 +1,4 @@
-package org.nextprot.pipeline.statement.ports;
+package org.nextprot.pipeline.statement.pipes;
 
 import org.nextprot.commons.statements.Statement;
 
@@ -9,9 +9,9 @@ import java.util.List;
 /**
  * Piped statement-input streams.
  *
- * Note: this class is a variation of PipedReader, it reads Statements instead of char
+ * Note: this class is a variation of PipedReader, it collect Statements instead of chars
  */
-public class PipedInputPort {
+public class SinkPipe {
 
 	private boolean closedByWriter = false;
 	private boolean closedByReader = false;
@@ -43,15 +43,15 @@ public class PipedInputPort {
 	 */
 	private int out = 0;
 
-	public PipedInputPort(int crossSection) {
-		initPipe(crossSection);
+	public SinkPipe(int capacity) {
+		init(capacity);
 	}
 
-	private void initPipe(int crossSection) {
-		if (crossSection <= 0) {
+	private void init(int capacity) {
+		if (capacity <= 0) {
 			throw new IllegalArgumentException("Pipe size <= 0");
 		}
-		buffer = new Statement[crossSection];
+		buffer = new Statement[capacity];
 	}
 
 	/**

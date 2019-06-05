@@ -1,12 +1,12 @@
 package org.nextprot.pipeline.statement;
 
 
-import org.nextprot.pipeline.statement.ports.PipedInputPort;
-import org.nextprot.pipeline.statement.ports.PipedOutputPort;
+import org.nextprot.pipeline.statement.pipes.SinkPipe;
+import org.nextprot.pipeline.statement.pipes.SourcePipe;
 
 import java.io.IOException;
 
-public interface Filter extends Pipe {
+public interface Filter extends PipelineElement {
 
 	/**
 	 * Filter statements coming from input port to output port
@@ -16,5 +16,5 @@ public interface Filter extends Pipe {
 	 * @return false if end of flow token has been received
 	 * @throws IOException
 	 */
-	boolean filter(PipedInputPort in, PipedOutputPort out) throws IOException;
+	boolean filter(SinkPipe in, SourcePipe out) throws IOException;
 }

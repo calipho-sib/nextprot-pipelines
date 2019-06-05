@@ -1,8 +1,8 @@
 package org.nextprot.pipeline.statement;
 
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.pipes.Sink;
-import org.nextprot.pipeline.statement.pipes.Source;
+import org.nextprot.pipeline.statement.elements.Sink;
+import org.nextprot.pipeline.statement.elements.Source;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ public class Pipeline {
 
 		threads = new ArrayList<>();
 
-		source.openPipe(threads);
+		source.start(threads);
 		monitorable.started(threads);
 	}
 

@@ -1,20 +1,20 @@
-package org.nextprot.pipeline.statement.pipes;
+package org.nextprot.pipeline.statement.elements;
 
 
 
 import org.nextprot.pipeline.statement.Filter;
-import org.nextprot.pipeline.statement.ports.PipedInputPort;
+import org.nextprot.pipeline.statement.pipes.SinkPipe;
 
 import java.io.IOException;
 
 
-public abstract class BaseFilter extends BasePipe implements Filter {
+public abstract class BaseFilter extends BasePipelineElement implements Filter {
 
 	private final ThreadLocal<Boolean> endOfFlow;
 
 	protected BaseFilter(int capacity) {
 
-		super(capacity, new PipedInputPort(capacity));
+		super(capacity, new SinkPipe(capacity));
 		endOfFlow = ThreadLocal.withInitial(() -> false);
 	}
 
@@ -23,7 +23,7 @@ public abstract class BaseFilter extends BasePipe implements Filter {
 
 		while (!endOfFlow.get()) {
 
-			endOfFlow.set(filter(inputPort, outputPort));
+			endOfFlow.set(filter(getSinkPipe(), getSourcePipe()));
 		}
 	}
 }

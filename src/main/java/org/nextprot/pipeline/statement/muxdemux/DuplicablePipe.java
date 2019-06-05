@@ -1,12 +1,12 @@
 package org.nextprot.pipeline.statement.muxdemux;
 
 
-import org.nextprot.pipeline.statement.ports.PipedInputPort;
-import org.nextprot.pipeline.statement.ports.PipedOutputPort;
+import org.nextprot.pipeline.statement.pipes.SinkPipe;
+import org.nextprot.pipeline.statement.pipes.SourcePipe;
 
 public interface DuplicablePipe {
 
 	DuplicablePipe duplicate();
-	PipedInputPort getPipedInputPort();
-	PipedOutputPort getPipedOutputPort();
+	SinkPipe getPipedInputPort();
+	SourcePipe getPipedOutputPort();
 }

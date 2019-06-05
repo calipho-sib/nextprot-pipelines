@@ -1,11 +1,10 @@
-package org.nextprot.pipeline.statement.pipes;
+package org.nextprot.pipeline.statement.elements;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.commons.statements.reader.BufferableStatementReader;
 import org.nextprot.commons.statements.reader.BufferedJsonStatementReader;
 import org.nextprot.pipeline.statement.Pump;
-import org.nextprot.pipeline.statement.ports.PipedInputPort;
-import org.nextprot.pipeline.statement.ports.PipedOutputPort;
+import org.nextprot.pipeline.statement.pipes.SinkPipe;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -18,7 +17,7 @@ import java.util.List;
  * but cannot serve as a receiver for any other Pipe: it must always be at the beginning,
  * or "source" of the pipe.
  **/
-public class Source extends BasePipe {
+public class Source extends BasePipelineElement {
 
 	protected Pump<Statement> pump;
 
@@ -36,14 +35,14 @@ public class Source extends BasePipe {
 
 		while((stmtsRead = pump.pump(collector)) != -1) {
 			System.out.println(Thread.currentThread().getName()
-					+ ": about to spill "+ stmtsRead + " statements...");
+					+ ": about to pump "+ stmtsRead + " statements...");
 
-			outputPort.write(collector, 0, stmtsRead);
+			getSourcePipe().write(collector, 0, stmtsRead);
 
 			collector.clear();
 		}
 
-		outputPort.write(END_OF_FLOW_TOKEN);
+		getSourcePipe().write(END_OF_FLOW_TOKEN);
 	}
 
 	@Override
@@ -56,21 +55,17 @@ public class Source extends BasePipe {
 	}
 
 	@Override
-	public void closePipe() throws IOException {
+	public void stop() throws IOException {
 
-		System.out.println("Pump: stopped");
+		System.out.println("Pump: deactivated");
 		pump.close();
-		super.closePipe();
+		super.stop();
 	}
 
-	/**
-	 * This method overrides the getReader() method of Pipe.  Because this
-	 * is a source thread, this method should never be called.  To make sure
-	 * that it is never called, we throw an Error if it is.
-	 **/
-	public PipedInputPort getInputPort() {
+	@Override
+	public SinkPipe getSinkPipe() {
 
-		throw new Error("It is a Source, can't connect to a PipedInputPort!");
+		throw new Error("It is a Source, can't connect to a PipelineElement through this pipe!");
 	}
 
 	public static class StatementPump implements Pump<Statement> {

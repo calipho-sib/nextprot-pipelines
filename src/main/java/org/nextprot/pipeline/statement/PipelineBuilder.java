@@ -1,7 +1,8 @@
 package org.nextprot.pipeline.statement;
 
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.pipes.Sink;
+import org.nextprot.pipeline.statement.elements.Sink;
+import org.nextprot.pipeline.statement.elements.Source;
 
 import java.io.IOException;
 import java.util.function.Function;
@@ -14,15 +15,15 @@ public class PipelineBuilder implements Pipeline.StartStep {
 	public Pipeline.SourceStep start(Pipeline.Monitorable monitorable) {
 
 		dataCollector.setMonitorable(monitorable);
-		return new Source();
+		return new SourceStep();
 	}
 
-	public class Source implements Pipeline.SourceStep {
+	public class SourceStep implements Pipeline.SourceStep {
 
 		@Override
 		public Pipeline.FilterStep source(Pump<Statement> pump) {
 
-			final org.nextprot.pipeline.statement.pipes.Source source = new org.nextprot.pipeline.statement.pipes.Source(pump);
+			final Source source = new Source(pump);
 			dataCollector.setSource(source);
 
 			return new FilterStep(source);
@@ -31,9 +32,9 @@ public class PipelineBuilder implements Pipeline.StartStep {
 
 	public class FilterStep implements Pipeline.FilterStep {
 
-		private final Pipe source;
+		private final PipelineElement source;
 
-		FilterStep(Pipe source) {
+		FilterStep(PipelineElement source) {
 
 			this.source = source;
 		}

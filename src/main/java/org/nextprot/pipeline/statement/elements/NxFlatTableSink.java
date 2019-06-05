@@ -1,4 +1,4 @@
-package org.nextprot.pipeline.statement.pipes;
+package org.nextprot.pipeline.statement.elements;
 
 import org.nextprot.commons.statements.Statement;
 
@@ -31,7 +31,7 @@ public class NxFlatTableSink extends Sink {
 		Statement statement;
 
 		int i = 0;
-		while ((statement = inputPort.read()) != null) {
+		while ((statement = getSinkPipe().read()) != null) {
 			System.out.println(Thread.currentThread().getName() + ": write statement " + statement.getStatementId()
 					+ " in table " + table);
 			i++;

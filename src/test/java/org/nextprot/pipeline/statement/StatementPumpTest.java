@@ -4,7 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.pipes.Source;
+import org.nextprot.pipeline.statement.elements.Source;
 
 import java.io.IOException;
 import java.io.Reader;
