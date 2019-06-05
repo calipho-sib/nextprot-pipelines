@@ -3,12 +3,11 @@ package org.nextprot.pipeline.statement.elements;
 
 
 import org.nextprot.pipeline.statement.Filter;
-import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
 
 import java.io.IOException;
 
 
-public abstract class BaseFilter extends BasePipelineElement implements Filter, DuplicableElement {
+public abstract class BaseFilter extends BasePipelineElement implements Filter {
 
 	private final ThreadLocal<Boolean> endOfFlow;
 

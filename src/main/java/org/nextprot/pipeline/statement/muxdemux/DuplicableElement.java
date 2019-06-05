@@ -12,12 +12,4 @@ public interface DuplicableElement extends PipelineElement {
 	 * @return a copy of itself
 	 */
 	PipelineElement duplicate(int newCapacity);
-
-	/**
-	 * @return a copy of itself
-	 */
-	default PipelineElement duplicate() {
-
-		return duplicate(getCapacity());
-	}
 }
