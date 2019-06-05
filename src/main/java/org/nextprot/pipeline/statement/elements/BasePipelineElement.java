@@ -20,7 +20,7 @@ public abstract class BasePipelineElement implements PipelineElement, Runnable {
 	 * There exists
 	 * - sink pipe, through which Statements enter an element
 	 * - source pipe, through which Statements exit an element.
-	 *
+	 * <p>
 	 * It follows naturally that
 	 * - source elements only contain source pipes
 	 * - sink elements only contain sink pipes
@@ -31,7 +31,7 @@ public abstract class BasePipelineElement implements PipelineElement, Runnable {
 
 	private boolean hasStarted;
 
-	private PipelineElement element = null;
+	private PipelineElement nextElement = null;
 
 	public BasePipelineElement(int capacity) {
 		this.capacity = capacity;
@@ -43,16 +43,22 @@ public abstract class BasePipelineElement implements PipelineElement, Runnable {
 	}
 
 	/**
-	 * Connect this pipe with the receiver pipe
-	 * @param element
+	 * Connect this pipe with the sink element
+	 *
+	 * @param nextElement
 	 * @throws IOException
 	 */
 	@Override
-	public void connect(PipelineElement element) throws IOException {
+	public void connect(PipelineElement nextElement) throws IOException {
 
-		this.element = element;
+		this.nextElement = nextElement;
 		sourcePipe = new SourcePipe();
-		sourcePipe.connect(element.getSinkPipe());
+		sourcePipe.connect(nextElement.getSinkPipe());
+	}
+
+	@Override
+	public PipelineElement nextElement() {
+		return nextElement;
 	}
 
 	@Override
@@ -84,12 +90,18 @@ public abstract class BasePipelineElement implements PipelineElement, Runnable {
 			Thread thread = new Thread(this, getName());
 			thread.start();
 			collector.add(thread);
-			System.out.println("Element "+getName()+": activated (capacity="+ capacity +")");
+			System.out.println("Element " + getName() + ": activated (capacity=" + capacity + ")");
 		}
 
-		if (element != null) {
-			element.start(collector);
+		if (nextElement != null) {
+			nextElement.start(collector);
 		}
+	}
+
+	@Override
+	public boolean hasStarted() {
+
+		return hasStarted;
 	}
 
 	@Override
@@ -98,8 +110,7 @@ public abstract class BasePipelineElement implements PipelineElement, Runnable {
 		try {
 			handleFlow();
 			endOfFlow();
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			System.err.println(e.getMessage() + " in thread " + Thread.currentThread().getName());
 		}
 		// When done with the data, close the pipe and flush the Writer
@@ -107,32 +118,38 @@ public abstract class BasePipelineElement implements PipelineElement, Runnable {
 			try {
 				stop();
 			} catch (IOException e) {
-				System.err.println("Element "+getName()+ ": could not stop, e="+e.getMessage());
+				System.err.println("Element " + getName() + ": could not stop, e=" + e.getMessage());
 			}
 		}
 	}
 
 	protected void endOfFlow() {
 
-		System.out.println("Element "+getName() + ": end of flow");
+		System.out.println("Element " + getName() + ": end of flow");
 	}
 
 	public void stop() throws IOException {
 
-		try {
-			if (sinkPipe != null) {
-				sinkPipe.close();
-				System.out.println(Thread.currentThread().getName() + ": sink pipe closed");
-			}
-			if (sourcePipe != null) {
-				sourcePipe.close();
-				System.out.println(Thread.currentThread().getName() + ": source pipe closed");
-			}
-			System.out.println("Element "+getName()+ ": stopped");
-		} catch (IOException e) {
-			System.err.println(e.getMessage() + " in thread " + Thread.currentThread().getName());
+		if (sinkPipe != null) {
+			sinkPipe.close();
+			System.out.println(Thread.currentThread().getName() + ": sink pipe closed");
 		}
+		if (sourcePipe != null) {
+			sourcePipe.close();
+			System.out.println(Thread.currentThread().getName() + ": source pipe closed");
+		}
+		System.out.println("Element " + getName() + ": stopped");
 	}
 
 	protected abstract void handleFlow() throws IOException;
+
+	public static PipelineElement connect(List<PipelineElement> elements) throws IOException {
+
+		// connect all ...
+		for (int i = 1; i < elements.size(); i++) {
+
+			elements.get(i - 1).connect(elements.get(i));
+		}
+		return elements.get(0);
+	}
 }

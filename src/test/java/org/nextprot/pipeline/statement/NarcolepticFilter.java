@@ -33,6 +33,12 @@ public class NarcolepticFilter extends BaseFilter {
 	}
 
 	@Override
+	public PipelineElement duplicate(int capacity) {
+
+		return new NarcolepticFilter(capacity);
+	}
+
+	@Override
 	public String getName() {
 
 		return getClass().getSimpleName()+"-"+id;

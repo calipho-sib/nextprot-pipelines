@@ -10,9 +10,11 @@ public interface PipelineElement {
 
 	String getName();
 	void start(List<Thread> collector);
+	boolean hasStarted();
 	void stop() throws IOException;
 	void connect(PipelineElement element) throws IOException;
 	SinkPipe getSinkPipe();
 	SourcePipe getSourcePipe();
 	int getCapacity();
+	PipelineElement nextElement();
 }

@@ -2,10 +2,12 @@ package org.nextprot.pipeline.statement.elements;
 
 
 import org.nextprot.pipeline.statement.PipelineElement;
+import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
 import org.nextprot.pipeline.statement.pipes.SinkPipe;
 import org.nextprot.pipeline.statement.pipes.SourcePipe;
 
-public abstract class Sink extends BasePipelineElement {
+
+public abstract class Sink extends BasePipelineElement implements DuplicableElement {
 
 	protected Sink(int capacity) {
 

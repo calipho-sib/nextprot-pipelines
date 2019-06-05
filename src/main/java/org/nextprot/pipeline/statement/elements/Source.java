@@ -19,7 +19,7 @@ import java.util.List;
  **/
 public class Source extends BasePipelineElement {
 
-	protected Pump<Statement> pump;
+	private Pump<Statement> pump;
 
 	public Source(Pump<Statement> pump) {
 

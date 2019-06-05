@@ -1,6 +1,7 @@
 package org.nextprot.pipeline.statement.elements;
 
 import org.nextprot.commons.statements.Statement;
+import org.nextprot.pipeline.statement.PipelineElement;
 
 import java.io.IOException;
 
@@ -23,6 +24,12 @@ public class NxFlatTableSink extends Sink {
 	public String getName() {
 
 		return "NxFlatSink";
+	}
+
+	@Override
+	public PipelineElement duplicate(int capacity) {
+
+		return new NxFlatTableSink(table);
 	}
 
 	@Override

@@ -3,12 +3,13 @@ package org.nextprot.pipeline.statement.elements;
 
 
 import org.nextprot.pipeline.statement.Filter;
+import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
 import org.nextprot.pipeline.statement.pipes.SinkPipe;
 
 import java.io.IOException;
 
 
-public abstract class BaseFilter extends BasePipelineElement implements Filter {
+public abstract class BaseFilter extends BasePipelineElement implements Filter, DuplicableElement {
 
 	private final ThreadLocal<Boolean> endOfFlow;
 

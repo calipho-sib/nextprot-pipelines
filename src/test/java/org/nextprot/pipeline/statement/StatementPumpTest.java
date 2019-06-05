@@ -37,7 +37,7 @@ public class StatementPumpTest {
 		Assert.assertTrue(pump.isEmpty());
 	}
 
-	private Reader mockReader() throws IOException {
+	public static Reader mockReader() throws IOException {
 
 		Reader reader = Mockito.mock(Reader.class);
 

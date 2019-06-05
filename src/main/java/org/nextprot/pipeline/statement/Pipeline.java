@@ -19,6 +19,8 @@ public class Pipeline {
 
 		source = dataCollector.getSource();
 		monitorable = dataCollector.getMonitorable();
+		//Demultiplexer demultiplexer = new Demultiplexer(source.getCapacity(), source.getSinkPipe(), 2);
+		//demultiplexer.connect();
 	}
 
 	public void open() {
