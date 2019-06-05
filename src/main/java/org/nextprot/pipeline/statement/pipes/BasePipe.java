@@ -16,7 +16,7 @@ import java.util.List;
  * It connects its PipedOutputPort stream to a corresponding PipedInputPort
  * stream in the receiver.
  **/
-abstract class BasePipe implements Pipe, Runnable {
+public abstract class BasePipe implements Pipe, Runnable {
 
 	public static final Statement END_OF_FLOW_TOKEN = null;
 
@@ -60,8 +60,16 @@ abstract class BasePipe implements Pipe, Runnable {
 	 * This protected method requests a Pipe threads to create and return
 	 * a PipedInputPort thread so that another Pipe thread can connect to it.
 	 **/
+	@Override
 	public PipedInputPort getInputPort() {
+
 		return inputPort;
+	}
+
+	@Override
+	public PipedOutputPort getOutputPort() {
+
+		return outputPort;
 	}
 
 	public void openPipe(List<Thread> collector) {
@@ -71,7 +79,7 @@ abstract class BasePipe implements Pipe, Runnable {
 			Thread thread = new Thread(this, getName());
 			thread.start();
 			collector.add(thread);
-			System.out.println("Pipe "+getName()+": opened (section width="+ capacity +")");
+			System.out.println("Pipe "+getName()+": opened (capacity="+ capacity +")");
 		}
 
 		if (receiver != null) {
@@ -121,5 +129,4 @@ abstract class BasePipe implements Pipe, Runnable {
 	}
 
 	protected abstract void handleFlow() throws IOException;
-	protected abstract String getName();
 }
