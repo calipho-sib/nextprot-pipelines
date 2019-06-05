@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.List;
 
 
-public abstract class BasePipelineElement implements PipelineElement, Runnable {
+public abstract class BasePipelineElement<E extends PipelineElement> implements PipelineElement<E>, Runnable {
 
 	public static final Statement END_OF_FLOW_TOKEN = null;
 
@@ -31,13 +31,18 @@ public abstract class BasePipelineElement implements PipelineElement, Runnable {
 
 	private boolean hasStarted;
 
-	private PipelineElement nextElement = null;
+	private E nextElement = null;
 
 	public BasePipelineElement(int capacity) {
 
+		this(capacity, new SinkPipePort(capacity), new SourcePipePort(capacity));
+	}
+
+	public BasePipelineElement(int capacity, SinkPipePort sinkPipePort, SourcePipePort sourcePipePort) {
+
 		this.capacity = capacity;
-		this.sinkPipePort = new SinkPipePort(capacity);
-		this.sourcePipePort = new SourcePipePort(capacity);
+		this.sinkPipePort = sinkPipePort;
+		this.sourcePipePort = sourcePipePort;
 	}
 
 	/**
@@ -47,14 +52,14 @@ public abstract class BasePipelineElement implements PipelineElement, Runnable {
 	 * @throws IOException
 	 */
 	@Override
-	public void pipe(PipelineElement nextElement) throws IOException {
+	public void pipe(E nextElement) throws IOException {
 
 		this.nextElement = nextElement;
 		sourcePipePort.connect(nextElement.getSinkPipePort());
 	}
 
 	@Override
-	public PipelineElement nextElement() {
+	public E nextElement() {
 		return nextElement;
 	}
 
@@ -139,14 +144,4 @@ public abstract class BasePipelineElement implements PipelineElement, Runnable {
 	}
 
 	protected abstract void handleFlow() throws IOException;
-
-	public static PipelineElement connect(List<PipelineElement> elements) throws IOException {
-
-		// connect all ...
-		for (int i = 1; i < elements.size(); i++) {
-
-			elements.get(i - 1).pipe(elements.get(i));
-		}
-		return elements.get(0);
-	}
 }

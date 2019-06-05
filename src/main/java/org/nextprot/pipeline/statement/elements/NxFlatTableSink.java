@@ -27,7 +27,7 @@ public class NxFlatTableSink extends Sink {
 	}
 
 	@Override
-	public PipelineElement duplicate(int capacity) {
+	public NxFlatTableSink duplicate(int capacity) {
 
 		return new NxFlatTableSink(table);
 	}

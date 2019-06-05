@@ -3,7 +3,6 @@ package org.nextprot.pipeline.statement.muxdemux;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.PipelineElement;
-import org.nextprot.pipeline.statement.elements.BasePipelineElement;
 import org.nextprot.pipeline.statement.elements.Sink;
 import org.nextprot.pipeline.statement.ports.SinkPipePort;
 import org.nextprot.pipeline.statement.ports.SourcePipePort;
@@ -18,14 +17,14 @@ import java.util.stream.Collectors;
  * De-multiplexer receive statements via one source pipe and
  * load balance them to multiple sink pipes.
  */
-public class Demultiplexer implements PipelineElement, Runnable {
+public class Demultiplexer implements PipelineElement<DuplicableElement>, Runnable {
 
 	private boolean hasStarted;
 
 	private final int capacity;
 	private final SinkPipePort sinkPipePort;
-	private final int duplication;
-	private final CircularList<PipelineElement> nextElements;
+	private final CircularList<SourcePipePort> sourcePipePorts;
+	private final List<DuplicableElement> nextElements;
 
 	public AtomicInteger incrementer = new AtomicInteger (0);
 
@@ -33,56 +32,93 @@ public class Demultiplexer implements PipelineElement, Runnable {
 
 		this.capacity = capacity;
 		this.sinkPipePort = new SinkPipePort(capacity);
-		this.duplication = duplication;
-		nextElements = new CircularList<>();
+		this.nextElements = new ArrayList<>();
+		this.sourcePipePorts = createSourcePipePorts(capacity, duplication);
+
+		if (sourcePipePorts.isEmpty()) {
+
+			throw new IllegalArgumentException(getName()+": cannot create src ports");
+		}
 	}
 
-	@Override
-	public void pipe(PipelineElement element) throws IOException {
+	private final CircularList<SourcePipePort> createSourcePipePorts(int capacity, int duplication) {
 
-		if (!nextElements.isEmpty()) {
-
-			throw new IllegalArgumentException("sink elements have been already connected");
-		}
-
-		List<DuplicableElement> duplicableElements = getPipelineDuplicableElementsFrom(element);
-
-		// 1. duplicate the whole chain from this element to sink
-		// 2. add each duplicated element into a list
+		CircularList<SourcePipePort> spp = new CircularList<>();
 
 		int newCapacity = capacity / duplication;
 
-		for (int i = 0; i < duplication; i++) {
+		for (int i=0 ; i<duplication ; i++) {
+
+			spp.add(new SourcePipePort(newCapacity));
+		}
+
+		return spp;
+	}
+
+	/**
+	 * This method first duplicate the whole pipeline from the given element
+	 *
+	 * @param element a duplicable element
+	 * @throws IOException
+	 */
+	@Override
+	public void pipe(DuplicableElement element) throws IOException {
+
+		for (SourcePipePort srcPort : sourcePipePorts) {
+
+			if (srcPort.isConnected()) {
+
+				throw new IllegalArgumentException(getName()+": src port is already connected");
+			}
+		}
+
+		// 1. duplicate the whole chain from this element to sink
+		List<DuplicableElement> duplicablePipeline = getPipelineDuplicableElementsFrom(element);
+
+		for (int i = 0; i < sourcePipePorts.size(); i++) {
+
+			SourcePipePort port = sourcePipePorts.get(i);
 
 			// copy elements until sink
-			List<PipelineElement> copiedElements = duplicableElements.stream()
-					.map(elt -> elt.duplicate(newCapacity))
+			List<DuplicableElement> copiedElements = duplicablePipeline.stream()
+					.map(elt -> elt.duplicate(elt.getCapacity()))
 					.collect(Collectors.toList());
 
 			if (! (copiedElements.get(copiedElements.size()-1) instanceof Sink) ) {
 
-				throw new IllegalArgumentException("Missing a Sink element from element "+element.getName());
+				throw new IllegalArgumentException(getName()+": Missing a Sink element from element "+element.getName());
 			}
 
-			PipelineElement first = BasePipelineElement.connect(copiedElements);
+			// ... -> F0(src)    (snk)F1 -> F2 -> .... -> SINK
+			DuplicableElement first = connect(copiedElements);
+
+			// ... -> F0(src) -> (snk)F1 -> F2 -> .... -> SINK
+			port.connect(first.getSinkPipePort());
+
 			nextElements.add(first);
 		}
 	}
 
-	private List<DuplicableElement> getPipelineDuplicableElementsFrom(PipelineElement element) {
+	private static DuplicableElement connect(List<DuplicableElement> elements) throws IOException {
+
+		// connect all ...
+		for (int i = 1; i < elements.size(); i++) {
+
+			elements.get(i - 1).pipe(elements.get(i));
+		}
+
+		return elements.get(0);
+	}
+
+	private List<DuplicableElement> getPipelineDuplicableElementsFrom(DuplicableElement element) {
 
 		List<DuplicableElement> pipelineElementList = new ArrayList<>();
 
-		if (element instanceof DuplicableElement) {
-			pipelineElementList.add((DuplicableElement) element);
-		}
+		pipelineElementList.add(element);
+
 		while ((element = element.nextElement()) != null) {
 
-			if (element instanceof DuplicableElement) {
-				pipelineElementList.add((DuplicableElement) element);
-			} else {
-				break;
-			}
+			pipelineElementList.add(element);
 		}
 
 		return pipelineElementList;
@@ -96,7 +132,7 @@ public class Demultiplexer implements PipelineElement, Runnable {
 			Thread thread = new Thread(this, getName());
 			thread.start();
 			collector.add(thread);
-			System.out.println("Pipe " + getName() + ": opened (capacity=" + capacity + ")");
+			System.out.println(getName() + ": opened (capacity=" + capacity + ")");
 		}
 
 		for (PipelineElement pipelineElement : nextElements) {
@@ -176,8 +212,8 @@ public class Demultiplexer implements PipelineElement, Runnable {
 	}
 
 	@Override
-	public PipelineElement nextElement() {
-		;
+	public DuplicableElement nextElement() {
+
 		return nextElements.get(incrementer.incrementAndGet());
 	}
 

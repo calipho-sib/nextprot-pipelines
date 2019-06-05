@@ -3,6 +3,8 @@ package org.nextprot.pipeline.statement;
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.elements.Sink;
 import org.nextprot.pipeline.statement.elements.Source;
+import org.nextprot.pipeline.statement.muxdemux.Demultiplexer;
+import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
 
 import java.io.IOException;
 import java.util.function.Function;
@@ -46,6 +48,15 @@ public class PipelineBuilder implements Pipeline.StartStep {
 			source.pipe(pipedFilter);
 
 			return new FilterStep(pipedFilter);
+		}
+
+		@Override
+		public Pipeline.FilterStep demux(DuplicableElement element, int duplication) throws IOException {
+
+			Demultiplexer demux = new Demultiplexer(element.getCapacity(), duplication);
+			demux.pipe(element);
+
+			return null;
 		}
 
 		@Override

@@ -33,7 +33,7 @@ public class NarcolepticFilter extends BaseFilter {
 	}
 
 	@Override
-	public PipelineElement duplicate(int capacity) {
+	public NarcolepticFilter duplicate(int capacity) {
 
 		return new NarcolepticFilter(capacity);
 	}

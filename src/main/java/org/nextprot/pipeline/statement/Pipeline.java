@@ -3,6 +3,7 @@ package org.nextprot.pipeline.statement;
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.elements.Sink;
 import org.nextprot.pipeline.statement.elements.Source;
+import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -60,6 +61,8 @@ public class Pipeline {
 	interface FilterStep {
 
 		FilterStep filter(Function<Integer, Filter> filterProvider) throws IOException;
+
+		FilterStep demux(DuplicableElement element, int duplication) throws IOException;
 
 		TerminateStep sink(Function<Integer, Sink> sinkProvider) throws IOException;
 	}

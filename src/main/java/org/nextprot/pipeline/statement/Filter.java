@@ -7,7 +7,7 @@ import org.nextprot.pipeline.statement.ports.SourcePipePort;
 
 import java.io.IOException;
 
-public interface Filter extends PipelineElement, DuplicableElement {
+public interface Filter extends PipelineElement<DuplicableElement>, DuplicableElement {
 
 	/**
 	 * Filter statements coming from input port to output port

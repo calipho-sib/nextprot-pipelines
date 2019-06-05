@@ -3,8 +3,11 @@ package org.nextprot.pipeline.statement.elements;
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.commons.statements.reader.BufferableStatementReader;
 import org.nextprot.commons.statements.reader.BufferedJsonStatementReader;
+import org.nextprot.pipeline.statement.PipelineElement;
 import org.nextprot.pipeline.statement.Pump;
+import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
 import org.nextprot.pipeline.statement.ports.SinkPipePort;
+import org.nextprot.pipeline.statement.ports.SourcePipePort;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -17,13 +20,13 @@ import java.util.List;
  * but cannot serve as a receiver for any other Pipe: it must always be at the beginning,
  * or "source" of the pipe.
  **/
-public class Source extends BasePipelineElement {
+public class Source extends BasePipelineElement<PipelineElement> {
 
 	private Pump<Statement> pump;
 
 	public Source(Pump<Statement> pump) {
 
-		super(pump.capacity());
+		super(pump.capacity(), null, new SourcePipePort(pump.capacity()));
 		this.pump = pump;
 	}
 

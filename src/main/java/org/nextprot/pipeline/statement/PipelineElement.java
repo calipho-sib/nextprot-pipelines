@@ -6,13 +6,13 @@ import org.nextprot.pipeline.statement.ports.SourcePipePort;
 import java.io.IOException;
 import java.util.List;
 
-public interface PipelineElement {
+public interface PipelineElement<E extends PipelineElement> {
 
 	String getName();
 	void start(List<Thread> collector);
 	boolean hasStarted();
 	void stop() throws IOException;
-	void pipe(PipelineElement element) throws IOException;
+	void pipe(E element) throws IOException;
 
 	/** @return the sink pipe port or null */
 	SinkPipePort getSinkPipePort();
@@ -22,5 +22,5 @@ public interface PipelineElement {
 
 	int getCapacity();
 
-	PipelineElement nextElement();
+	E nextElement();
 }
