@@ -4,7 +4,7 @@ import org.nextprot.commons.statements.Statement;
 import org.nextprot.commons.statements.reader.BufferableStatementReader;
 import org.nextprot.commons.statements.reader.BufferedJsonStatementReader;
 import org.nextprot.pipeline.statement.Pump;
-import org.nextprot.pipeline.statement.pipes.SinkPipe;
+import org.nextprot.pipeline.statement.ports.SinkPipePort;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -37,12 +37,12 @@ public class Source extends BasePipelineElement {
 			System.out.println(Thread.currentThread().getName()
 					+ ": about to pump "+ stmtsRead + " statements...");
 
-			getSourcePipe().write(collector, 0, stmtsRead);
+			getSourcePipePort().write(collector, 0, stmtsRead);
 
 			collector.clear();
 		}
 
-		getSourcePipe().write(END_OF_FLOW_TOKEN);
+		getSourcePipePort().write(END_OF_FLOW_TOKEN);
 	}
 
 	@Override
@@ -63,7 +63,7 @@ public class Source extends BasePipelineElement {
 	}
 
 	@Override
-	public SinkPipe getSinkPipe() {
+	public SinkPipePort getSinkPipePort() {
 
 		throw new Error("It is a Source, can't connect to a PipelineElement through this pipe!");
 	}

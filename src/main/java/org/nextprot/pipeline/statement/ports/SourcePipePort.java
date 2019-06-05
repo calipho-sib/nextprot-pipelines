@@ -1,4 +1,4 @@
-package org.nextprot.pipeline.statement.pipes;
+package org.nextprot.pipeline.statement.ports;
 
 import org.nextprot.commons.statements.Statement;
 
@@ -10,15 +10,15 @@ import java.util.List;
  *
  * Note: this class is a variation of PipedWriter, it emit Statements instead of chars
  */
-public class SourcePipe {
+public class SourcePipePort {
 
-	private SinkPipe sink;
+	private SinkPipePort sink;
 
 	private boolean closed = false;
 
-	public SourcePipe() { }
+	public SourcePipePort() { }
 
-	public synchronized void connect(SinkPipe snk) throws IOException {
+	public synchronized void connect(SinkPipePort snk) throws IOException {
 
 		if (snk == null) {
 			throw new NullPointerException();
@@ -45,7 +45,7 @@ public class SourcePipe {
 	 * @param      statement  the <code>statement</code> to be written.
 	 * @exception  IOException  if the pipe is
 	 *          <a href=PipedOutputStream.html#BROKEN> <code>broken</code></a>,
-	 *          {@link #connect(SinkPipe) unconnected}, closed
+	 *          {@link #connect(SinkPipePort) unconnected}, closed
 	 *          or an I/O error occurs.
 	 */
 	public void write(Statement statement)  throws IOException {
@@ -69,7 +69,7 @@ public class SourcePipe {
 	 * @param      len   the number of statements to write.
 	 * @exception  IOException  if the pipe is
 	 *          <a href=PipedOutputStream.html#BROKEN> <code>broken</code></a>,
-	 *          {@link #connect(SinkPipe) unconnected}, closed
+	 *          {@link #connect(SinkPipePort) unconnected}, closed
 	 *          or an I/O error occurs.
 	 */
 	public void write(List<Statement> buffer, int off, int len) throws IOException {

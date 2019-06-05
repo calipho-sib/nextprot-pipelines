@@ -1,4 +1,4 @@
-package org.nextprot.pipeline.statement.pipes;
+package org.nextprot.pipeline.statement.ports;
 
 import org.nextprot.commons.statements.Statement;
 
@@ -11,7 +11,7 @@ import java.util.List;
  *
  * Note: this class is a variation of PipedReader, it collect Statements instead of chars
  */
-public class SinkPipe {
+public class SinkPipePort {
 
 	private boolean closedByWriter = false;
 	private boolean closedByReader = false;
@@ -43,7 +43,7 @@ public class SinkPipe {
 	 */
 	private int out = 0;
 
-	public SinkPipe(int capacity) {
+	public SinkPipePort(int capacity) {
 		init(capacity);
 	}
 

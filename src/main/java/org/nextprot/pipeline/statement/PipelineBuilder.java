@@ -43,7 +43,7 @@ public class PipelineBuilder implements Pipeline.StartStep {
 		public Pipeline.FilterStep filter(Function<Integer, Filter> filterProvider) throws IOException {
 
 			Filter pipedFilter = filterProvider.apply(dataCollector.getSource().getPump().capacity());
-			source.connect(pipedFilter);
+			source.pipe(pipedFilter);
 
 			return new FilterStep(pipedFilter);
 		}
@@ -52,7 +52,7 @@ public class PipelineBuilder implements Pipeline.StartStep {
 		public Pipeline.TerminateStep sink(Function<Integer, Sink> sinkProvider) throws IOException {
 
 			Sink sink = sinkProvider.apply(1);
-			source.connect(sink);
+			source.pipe(sink);
 
 			return new TerminateStep();
 		}

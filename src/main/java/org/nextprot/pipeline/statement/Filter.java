@@ -1,8 +1,8 @@
 package org.nextprot.pipeline.statement;
 
 
-import org.nextprot.pipeline.statement.pipes.SinkPipe;
-import org.nextprot.pipeline.statement.pipes.SourcePipe;
+import org.nextprot.pipeline.statement.ports.SinkPipePort;
+import org.nextprot.pipeline.statement.ports.SourcePipePort;
 
 import java.io.IOException;
 
@@ -16,5 +16,5 @@ public interface Filter extends PipelineElement {
 	 * @return false if end of flow token has been received
 	 * @throws IOException
 	 */
-	boolean filter(SinkPipe in, SourcePipe out) throws IOException;
+	boolean filter(SinkPipePort in, SourcePipePort out) throws IOException;
 }

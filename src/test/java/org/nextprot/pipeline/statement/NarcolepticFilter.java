@@ -3,8 +3,8 @@ package org.nextprot.pipeline.statement;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.elements.BaseFilter;
-import org.nextprot.pipeline.statement.pipes.SinkPipe;
-import org.nextprot.pipeline.statement.pipes.SourcePipe;
+import org.nextprot.pipeline.statement.ports.SinkPipePort;
+import org.nextprot.pipeline.statement.ports.SourcePipePort;
 
 import java.io.IOException;
 
@@ -45,7 +45,7 @@ public class NarcolepticFilter extends BaseFilter {
 	}
 
 	@Override
-	public boolean filter(SinkPipe in, SourcePipe out) throws IOException {
+	public boolean filter(SinkPipePort in, SourcePipePort out) throws IOException {
 
 		Statement[] buffer = new Statement[getCapacity()];
 

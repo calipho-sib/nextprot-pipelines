@@ -4,7 +4,6 @@ package org.nextprot.pipeline.statement.elements;
 
 import org.nextprot.pipeline.statement.Filter;
 import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
-import org.nextprot.pipeline.statement.pipes.SinkPipe;
 
 import java.io.IOException;
 
@@ -15,7 +14,7 @@ public abstract class BaseFilter extends BasePipelineElement implements Filter, 
 
 	protected BaseFilter(int capacity) {
 
-		super(capacity, new SinkPipe(capacity));
+		super(capacity);
 		endOfFlow = ThreadLocal.withInitial(() -> false);
 	}
 
@@ -24,7 +23,7 @@ public abstract class BaseFilter extends BasePipelineElement implements Filter, 
 
 		while (!endOfFlow.get()) {
 
-			endOfFlow.set(filter(getSinkPipe(), getSourcePipe()));
+			endOfFlow.set(filter(getSinkPipePort(), getSourcePipePort()));
 		}
 	}
 }

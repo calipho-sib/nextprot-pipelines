@@ -5,8 +5,8 @@ import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.PipelineElement;
 import org.nextprot.pipeline.statement.elements.BasePipelineElement;
 import org.nextprot.pipeline.statement.elements.Sink;
-import org.nextprot.pipeline.statement.pipes.SinkPipe;
-import org.nextprot.pipeline.statement.pipes.SourcePipe;
+import org.nextprot.pipeline.statement.ports.SinkPipePort;
+import org.nextprot.pipeline.statement.ports.SourcePipePort;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ public class Demultiplexer implements PipelineElement, Runnable {
 	private boolean hasStarted;
 
 	private final int capacity;
-	private final SinkPipe sinkPipe;
+	private final SinkPipePort sinkPipePort;
 	private final int duplication;
 	private final CircularList<PipelineElement> nextElements;
 
@@ -32,13 +32,13 @@ public class Demultiplexer implements PipelineElement, Runnable {
 	public Demultiplexer(int capacity, int duplication) {
 
 		this.capacity = capacity;
-		this.sinkPipe = new SinkPipe(capacity);
+		this.sinkPipePort = new SinkPipePort(capacity);
 		this.duplication = duplication;
 		nextElements = new CircularList<>();
 	}
 
 	@Override
-	public void connect(PipelineElement element) throws IOException {
+	public void pipe(PipelineElement element) throws IOException {
 
 		if (!nextElements.isEmpty()) {
 
@@ -112,13 +112,13 @@ public class Demultiplexer implements PipelineElement, Runnable {
 	@Override
 	public void stop() throws IOException {
 
-		sinkPipe.close();
+		sinkPipePort.close();
 		System.out.println(Thread.currentThread().getName() + ": sink pipe closed");
 
 		System.out.println(Thread.currentThread().getName() + ": input port closed");
 
 		for (PipelineElement outputPipelineElement : nextElements) {
-			outputPipelineElement.getSourcePipe().close();
+			outputPipelineElement.getSourcePipePort().close();
 			System.out.println(outputPipelineElement.getName() + ": output port closed");
 		}
 	}
@@ -130,14 +130,14 @@ public class Demultiplexer implements PipelineElement, Runnable {
 			// 1. get input
 			Statement[] buffer = new Statement[getCapacity()];
 
-			int numOfStatements = sinkPipe.read(buffer, 0, getCapacity());
+			int numOfStatements = sinkPipePort.read(buffer, 0, getCapacity());
 
 			int j = 0;
 			for (int i = 0; i < numOfStatements; i++) {
 
 				// 2. split in n output batch
 				// 3. distribute to all output
-				nextElements.get(j++).getSourcePipe().write(buffer[i]);
+				nextElements.get(j++).getSourcePipePort().write(buffer[i]);
 
 				System.out.println(Thread.currentThread().getName()
 						+ ": filter statement " + buffer[i].getStatementId());
@@ -160,12 +160,12 @@ public class Demultiplexer implements PipelineElement, Runnable {
 	}
 
 	@Override
-	public SinkPipe getSinkPipe() {
-		return sinkPipe;
+	public SinkPipePort getSinkPipePort() {
+		return sinkPipePort;
 	}
 
 	@Override
-	public SourcePipe getSourcePipe() {
+	public SourcePipePort getSourcePipePort() {
 
 		return null;
 	}

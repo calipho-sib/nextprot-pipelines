@@ -2,8 +2,8 @@ package org.nextprot.pipeline.statement.elements;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.PipelineElement;
-import org.nextprot.pipeline.statement.pipes.SinkPipe;
-import org.nextprot.pipeline.statement.pipes.SourcePipe;
+import org.nextprot.pipeline.statement.ports.SinkPipePort;
+import org.nextprot.pipeline.statement.ports.SourcePipePort;
 
 import java.io.IOException;
 import java.util.List;
@@ -16,44 +16,41 @@ public abstract class BasePipelineElement implements PipelineElement, Runnable {
 	private final int capacity;
 
 	/**
-	 * The ports through which pipeline elements communicate with each other are called pipes.
+	 * The ports through which pipeline elements communicate with each other.
 	 * There exists
-	 * - sink pipe, through which Statements enter an element
-	 * - source pipe, through which Statements exit an element.
+	 * - sink pipe port, through which Statements enter from the previous element
+	 * - source pipe port, through which Statements exit to the next element.
 	 * <p>
 	 * It follows naturally that
-	 * - source elements only contain source pipes
-	 * - sink elements only contain sink pipes
+	 * - source elements only contain source pipe ports
+	 * - sink elements only contain sink pipe ports
 	 * - and filter elements contain both.
 	 */
-	private SourcePipe sourcePipe;
-	private SinkPipe sinkPipe;
+	private SourcePipePort sourcePipePort;
+	private SinkPipePort sinkPipePort;
 
 	private boolean hasStarted;
 
 	private PipelineElement nextElement = null;
 
 	public BasePipelineElement(int capacity) {
-		this.capacity = capacity;
-	}
 
-	public BasePipelineElement(int capacity, SinkPipe sinkPipe) {
-		this(capacity);
-		this.sinkPipe = sinkPipe;
+		this.capacity = capacity;
+		this.sinkPipePort = new SinkPipePort(capacity);
+		this.sourcePipePort = new SourcePipePort();
 	}
 
 	/**
-	 * Connect this pipe with the sink element
+	 * Pipe this element with the next element
 	 *
 	 * @param nextElement
 	 * @throws IOException
 	 */
 	@Override
-	public void connect(PipelineElement nextElement) throws IOException {
+	public void pipe(PipelineElement nextElement) throws IOException {
 
 		this.nextElement = nextElement;
-		sourcePipe = new SourcePipe();
-		sourcePipe.connect(nextElement.getSinkPipe());
+		sourcePipePort.connect(nextElement.getSinkPipePort());
 	}
 
 	@Override
@@ -72,15 +69,15 @@ public abstract class BasePipelineElement implements PipelineElement, Runnable {
 	 * a PipedInputPort thread so that another Pipe thread can connect to it.
 	 **/
 	@Override
-	public SinkPipe getSinkPipe() {
+	public SinkPipePort getSinkPipePort() {
 
-		return sinkPipe;
+		return sinkPipePort;
 	}
 
 	@Override
-	public SourcePipe getSourcePipe() {
+	public SourcePipePort getSourcePipePort() {
 
-		return sourcePipe;
+		return sourcePipePort;
 	}
 
 	public void start(List<Thread> collector) {
@@ -90,7 +87,7 @@ public abstract class BasePipelineElement implements PipelineElement, Runnable {
 			Thread thread = new Thread(this, getName());
 			thread.start();
 			collector.add(thread);
-			System.out.println("Element " + getName() + ": activated (capacity=" + capacity + ")");
+			System.out.println(getName() + ": activated (capacity=" + capacity + ")");
 		}
 
 		if (nextElement != null) {
@@ -118,27 +115,27 @@ public abstract class BasePipelineElement implements PipelineElement, Runnable {
 			try {
 				stop();
 			} catch (IOException e) {
-				System.err.println("Element " + getName() + ": could not stop, e=" + e.getMessage());
+				System.err.println(getName() + ": could not stop, e=" + e.getMessage());
 			}
 		}
 	}
 
 	protected void endOfFlow() {
 
-		System.out.println("Element " + getName() + ": end of flow");
+		System.out.println(getName() + ": end of flow");
 	}
 
 	public void stop() throws IOException {
 
-		if (sinkPipe != null) {
-			sinkPipe.close();
-			System.out.println(Thread.currentThread().getName() + ": sink pipe closed");
+		if (sinkPipePort != null) {
+			sinkPipePort.close();
+			System.out.println(Thread.currentThread().getName() + ": sink pipe port closed");
 		}
-		if (sourcePipe != null) {
-			sourcePipe.close();
-			System.out.println(Thread.currentThread().getName() + ": source pipe closed");
+		if (sourcePipePort != null) {
+			sourcePipePort.close();
+			System.out.println(Thread.currentThread().getName() + ": source pipe port closed");
 		}
-		System.out.println("Element " + getName() + ": stopped");
+		System.out.println(getName() + ": stopped");
 	}
 
 	protected abstract void handleFlow() throws IOException;
@@ -148,7 +145,7 @@ public abstract class BasePipelineElement implements PipelineElement, Runnable {
 		// connect all ...
 		for (int i = 1; i < elements.size(); i++) {
 
-			elements.get(i - 1).connect(elements.get(i));
+			elements.get(i - 1).pipe(elements.get(i));
 		}
 		return elements.get(0);
 	}
