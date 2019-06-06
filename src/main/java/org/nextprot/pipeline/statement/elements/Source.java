@@ -52,10 +52,6 @@ public class Source extends BasePipelineElement<PipelineElement> {
 		return "Source";
 	}
 
-	public Pump<Statement> getPump() {
-		return pump;
-	}
-
 	@Override
 	public void stop() throws IOException {
 
