@@ -13,11 +13,15 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import static org.nextprot.pipeline.statement.elements.BasePipelineElement.END_OF_FLOW_TOKEN;
+
 /**
  * De-multiplexer receive statements via one source pipe and
  * load balance them to multiple sink pipes.
  */
 public class Demultiplexer implements PipelineElement<DuplicableElement>, Runnable {
+
+	private final ThreadLocal<Boolean> endOfFlow;
 
 	private boolean hasStarted;
 
@@ -37,6 +41,7 @@ public class Demultiplexer implements PipelineElement<DuplicableElement>, Runnab
 
 			throw new IllegalArgumentException(getName()+": cannot create src ports");
 		}
+		endOfFlow = ThreadLocal.withInitial(() -> false);
 	}
 
 	private final CircularList<SourcePipePort> createSourcePipePorts(int capacity, int sourcePipePortCount) {
@@ -161,21 +166,7 @@ public class Demultiplexer implements PipelineElement<DuplicableElement>, Runnab
 	public void run() {
 
 		try {
-			// 1. get input
-			Statement[] buffer = new Statement[sinkPipePort.capacity()];
-
-			int numOfStatements = sinkPipePort.read(buffer, 0, sinkPipePort.capacity());
-
-			int j = 0;
-			for (int i = 0; i < numOfStatements; i++) {
-
-				// 2. split in n output batch
-				// 3. distribute to all output
-				sourcePipePorts.get(j++).write(buffer[i]);
-
-				System.out.println(Thread.currentThread().getName()
-						+ ": transmit statement " + buffer[i].getStatementId());
-			}
+			handleFlow();
 		} catch (IOException e) {
 			System.err.println(e.getMessage() + " in thread " + Thread.currentThread().getName());
 		}
@@ -186,6 +177,30 @@ public class Demultiplexer implements PipelineElement<DuplicableElement>, Runnab
 			} catch (IOException e) {
 				System.err.println(Thread.currentThread().getName() + ": could not close the pipe, e=" + e.getMessage());
 			}
+		}
+	}
+
+	private void handleFlow() throws IOException {
+
+		while (!endOfFlow.get()) {
+
+			// 1. get input
+			Statement[] buffer = new Statement[sinkPipePort.capacity()];
+
+			int numOfStatements = sinkPipePort.read(buffer, 0, sinkPipePort.capacity());
+
+			System.out.println(Thread.currentThread().getName()
+					+ ": distributing " + numOfStatements + " statements");
+
+			int j = 0;
+			for (int i = 0; i < numOfStatements; i++) {
+
+				// 2. split in n output batch
+				// 3. distribute to all output
+				sourcePipePorts.get(j++).write(buffer[i]);
+			}
+
+			endOfFlow.set(buffer[numOfStatements-1] == END_OF_FLOW_TOKEN);
 		}
 	}
 

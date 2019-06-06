@@ -81,13 +81,11 @@ public class PipelineBuilder implements Pipeline.StartStep {
 
 					DuplicableElement fromElement = dataCollector.demuxFromElement();
 
-					// TODO: we should disconnect the element before the fromElement
 					Demultiplexer demultiplexer = new Demultiplexer(fromElement.getSinkPipePort(),
 							dataCollector.getDemuxSourcePipePortCount());
 
 					demultiplexer.pipe(fromElement);
 
-					System.out.println("disconnecting sink "+fromElement.getSinkPipePort().isConnected());
 					dataCollector.getSource().getSourcePipePort().disconnectSink();
 					dataCollector.getSource().pipe(demultiplexer);
 				}

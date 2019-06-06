@@ -17,10 +17,7 @@ public class SinkPipePort {
 	private boolean closedByReader = false;
 	private boolean connected = false;
 
-	/* REMIND: identification of the read and write sides needs to be
-	   more sophisticated.  Either using thread groups (but what about
-	   pipes within a thread?) or using finalization (but it may be a
-	   long time until the next GC). */
+	/* Communicating threads (pipeline element connected to the sink and source ports) */
 	private Thread readSide;
 	private Thread writeSide;
 
