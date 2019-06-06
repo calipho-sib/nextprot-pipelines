@@ -38,6 +38,15 @@ public class SourcePipePort {
 		snk.setConnected(true);
 	}
 
+	public synchronized void disconnectSink() {
+
+		if (sink != null) {
+
+			sink.setConnected(false);
+			sink = null;
+		}
+	}
+
 	/**
 	 * Writes the specified <code>statement</code> to the piped output stream.
 	 * If a thread was reading data statements from the connected piped input

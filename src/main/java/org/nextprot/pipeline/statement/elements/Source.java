@@ -5,7 +5,6 @@ import org.nextprot.commons.statements.reader.BufferableStatementReader;
 import org.nextprot.commons.statements.reader.BufferedJsonStatementReader;
 import org.nextprot.pipeline.statement.PipelineElement;
 import org.nextprot.pipeline.statement.Pump;
-import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
 import org.nextprot.pipeline.statement.ports.SinkPipePort;
 import org.nextprot.pipeline.statement.ports.SourcePipePort;
 

@@ -34,36 +34,40 @@ public class PipelineBuilder implements Pipeline.StartStep {
 
 	public class FilterStep implements Pipeline.FilterStep {
 
-		private final PipelineElement source;
+		private final PipelineElement previousElement;
 
-		FilterStep(PipelineElement source) {
 
-			this.source = source;
+		FilterStep(PipelineElement previousElement) {
+
+			this.previousElement = previousElement;
 		}
 
 		@Override
-		public Pipeline.FilterStep filter(Function<Integer, Filter> filterProvider) throws IOException {
+		public Pipeline.FilterStep filter(Function<Integer, DuplicableElement> filterProvider) throws IOException {
 
-			Filter pipedFilter = filterProvider.apply(dataCollector.getSource().getPump().capacity());
-			source.pipe(pipedFilter);
+			DuplicableElement pipedFilter = filterProvider.apply(previousElement.getSourcePipePort().capacity());
+			previousElement.pipe(pipedFilter);
 
 			return new FilterStep(pipedFilter);
 		}
 
 		@Override
-		public Pipeline.FilterStep demux(DuplicableElement element, int sourcePipePortCount) throws IOException {
+		public Pipeline.FilterStep filter(Function<Integer, DuplicableElement> filterProvider, int sourcePipePortCount) throws IOException {
 
-			Demultiplexer demux = new Demultiplexer(element.getSinkPipePort(), sourcePipePortCount);
-			demux.pipe(element);
+			DuplicableElement pipedFilter = filterProvider.apply(previousElement.getSourcePipePort().capacity());
+			previousElement.pipe(pipedFilter);
 
-			return null;
+			dataCollector.setDemuxSourcePipePortCount(sourcePipePortCount);
+			dataCollector.setDemuxFromElement(pipedFilter);
+
+			return new FilterStep(pipedFilter);
 		}
 
 		@Override
 		public Pipeline.TerminateStep sink(Function<Integer, Sink> sinkProvider) throws IOException {
 
 			Sink sink = sinkProvider.apply(1);
-			source.pipe(sink);
+			previousElement.pipe(sink);
 
 			return new TerminateStep();
 		}
@@ -71,7 +75,22 @@ public class PipelineBuilder implements Pipeline.StartStep {
 		public class TerminateStep implements Pipeline.TerminateStep {
 
 			@Override
-			public Pipeline build() {
+			public Pipeline build() throws IOException {
+
+				if (dataCollector.demuxFromElement() != null) {
+
+					DuplicableElement fromElement = dataCollector.demuxFromElement();
+
+					// TODO: we should disconnect the element before the fromElement
+					Demultiplexer demultiplexer = new Demultiplexer(fromElement.getSinkPipePort(),
+							dataCollector.getDemuxSourcePipePortCount());
+
+					demultiplexer.pipe(fromElement);
+
+					System.out.println("disconnecting sink "+fromElement.getSinkPipePort().isConnected());
+					dataCollector.getSource().getSourcePipePort().disconnectSink();
+					dataCollector.getSource().pipe(demultiplexer);
+				}
 
 				return new Pipeline(dataCollector);
 			}

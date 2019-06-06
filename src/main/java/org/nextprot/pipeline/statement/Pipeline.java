@@ -20,8 +20,6 @@ public class Pipeline {
 
 		source = dataCollector.getSource();
 		monitorable = dataCollector.getMonitorable();
-		//Demultiplexer demultiplexer = new Demultiplexer(source.getCapacity(), source.getSinkPipe(), 2);
-		//demultiplexer.connect();
 	}
 
 	public void open() {
@@ -60,9 +58,9 @@ public class Pipeline {
 
 	interface FilterStep {
 
-		FilterStep filter(Function<Integer, Filter> filterProvider) throws IOException;
+		FilterStep filter(Function<Integer, DuplicableElement> filterProvider) throws IOException;
 
-		FilterStep demux(DuplicableElement element, int sourcePipePortCount) throws IOException;
+		FilterStep filter(Function<Integer, DuplicableElement> filterProvider, int sourcePipePortCount) throws IOException;
 
 		TerminateStep sink(Function<Integer, Sink> sinkProvider) throws IOException;
 	}
@@ -79,6 +77,27 @@ public class Pipeline {
 		void ended();
 	}
 
+	/**
+	 * interface SourceStep {
+	 *
+	 * 		FilterStep source(Pump<Statement> pump);
+	 * 		DemuxStep source(Pump<Statement> pump, int sourcePipePortCount);
+	 *        }
+	 *
+	 * 	interface DemuxStep {
+	 *
+	 * 		FilterStep filter(int sourcePipePortCount) throws IOException;
+	 *    }
+	 *
+	 * 	interface FilterStep {
+	 *
+	 * 		FilterStep filter(Function<Integer, DuplicableElement> filterProvider) throws IOException;
+	 *
+	 * 		TerminateStep sink(Function<Integer, Sink> sinkProvider) throws IOException;
+	 *    }
+	 */
+
+
 	static class Deaf implements Monitorable {
 
 		@Override
@@ -92,6 +111,24 @@ public class Pipeline {
 
 		private Source source;
 		private Monitorable monitorable;
+		private int demuxSourcePipePortCount;
+		private DuplicableElement fromElement;
+
+		public int getDemuxSourcePipePortCount() {
+			return demuxSourcePipePortCount;
+		}
+
+		public DuplicableElement demuxFromElement() {
+			return fromElement;
+		}
+
+		public void setDemuxSourcePipePortCount(int sourcePipePortCount) {
+			this.demuxSourcePipePortCount = sourcePipePortCount;
+		}
+
+		public void setDemuxFromElement(DuplicableElement fromElement) {
+			this.fromElement = fromElement;
+		}
 
 		public Source getSource() {
 			return source;

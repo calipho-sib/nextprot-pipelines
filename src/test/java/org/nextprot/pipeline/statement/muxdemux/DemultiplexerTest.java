@@ -38,7 +38,7 @@ public class DemultiplexerTest {
 	        	             \_____  Filter(5) --> Sink(5)
 		 */
 
-		source.pipe(demux);
+		//source.pipe(demux);
 		demux.pipe(filter);
 
 		List<Thread> tl = new ArrayList<>();

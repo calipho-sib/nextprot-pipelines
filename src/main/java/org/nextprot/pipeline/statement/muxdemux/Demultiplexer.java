@@ -84,7 +84,7 @@ public class Demultiplexer implements PipelineElement<DuplicableElement>, Runnab
 
 			if (! (copiedElements.get(copiedElements.size()-1) instanceof Sink) ) {
 
-				throw new IllegalArgumentException(getName()+": Missing a Sink element from element "+element.getName());
+				throw new IllegalArgumentException(getName()+": cannot demux from element "+element.getName() + ", the last element should be a Sink");
 			}
 
 			// ... -> F0(src)    (snk)F1 -> F2 -> .... -> SINK
@@ -171,10 +171,10 @@ public class Demultiplexer implements PipelineElement<DuplicableElement>, Runnab
 
 				// 2. split in n output batch
 				// 3. distribute to all output
-				nextElements.get(j++).getSourcePipePort().write(buffer[i]);
+				sourcePipePorts.get(j++).write(buffer[i]);
 
 				System.out.println(Thread.currentThread().getName()
-						+ ": filter statement " + buffer[i].getStatementId());
+						+ ": transmit statement " + buffer[i].getStatementId());
 			}
 		} catch (IOException e) {
 			System.err.println(e.getMessage() + " in thread " + Thread.currentThread().getName());
