@@ -35,7 +35,8 @@ public class PipelineBuilder implements Pipeline.StartStep {
 	public class FilterStep implements Pipeline.FilterStep {
 
 		private final PipelineElement previousElement;
-
+		private DuplicableElement demuxFromElement;
+		private int demuxSourcePipePortCount;
 
 		FilterStep(PipelineElement previousElement) {
 
@@ -57,8 +58,8 @@ public class PipelineBuilder implements Pipeline.StartStep {
 			DuplicableElement pipedFilter = filterProvider.apply(previousElement.getSourcePipePort().capacity());
 			previousElement.pipe(pipedFilter);
 
-			dataCollector.setDemuxSourcePipePortCount(sourcePipePortCount);
-			dataCollector.setDemuxFromElement(pipedFilter);
+			demuxFromElement = pipedFilter;
+			demuxSourcePipePortCount = sourcePipePortCount;
 
 			return new FilterStep(pipedFilter);
 		}
@@ -77,14 +78,12 @@ public class PipelineBuilder implements Pipeline.StartStep {
 			@Override
 			public Pipeline build() throws IOException {
 
-				if (dataCollector.demuxFromElement() != null) {
+				if (demuxFromElement != null) {
 
-					DuplicableElement fromElement = dataCollector.demuxFromElement();
+					Demultiplexer demultiplexer = new Demultiplexer(demuxFromElement.getSinkPipePort(),
+							demuxSourcePipePortCount);
 
-					Demultiplexer demultiplexer = new Demultiplexer(fromElement.getSinkPipePort(),
-							dataCollector.getDemuxSourcePipePortCount());
-
-					demultiplexer.pipe(fromElement);
+					demultiplexer.pipe(demuxFromElement);
 
 					dataCollector.getSource().getSourcePipePort().disconnectSink();
 					dataCollector.getSource().pipe(demultiplexer);

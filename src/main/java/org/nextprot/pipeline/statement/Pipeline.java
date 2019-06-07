@@ -111,24 +111,6 @@ public class Pipeline {
 
 		private Source source;
 		private Monitorable monitorable;
-		private int demuxSourcePipePortCount;
-		private DuplicableElement fromElement;
-
-		public int getDemuxSourcePipePortCount() {
-			return demuxSourcePipePortCount;
-		}
-
-		public DuplicableElement demuxFromElement() {
-			return fromElement;
-		}
-
-		public void setDemuxSourcePipePortCount(int sourcePipePortCount) {
-			this.demuxSourcePipePortCount = sourcePipePortCount;
-		}
-
-		public void setDemuxFromElement(DuplicableElement fromElement) {
-			this.fromElement = fromElement;
-		}
 
 		public Source getSource() {
 			return source;
