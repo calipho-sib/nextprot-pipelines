@@ -60,7 +60,7 @@ public class Pipeline {
 
 		FilterStep filter(Function<Integer, DuplicableElement> filterProvider) throws IOException;
 
-		FilterStep demuxFromFilter(Function<Integer, DuplicableElement> filterProvider, int sourcePipePortCount) throws IOException;
+		FilterStep demuxFilter(Function<Integer, DuplicableElement> filterProvider, int sourcePipePortCount) throws IOException;
 
 		TerminateStep sink(Function<Integer, Sink> sinkProvider) throws IOException;
 	}
@@ -111,6 +111,24 @@ public class Pipeline {
 
 		private Source source;
 		private Monitorable monitorable;
+		private int demuxSourcePipePortCount;
+		private DuplicableElement fromElement;
+
+		public int getDemuxSourcePipePortCount() {
+			return demuxSourcePipePortCount;
+		}
+
+		public DuplicableElement demuxFromElement() {
+			return fromElement;
+		}
+
+		public void setDemuxSourcePipePortCount(int sourcePipePortCount) {
+			this.demuxSourcePipePortCount = sourcePipePortCount;
+		}
+
+		public void setDemuxFromElement(DuplicableElement fromElement) {
+			this.fromElement = fromElement;
+		}
 
 		public Source getSource() {
 			return source;

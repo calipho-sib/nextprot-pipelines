@@ -22,13 +22,12 @@ public class PipelineBuilderTest {
 
 		URL url = new URL("http://kant.sib.swiss:9001/glyconnect/2019-01-22/all-entries.json");
 		Reader reader = new InputStreamReader(url.openStream());
-		Pump<Statement> pump = new Source.StatementPump(reader, 10);
+		Pump<Statement> pump = new Source.StatementPump(reader, 100);
 
 		Pipeline pipeline = new PipelineBuilder()
-				.start()
+				.start(new Timer())
 				.source(pump)
-				.filter(NarcolepticFilter::new)
-				.filter(NarcolepticFilter::new)
+				.filter(c -> new NarcolepticFilter(c, 500))
 				.sink((c) -> new NxFlatTableSink(NxFlatTableSink.Table.entry_mapped_statements))
 				.build();
 
@@ -53,7 +52,7 @@ public class PipelineBuilderTest {
 		Pipeline pipeline = new PipelineBuilder()
 				.start(new Timer())
 				.source(pump)
-				.demuxFromFilter(c -> new NarcolepticFilter(c, 500), 10)
+				.demuxFilter(c -> new NarcolepticFilter(c, 500), 10)
 				.sink((c) -> new NxFlatTableSink(NxFlatTableSink.Table.entry_mapped_statements))
 				.build();
 
