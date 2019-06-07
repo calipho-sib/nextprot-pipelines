@@ -52,7 +52,7 @@ public class PipelineBuilder implements Pipeline.StartStep {
 		}
 
 		@Override
-		public Pipeline.FilterStep filter(Function<Integer, DuplicableElement> filterProvider, int sourcePipePortCount) throws IOException {
+		public Pipeline.FilterStep demuxFromFilter(Function<Integer, DuplicableElement> filterProvider, int sourcePipePortCount) throws IOException {
 
 			DuplicableElement pipedFilter = filterProvider.apply(previousElement.getSourcePipePort().capacity());
 			previousElement.pipe(pipedFilter);

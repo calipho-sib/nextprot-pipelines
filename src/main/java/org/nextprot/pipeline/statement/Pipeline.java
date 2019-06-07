@@ -60,7 +60,7 @@ public class Pipeline {
 
 		FilterStep filter(Function<Integer, DuplicableElement> filterProvider) throws IOException;
 
-		FilterStep filter(Function<Integer, DuplicableElement> filterProvider, int sourcePipePortCount) throws IOException;
+		FilterStep demuxFromFilter(Function<Integer, DuplicableElement> filterProvider, int sourcePipePortCount) throws IOException;
 
 		TerminateStep sink(Function<Integer, Sink> sinkProvider) throws IOException;
 	}

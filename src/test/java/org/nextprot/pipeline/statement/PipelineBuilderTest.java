@@ -53,7 +53,7 @@ public class PipelineBuilderTest {
 		Pipeline pipeline = new PipelineBuilder()
 				.start(new Timer())
 				.source(pump)
-				.filter(c -> new NarcolepticFilter(c, 500), 10)
+				.demuxFromFilter(c -> new NarcolepticFilter(c, 500), 10)
 				.sink((c) -> new NxFlatTableSink(NxFlatTableSink.Table.entry_mapped_statements))
 				.build();
 
