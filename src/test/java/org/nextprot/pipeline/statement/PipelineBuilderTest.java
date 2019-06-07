@@ -2,7 +2,6 @@ package org.nextprot.pipeline.statement;
 
 
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.elements.NxFlatTableSink;
 import org.nextprot.pipeline.statement.elements.Source;
@@ -13,7 +12,8 @@ import java.io.Reader;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class PipelineBuilderTest {
 
@@ -24,10 +24,12 @@ public class PipelineBuilderTest {
 		Reader reader = new InputStreamReader(url.openStream());
 		Pump<Statement> pump = new Source.StatementPump(reader, 100);
 
+		Timer timer = new Timer();
+
 		Pipeline pipeline = new PipelineBuilder()
-				.start(new Timer())
+				.start(timer)
 				.source(pump)
-				.filter(c -> new NarcolepticFilter(c, 500))
+				.filter(c -> new NarcolepticFilter(c, 100))
 				.sink((c) -> new NxFlatTableSink(NxFlatTableSink.Table.entry_mapped_statements))
 				.build();
 
@@ -39,7 +41,7 @@ public class PipelineBuilderTest {
 		} catch (InterruptedException e) {
 			System.err.println("pipeline error: "+e.getMessage());
 		}
-		System.out.println("Done.");
+		System.out.println("Done in "+timer.getElapsedTimeInMs() + " ms.");
 	}
 
 	@Test
@@ -49,10 +51,12 @@ public class PipelineBuilderTest {
 		Reader reader = new InputStreamReader(url.openStream());
 		Pump<Statement> pump = new Source.StatementPump(reader, 100);
 
+		Timer timer = new Timer();
+
 		Pipeline pipeline = new PipelineBuilder()
-				.start(new Timer())
+				.start(timer)
 				.source(pump)
-				.demuxFilter(c -> new NarcolepticFilter(c, 500), 10)
+				.demuxFilter(c -> new NarcolepticFilter(c, 100), 10)
 				.sink((c) -> new NxFlatTableSink(NxFlatTableSink.Table.entry_mapped_statements))
 				.build();
 
@@ -64,15 +68,20 @@ public class PipelineBuilderTest {
 		} catch (InterruptedException e) {
 			System.err.println("pipeline error: "+e.getMessage());
 		}
-		System.out.println("Done.");
+		System.out.println("Done in "+timer.getElapsedTimeInMs() + " ms.");
 	}
 
-	public static class Timer implements Pipeline.Monitorable {
+	private static class Timer implements Pipeline.Monitorable {
 
 		private Instant start;
+		private final Map<String, Long> infos;
+
+		public Timer() {
+			this.infos = new HashMap<>();
+		}
 
 		@Override
-		public void started(List<Thread> threads) {
+		public void started() {
 
 			start = Instant.now();
 		}
@@ -80,10 +89,12 @@ public class PipelineBuilderTest {
 		@Override
 		public void ended() {
 
-			Instant finish = Instant.now();
-			long timeElapsed = Duration.between(start, finish).toMillis();
+			infos.put("elapsed", Duration.between(start, Instant.now()).toMillis());
+		}
 
-			System.out.println("ELAPSED TIME: "+ timeElapsed + "ms");
+		public long getElapsedTimeInMs() {
+
+			return infos.get("elapsed");
 		}
 	}
 }

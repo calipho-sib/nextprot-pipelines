@@ -8,6 +8,7 @@ import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 public class Pipeline {
@@ -27,7 +28,7 @@ public class Pipeline {
 		threads = new ArrayList<>();
 
 		source.start(threads);
-		monitorable.started(threads);
+		monitorable.started();
 	}
 
 	/**
@@ -72,7 +73,7 @@ public class Pipeline {
 
 	interface Monitorable {
 
-		void started(List<Thread> threads);
+		void started();
 
 		void ended();
 	}
@@ -101,7 +102,7 @@ public class Pipeline {
 	static class Deaf implements Monitorable {
 
 		@Override
-		public void started(List<Thread> threads) { }
+		public void started() { }
 
 		@Override
 		public void ended() { }

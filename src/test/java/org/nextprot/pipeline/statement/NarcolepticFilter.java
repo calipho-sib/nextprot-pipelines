@@ -35,7 +35,7 @@ public class NarcolepticFilter extends BaseFilter {
 	@Override
 	public NarcolepticFilter duplicate(int capacity) {
 
-		return new NarcolepticFilter(capacity);
+		return new NarcolepticFilter(capacity, this.takeANapInMillis);
 	}
 
 	@Override
@@ -60,18 +60,18 @@ public class NarcolepticFilter extends BaseFilter {
 				return true;
 			} else {
 
+				if (takeANapInMillis > 0) {
+					try {
+						System.out.println(Thread.currentThread().getName()
+								+ ": filter statement take a nap");
+						Thread.sleep(takeANapInMillis);
+					} catch (InterruptedException e) {
+						System.err.println(e.getMessage());
+					}
+				}
+
 				System.out.println(Thread.currentThread().getName()
 						+ ": filter statement "+ buffer[i].getStatementId());
-			}
-		}
-
-		if (takeANapInMillis > 0) {
-			try {
-				System.out.println(Thread.currentThread().getName()
-						+ ": filter statement take a nap");
-				Thread.sleep(takeANapInMillis);
-			} catch (InterruptedException e) {
-				System.err.println(e.getMessage());
 			}
 		}
 
