@@ -30,7 +30,7 @@ public class PipelineBuilderTest {
 				.start(timer)
 				.source(pump)
 				.filter(c -> new NarcolepticFilter(c, 100))
-				.sink((c) -> new NxFlatTableSink(NxFlatTableSink.Table.entry_mapped_statements))
+				.sink(c -> new NxFlatTableSink(NxFlatTableSink.Table.entry_mapped_statements))
 				.build();
 
 		pipeline.open();
@@ -57,7 +57,7 @@ public class PipelineBuilderTest {
 				.start(timer)
 				.source(pump)
 				.demuxFilter(c -> new NarcolepticFilter(c, 100), 10)
-				.sink((c) -> new NxFlatTableSink(NxFlatTableSink.Table.entry_mapped_statements))
+				.sink(c -> new NxFlatTableSink(NxFlatTableSink.Table.entry_mapped_statements))
 				.build();
 
 		pipeline.open();

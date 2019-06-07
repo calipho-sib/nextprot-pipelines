@@ -23,9 +23,7 @@ public interface PipelineElement<E extends PipelineElement> {
 	/** @return the source pipe port or null */
 	SourcePipePort getSourcePipePort();
 
-	/**
-	 * @return the next element connected to this element
-	 */
+	/** @return the next element connected to this element */
 	E nextElement();
 
 	/** Start the processing */

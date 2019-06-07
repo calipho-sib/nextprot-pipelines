@@ -1,7 +1,6 @@
 package org.nextprot.pipeline.statement.elements;
 
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.PipelineElement;
 
 import java.io.IOException;
 
