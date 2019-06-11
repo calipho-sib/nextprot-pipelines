@@ -24,7 +24,7 @@ public class NxFlatTableSink extends Sink {
 	}
 
 	@Override
-	public String getName() {
+	public String getThreadName() {
 
 		return getClass().getSimpleName()+"-"+id;
 	}
@@ -42,10 +42,9 @@ public class NxFlatTableSink extends Sink {
 
 		int i = 0;
 		while ((statement = getSinkPipePort().read()) != END_OF_FLOW_TOKEN) {
-			System.out.println(Thread.currentThread().getName() + ": write statement " + statement.getStatementId()
-					+ " in table " + table);
+			printlnTextInLog("write statement " + statement.getStatementId() + " in table " + table);
 			i++;
 		}
-		System.out.println(Thread.currentThread().getName() + ": " + i + " statements evacuated");
+		printlnTextInLog(i + " statements evacuated");
 	}
 }

@@ -6,10 +6,11 @@ import org.nextprot.pipeline.statement.ports.SinkPipePort;
 import org.nextprot.pipeline.statement.ports.SourcePipePort;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.List;
 
 
-public abstract class BasePipelineElement<E extends PipelineElement> implements PipelineElement<E>, Runnable {
+public abstract class BasePipelineElement<E extends PipelineElement> implements PipelineElement<E> {
 
 	public static final Statement END_OF_FLOW_TOKEN = null;
 
@@ -33,6 +34,8 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 
 	private E nextElement = null;
 
+	private ThreadLocal<PrintStream> logStream;
+
 	public BasePipelineElement(int capacity) {
 
 		this(capacity, new SinkPipePort(capacity), new SourcePipePort(capacity));
@@ -43,6 +46,8 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 		this.capacity = capacity;
 		this.sinkPipePort = sinkPipePort;
 		this.sourcePipePort = sourcePipePort;
+
+		this.logStream = ThreadLocal.withInitial(this::createLogStream);
 	}
 
 	/**
@@ -79,14 +84,14 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 		return sourcePipePort;
 	}
 
+	@Override
 	public void start(List<Thread> collector) {
 
 		if (!hasStarted) {
 			hasStarted = true;
-			Thread thread = new Thread(this, getName());
+			Thread thread = new Thread(this, getThreadName());
 			thread.start();
 			collector.add(thread);
-			System.out.println(getName() + ": activated (capacity=" + capacity + ")");
 		}
 
 		if (nextElement != null) {
@@ -95,46 +100,41 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 	}
 
 	@Override
-	public boolean hasStarted() {
+	public final PrintStream getLogStream() {
 
-		return hasStarted;
+		return logStream.get();
 	}
 
 	@Override
 	public void run() {
 
 		try {
+			printlnTextInLog("opened (capacity=" + capacity + ")");
 			handleFlow();
-			endOfFlow();
+			printlnTextInLog("end of flow");
 		} catch (IOException e) {
-			System.err.println(e.getMessage() + " in thread " + Thread.currentThread().getName());
+			System.err.println(Thread.currentThread().getName() +": "+e.getMessage());
 		}
-		// When done with the data, close the pipe and flush the Writer
 		finally {
 			try {
 				stop();
 			} catch (IOException e) {
-				System.err.println(getName() + ": could not stop, e=" + e.getMessage());
+				System.err.println(Thread.currentThread().getName() + ": could not stop, e=" + e.getMessage());
 			}
 		}
-	}
-
-	protected void endOfFlow() {
-
-		System.out.println(getName() + ": end of flow");
 	}
 
 	public void stop() throws IOException {
 
 		if (sinkPipePort != null) {
 			sinkPipePort.close();
-			System.out.println(Thread.currentThread().getName() + ": sink pipe port closed");
+			printlnTextInLog("sink pipe port closed");
 		}
 		if (sourcePipePort != null) {
 			sourcePipePort.close();
-			System.out.println(Thread.currentThread().getName() + ": source pipe port closed");
+			printlnTextInLog("source pipe port closed");
 		}
-		System.out.println(getName() + ": stopped");
+		printlnTextInLog("closed");
 	}
 
 	protected abstract void handleFlow() throws IOException;

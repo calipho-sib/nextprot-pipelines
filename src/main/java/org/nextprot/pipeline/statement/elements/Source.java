@@ -27,6 +27,7 @@ public class Source extends BasePipelineElement<PipelineElement> {
 
 		super(pump.capacity(), null, new SourcePipePort(pump.capacity()));
 		this.pump = pump;
+		printlnTextInLog("Pump started");
 	}
 
 	@Override
@@ -36,8 +37,7 @@ public class Source extends BasePipelineElement<PipelineElement> {
 		int stmtsRead;
 
 		while((stmtsRead = pump.pump(collector)) != -1) {
-			System.out.println(Thread.currentThread().getName()
-					+ ": about to pump "+ stmtsRead + " statements...");
+			printlnTextInLog("pump "+ stmtsRead + " statements");
 
 			getSourcePipePort().write(collector, 0, stmtsRead);
 
@@ -48,14 +48,14 @@ public class Source extends BasePipelineElement<PipelineElement> {
 	}
 
 	@Override
-	public String getName() {
+	public String getThreadName() {
 		return "Source";
 	}
 
 	@Override
 	public void stop() throws IOException {
 
-		System.out.println("Pump: deactivated");
+		printlnTextInLog("pump stopped");
 		pump.close();
 		super.stop();
 	}

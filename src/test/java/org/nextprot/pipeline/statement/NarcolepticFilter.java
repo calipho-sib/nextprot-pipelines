@@ -39,7 +39,7 @@ public class NarcolepticFilter extends BaseFilter {
 	}
 
 	@Override
-	public String getName() {
+	public String getThreadName() {
 
 		return getClass().getSimpleName()+"-"+id;
 	}
@@ -62,16 +62,13 @@ public class NarcolepticFilter extends BaseFilter {
 
 				if (takeANapInMillis > 0) {
 					try {
-						System.out.println(Thread.currentThread().getName()
-								+ ": filter statement take a nap");
 						Thread.sleep(takeANapInMillis);
 					} catch (InterruptedException e) {
 						System.err.println(e.getMessage());
 					}
 				}
 
-				System.out.println(Thread.currentThread().getName()
-						+ ": filter statement "+ buffer[i].getStatementId());
+				printlnTextInLog("filter statement "+ buffer[i].getStatementId());
 			}
 		}
 

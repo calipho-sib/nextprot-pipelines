@@ -17,6 +17,7 @@ import java.util.Map;
 
 public class PipelineBuilderTest {
 
+	// 250" for 100ms naps
 	@Test
 	public void testPipeline() throws IOException {
 
@@ -44,6 +45,7 @@ public class PipelineBuilderTest {
 		System.out.println("Done in "+timer.getElapsedTimeInMs() + " ms.");
 	}
 
+	// 25" for 100ms naps
 	@Test
 	public void testPipelineWithDemux() throws IOException {
 

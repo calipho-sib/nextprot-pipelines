@@ -27,6 +27,9 @@ public class Pipeline {
 		threads = new ArrayList<>();
 
 		source.start(threads);
+		for (Thread thread : threads) {
+			System.out.println("Thread "+thread.getName() + ": created");
+		}
 		monitorable.started();
 	}
 
@@ -37,7 +40,7 @@ public class Pipeline {
 
 		for (Thread thread : threads) {
 			thread.join();
-			System.out.println(thread.getName() + ": closed");
+			System.out.println("Thread "+thread.getName() + ": died");
 		}
 		monitorable.ended();
 	}
@@ -112,21 +115,27 @@ public class Pipeline {
 		private Source source;
 		private Monitorable monitorable;
 		private int demuxSourcePipePortCount;
+		private PipelineElement elementBeforeDemux;
 		private DuplicableElement fromElement;
 
 		public int getDemuxSourcePipePortCount() {
 			return demuxSourcePipePortCount;
 		}
 
-		public DuplicableElement demuxFromElement() {
+		public DuplicableElement getDemuxFromElement() {
 			return fromElement;
+		}
+
+		public PipelineElement getElementBeforeDemux() {
+			return elementBeforeDemux;
 		}
 
 		public void setDemuxSourcePipePortCount(int sourcePipePortCount) {
 			this.demuxSourcePipePortCount = sourcePipePortCount;
 		}
 
-		public void setDemuxFromElement(DuplicableElement fromElement) {
+		public void setDemuxFromElement(PipelineElement elementBeforeDemux, DuplicableElement fromElement) {
+			this.elementBeforeDemux = elementBeforeDemux;
 			this.fromElement = fromElement;
 		}
 
