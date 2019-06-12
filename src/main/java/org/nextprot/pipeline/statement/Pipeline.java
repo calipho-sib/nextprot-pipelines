@@ -6,6 +6,7 @@ import org.nextprot.pipeline.statement.elements.Source;
 import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -27,6 +28,7 @@ public class Pipeline {
 		threads = new ArrayList<>();
 
 		source.start(threads);
+
 		for (Thread thread : threads) {
 			System.out.println("Thread "+thread.getName() + ": created");
 		}
@@ -56,7 +58,7 @@ public class Pipeline {
 
 	interface SourceStep {
 
-		FilterStep source(Pump<Statement> pump);
+		FilterStep source(Reader reader, int capacity);
 	}
 
 	interface FilterStep {
@@ -79,27 +81,6 @@ public class Pipeline {
 
 		void ended();
 	}
-
-	/**
-	 * interface SourceStep {
-	 *
-	 * 		FilterStep source(Pump<Statement> pump);
-	 * 		DemuxStep source(Pump<Statement> pump, int sourcePipePortCount);
-	 *        }
-	 *
-	 * 	interface DemuxStep {
-	 *
-	 * 		FilterStep filter(int sourcePipePortCount) throws IOException;
-	 *    }
-	 *
-	 * 	interface FilterStep {
-	 *
-	 * 		FilterStep filter(Function<Integer, DuplicableElement> filterProvider) throws IOException;
-	 *
-	 * 		TerminateStep sink(Function<Integer, Sink> sinkProvider) throws IOException;
-	 *    }
-	 */
-
 
 	static class Deaf implements Monitorable {
 

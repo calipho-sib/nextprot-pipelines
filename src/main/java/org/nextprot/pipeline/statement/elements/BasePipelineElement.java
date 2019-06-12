@@ -6,15 +6,17 @@ import org.nextprot.pipeline.statement.ports.SinkPipePort;
 import org.nextprot.pipeline.statement.ports.SourcePipePort;
 
 import java.io.IOException;
-import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
 
 
-public abstract class BasePipelineElement<E extends PipelineElement> implements PipelineElement<E> {
+public abstract class BasePipelineElement<E extends PipelineElement> implements PipelineElement<E>, EventHandler {
 
 	public static final Statement END_OF_FLOW_TOKEN = null;
 
 	private final int capacity;
+
+	protected final ThreadLocal<Boolean> endOfFlow;
 
 	/**
 	 * The ports through which pipeline elements communicate with each other.
@@ -34,20 +36,12 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 
 	private E nextElement = null;
 
-	private ThreadLocal<PrintStream> logStream;
-
-	public BasePipelineElement(int capacity) {
-
-		this(capacity, new SinkPipePort(capacity), new SourcePipePort(capacity));
-	}
-
 	public BasePipelineElement(int capacity, SinkPipePort sinkPipePort, SourcePipePort sourcePipePort) {
 
 		this.capacity = capacity;
 		this.sinkPipePort = sinkPipePort;
 		this.sourcePipePort = sourcePipePort;
-
-		this.logStream = ThreadLocal.withInitial(this::createLogStream);
+		this.endOfFlow = ThreadLocal.withInitial(() -> false);
 	}
 
 	/**
@@ -100,18 +94,18 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 	}
 
 	@Override
-	public final PrintStream getLogStream() {
-
-		return logStream.get();
-	}
-
-	@Override
 	public void run() {
 
 		try {
-			printlnTextInLog("opened (capacity=" + capacity + ")");
-			handleFlow();
-			printlnTextInLog("end of flow");
+			List<Statement> buffer = new ArrayList<>();
+			elementOpened(capacity);
+
+			while (!endOfFlow.get()) {
+
+				endOfFlow.set(handleFlow(buffer));
+				buffer.clear();
+			}
+			endOfFlow();
 		} catch (IOException e) {
 			System.err.println(Thread.currentThread().getName() +": "+e.getMessage());
 		}
@@ -126,16 +120,24 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 
 	public void stop() throws IOException {
 
+		hasStarted = false;
+
 		if (sinkPipePort != null) {
+
 			sinkPipePort.close();
-			printlnTextInLog("sink pipe port closed");
+			sinkPipePortClosed();
 		}
 		if (sourcePipePort != null) {
+
 			sourcePipePort.close();
-			printlnTextInLog("source pipe port closed");
+			sourcePipePortClosed();
 		}
-		printlnTextInLog("closed");
+		elementClosed();
 	}
 
-	protected abstract void handleFlow() throws IOException;
+	//public void elementOpened(int capacity) {}
+	//public void endOfFlow() {}
+	public void sinkPipePortClosed() {}
+	public void sourcePipePortClosed() {}
+	public void elementClosed() {}
 }

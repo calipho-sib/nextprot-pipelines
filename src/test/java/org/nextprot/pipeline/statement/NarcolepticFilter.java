@@ -68,10 +68,20 @@ public class NarcolepticFilter extends BaseFilter {
 					}
 				}
 
-				printlnTextInLog("filter statement "+ buffer[i].getStatementId());
+				statementsHandled(numOfStatements);
+				//printlnTextInLog("filter statement "+ buffer[i].getStatementId());
 			}
 		}
 
 		return false;
 	}
+
+	@Override
+	public void elementOpened(int capacity) { }
+
+	@Override
+	public void endOfFlow() { }
+
+	@Override
+	public void statementsHandled(int statements) { }
 }

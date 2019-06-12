@@ -2,28 +2,26 @@ package org.nextprot.pipeline.statement.elements;
 
 
 
+import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.Filter;
 import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
+import org.nextprot.pipeline.statement.ports.SinkPipePort;
+import org.nextprot.pipeline.statement.ports.SourcePipePort;
 
 import java.io.IOException;
+import java.util.List;
 
 
 public abstract class BaseFilter extends BasePipelineElement<DuplicableElement> implements Filter {
 
-	private final ThreadLocal<Boolean> endOfFlow;
-
 	protected BaseFilter(int capacity) {
 
-		super(capacity);
-		endOfFlow = ThreadLocal.withInitial(() -> false);
+		super(capacity, new SinkPipePort(capacity), new SourcePipePort(capacity));
 	}
 
 	@Override
-	public void handleFlow() throws IOException {
+	public boolean handleFlow(List<Statement> buffer) throws IOException {
 
-		while (!endOfFlow.get()) {
-
-			endOfFlow.set(filter(getSinkPipePort(), getSourcePipePort()));
-		}
+		return filter(getSinkPipePort(), getSourcePipePort());
 	}
 }

@@ -3,12 +3,12 @@ package org.nextprot.pipeline.statement.muxdemux;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.PipelineElement;
+import org.nextprot.pipeline.statement.elements.EventHandler;
 import org.nextprot.pipeline.statement.elements.Sink;
 import org.nextprot.pipeline.statement.ports.SinkPipePort;
 import org.nextprot.pipeline.statement.ports.SourcePipePort;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -20,10 +20,9 @@ import static org.nextprot.pipeline.statement.elements.BasePipelineElement.END_O
  * De-multiplexer receive statements via one source pipe and
  * load balance them to multiple sink pipes.
  */
-public class Demultiplexer implements PipelineElement<DuplicableElement> {
+public class Demultiplexer implements PipelineElement<DuplicableElement>, EventHandler {
 
 	private final ThreadLocal<Boolean> endOfFlow;
-	private final PrintStream logStream;
 
 	private boolean hasStarted;
 
@@ -31,7 +30,7 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 	private final CircularList<SourcePipePort> sourcePipePorts;
 	private final List<DuplicableElement> nextElements;
 
-	private AtomicInteger incrementer = new AtomicInteger (0);
+	private final AtomicInteger incrementer = new AtomicInteger (0);
 
 	public Demultiplexer(SinkPipePort sinkPipePort, int sourcePipePortCount) {
 
@@ -44,7 +43,6 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 			throw new IllegalArgumentException(getThreadName()+": cannot create src ports");
 		}
 		this.endOfFlow = ThreadLocal.withInitial(() -> false);
-		this.logStream = createLogStream();
 	}
 
 	private CircularList<SourcePipePort> createSourcePipePorts(int capacity, int sourcePipePortCount) {
@@ -153,18 +151,18 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 	}
 
 	@Override
-	public PrintStream getLogStream() {
-
-		return logStream;
-	}
-
-	@Override
 	public void run() {
 
 		try {
-			printlnTextInLog("opened");
-			handleFlow();
-			printlnTextInLog("end of flow");
+			List<Statement> buffer = new ArrayList<>();
+			elementOpened(sinkPipePort.capacity());
+
+			while (!endOfFlow.get()) {
+
+				endOfFlow.set(handleFlow(buffer));
+				buffer.clear();
+			}
+			endOfFlow();
 		} catch (IOException e) {
 			System.err.println(Thread.currentThread().getName() + ": " + e.getMessage());
 		}
@@ -181,41 +179,34 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 	public void stop() throws IOException {
 
 		sinkPipePort.close();
-
-		printlnTextInLog("sink pipe port closed");
+		sinkPipePortClosed();
 
 		for (PipelineElement outputPipelineElement : nextElements) {
 
-			outputPipelineElement.getSinkPipePort().close();
-			printlnTextInLog("closing sink pipe port of "+outputPipelineElement.getThreadName());
-
-			outputPipelineElement.getSourcePipePort().close();
-			printlnTextInLog("closing source pipe port of "+outputPipelineElement.getThreadName());
+			outputPipelineElement.stop();
 		}
-		printlnTextInLog("closed");
+		elementClosed();
 	}
 
-	private void handleFlow() throws IOException {
+	@Override
+	public boolean handleFlow(List<Statement> buf) throws IOException {
 
-		while (!endOfFlow.get()) {
+		// 1. get input
+		Statement[] buffer = new Statement[sinkPipePort.capacity()];
 
-			// 1. get input
-			Statement[] buffer = new Statement[sinkPipePort.capacity()];
+		int numOfStatements = sinkPipePort.read(buffer, 0, sinkPipePort.capacity());
 
-			int numOfStatements = sinkPipePort.read(buffer, 0, sinkPipePort.capacity());
+		int j = 0;
+		for (int i = 0; i < numOfStatements; i++) {
 
-			printlnTextInLog("distributing " + numOfStatements + " statements...");
-
-			int j = 0;
-			for (int i = 0; i < numOfStatements; i++) {
-
-				// 2. split in n output batch
-				// 3. distribute to all output
-				sourcePipePorts.get(j++).write(buffer[i]);
-			}
-
-			endOfFlow.set(buffer[numOfStatements-1] == END_OF_FLOW_TOKEN);
+			// 2. split in n output batch
+			// 3. distribute to all output
+			sourcePipePorts.get(j++).write(buffer[i]);
 		}
+
+		statementsHandled(numOfStatements);
+
+		return buffer[numOfStatements-1] == END_OF_FLOW_TOKEN;
 	}
 
 	public String getThreadName() {
@@ -238,6 +229,21 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 
 		return nextElements.get(incrementer.incrementAndGet());
 	}
+
+	@Override
+	public void elementOpened(int capacity) {}
+	@Override
+	public void statementsHandled(int statements) {
+//		printlnTextInLog("distributing " + numOfStatements + " statements...");
+	}
+	@Override
+	public void endOfFlow() {}
+	@Override
+	public void sinkPipePortClosed() {}
+	@Override
+	public void sourcePipePortClosed() {}
+	@Override
+	public void elementClosed() {}
 
 	public static class CircularList<E> extends ArrayList<E> {
 

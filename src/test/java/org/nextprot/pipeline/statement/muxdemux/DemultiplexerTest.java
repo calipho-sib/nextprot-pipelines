@@ -19,7 +19,7 @@ import java.util.List;
 
 public class DemultiplexerTest {
 
-	@Test
+	/*@Test
 	public void connect() throws IOException, InterruptedException {
 
 		URL url = new URL("http://kant.sib.swiss:9001/glyconnect/2019-01-22/all-entries.json");
@@ -33,10 +33,9 @@ public class DemultiplexerTest {
 
 		filter.pipe(sink);
 
-		/*
-		   SRC(10) --> Demux(10) --> Filter(5) --> Sink(5)
-	        	             \_____  Filter(5) --> Sink(5)
-		 */
+
+		//   SRC(10) --> Demux(10) --> Filter(5) --> Sink(5)
+	    //    	             \_____  Filter(5) --> Sink(5)
 
 		//source.pipe(demux);
 		demux.pipe(filter);
@@ -49,5 +48,5 @@ public class DemultiplexerTest {
 			System.out.println("Pipe " + thread.getName() + ": closed");
 		}
 		System.out.println(tl);
-	}
+	}*/
 }

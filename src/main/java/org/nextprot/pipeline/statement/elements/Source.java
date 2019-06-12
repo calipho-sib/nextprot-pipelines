@@ -10,8 +10,8 @@ import org.nextprot.pipeline.statement.ports.SourcePipePort;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 
 /**
  * This class is a source of data for a pipe of threads.
@@ -21,31 +21,48 @@ import java.util.List;
  **/
 public class Source extends BasePipelineElement<PipelineElement> {
 
-	private Pump<Statement> pump;
+	private BiFunction<Reader, Integer, Pump<Statement>> pumpSupplier;
+	private Reader reader;
+	private ThreadLocal<Pump<Statement>> pump;
 
-	public Source(Pump<Statement> pump) {
+	public Source(Reader reader, int pumpCapacity) {
 
-		super(pump.capacity(), null, new SourcePipePort(pump.capacity()));
-		this.pump = pump;
-		printlnTextInLog("Pump started");
+		this(reader, pumpCapacity, (r, pc) -> {
+			try {
+				return new StatementPump(r, pc);
+			} catch (IOException e) {
+				e.printStackTrace();
+				throw new IllegalArgumentException(e.getMessage());
+			}
+		});
+
+		this.pump = new ThreadLocal<>();
+	}
+
+	public Source(Reader reader, int pumpCapacity, BiFunction<Reader, Integer, Pump<Statement>> pumpSupplier) {
+
+		super(pumpCapacity, null, new SourcePipePort(pumpCapacity));
+		this.reader = reader;
+		this.pumpSupplier = pumpSupplier;
 	}
 
 	@Override
-	public void handleFlow() throws IOException {
+	public boolean handleFlow(List<Statement> buffer) throws IOException {
 
-		List<Statement> collector = new ArrayList<>();
 		int stmtsRead;
 
-		while((stmtsRead = pump.pump(collector)) != -1) {
-			printlnTextInLog("pump "+ stmtsRead + " statements");
+		while ((stmtsRead = pump.get().pump(buffer)) != -1) {
 
-			getSourcePipePort().write(collector, 0, stmtsRead);
-
-			collector.clear();
+			getSourcePipePort().write(buffer, 0, stmtsRead);
+			buffer.clear();
 		}
 
 		getSourcePipePort().write(END_OF_FLOW_TOKEN);
+		return true;
 	}
+
+	@Override
+	public void endOfFlow() { }
 
 	@Override
 	public String getThreadName() {
@@ -55,9 +72,14 @@ public class Source extends BasePipelineElement<PipelineElement> {
 	@Override
 	public void stop() throws IOException {
 
-		printlnTextInLog("pump stopped");
-		pump.close();
+		pump.get().close();
 		super.stop();
+	}
+
+	@Override
+	public void elementOpened(int capacity) {
+
+		pump.set(pumpSupplier.apply(reader, capacity));
 	}
 
 	@Override
@@ -65,6 +87,9 @@ public class Source extends BasePipelineElement<PipelineElement> {
 
 		throw new Error("It is a Source, can't connect to a PipelineElement through this pipe!");
 	}
+
+	@Override
+	public void statementsHandled(int statements) { }
 
 	public static class StatementPump implements Pump<Statement> {
 
@@ -112,4 +137,36 @@ public class Source extends BasePipelineElement<PipelineElement> {
 			reader.close();
 		}
 	}
+
+	/*public static class Logged extends LoggedElement {
+
+		public Logged(Source source, String path) {
+
+			this(source, () -> {
+				try {
+					return new PrintStream(new File(path+File.separator+source.getThreadName()+".log"));
+				} catch (FileNotFoundException e) {
+					throw new IllegalArgumentException("Cannot create Logged Source", e);
+				}
+			});
+		}
+
+		public Logged(BasePipelineElement pipelineElement, Supplier<PrintStream> eventHandlerFunction) {
+
+			super(pipelineElement, eventHandlerFunction);
+		}
+
+		@Override
+		public void elementOpened(int capacity) { }
+
+		@Override
+		public void statementsHandled(int stmtsRead) {
+			sendMessage("pump "+ stmtsRead + " statements");
+		}
+
+		@Override
+		public void elementClosed() {
+			sendMessage("pump stopped");
+		}
+	}*/
 }

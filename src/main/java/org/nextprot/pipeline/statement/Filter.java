@@ -14,7 +14,7 @@ public interface Filter extends PipelineElement<DuplicableElement>, DuplicableEl
 	 *
 	 * @param in  input port
 	 * @param out output port
-	 * @return false if end of flow token has been received
+	 * @return true if the flow has ended
 	 * @throws IOException
 	 */
 	boolean filter(SinkPipePort in, SourcePipePort out) throws IOException;

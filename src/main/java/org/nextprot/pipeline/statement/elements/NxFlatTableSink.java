@@ -3,6 +3,7 @@ package org.nextprot.pipeline.statement.elements;
 import org.nextprot.commons.statements.Statement;
 
 import java.io.IOException;
+import java.util.List;
 
 public class NxFlatTableSink extends Sink {
 
@@ -36,15 +37,25 @@ public class NxFlatTableSink extends Sink {
 	}
 
 	@Override
-	public void handleFlow() throws IOException {
+	public boolean handleFlow(List<Statement> buffer) throws IOException {
 
-		Statement statement;
+		Statement statement = getSinkPipePort().read();
+		statementsHandled(1);
+		return statement == END_OF_FLOW_TOKEN;
+	}
 
-		int i = 0;
-		while ((statement = getSinkPipePort().read()) != END_OF_FLOW_TOKEN) {
-			printlnTextInLog("write statement " + statement.getStatementId() + " in table " + table);
-			i++;
-		}
-		printlnTextInLog(i + " statements evacuated");
+	@Override
+	public void elementOpened(int capacity) {
+
+	}
+
+	@Override
+	public void endOfFlow() {
+		//printlnTextInLog(i + " statements evacuated");
+	}
+
+	@Override
+	public void statementsHandled(int statements) {
+		//printlnTextInLog("write statement " + statement.getStatementId() + " in table " + table);
 	}
 }

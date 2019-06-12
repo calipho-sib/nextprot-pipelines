@@ -1,12 +1,10 @@
 package org.nextprot.pipeline.statement;
 
+import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.ports.SinkPipePort;
 import org.nextprot.pipeline.statement.ports.SourcePipePort;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.List;
 
 /**
@@ -31,7 +29,7 @@ public interface PipelineElement<E extends PipelineElement> extends Runnable {
 	E nextElement();
 
 	/**
-	 * Start the element and the following connected element
+	 * Start the processing in a new thread and the following connected element
 	 * @param collector collect running pipeline elements needed for thread management
 	 */
 	void start(List<Thread> collector);
@@ -39,21 +37,10 @@ public interface PipelineElement<E extends PipelineElement> extends Runnable {
 	/** Stop the processing */
 	void stop() throws IOException;
 
-	/** @return the log stream */
-	PrintStream getLogStream();
+	void elementOpened(int capacity);
 
-	/** log a message */
-	default void printlnTextInLog(String message) {
+	/** handle the current flow and @return true if the flow ends */
+	boolean handleFlow(List<Statement> buffer) throws IOException;
 
-		getLogStream().println(getThreadName()+":" + message);
-	}
-
-	/** @return output stream for log messages */
-	default PrintStream createLogStream() {
-		try {
-			return new PrintStream(new File("logs"+File.separator+getThreadName()+".log"));
-		} catch (FileNotFoundException e) {
-			throw new IllegalStateException("Cannot create log file for pipeline element "+ getThreadName(), e);
-		}
-	}
+	void endOfFlow();
 }
