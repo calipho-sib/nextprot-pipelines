@@ -1,6 +1,5 @@
 package org.nextprot.pipeline.statement;
 
-import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.elements.Sink;
 import org.nextprot.pipeline.statement.elements.Source;
 import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
@@ -58,6 +57,7 @@ public class Pipeline {
 
 	interface SourceStep {
 
+		FilterStep source(String url, int capacity) throws IOException;
 		FilterStep source(Reader reader, int capacity);
 	}
 

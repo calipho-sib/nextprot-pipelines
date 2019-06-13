@@ -1,22 +1,5 @@
 package org.nextprot.pipeline.statement.muxdemux;
 
-import org.junit.Test;
-import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.Filter;
-import org.nextprot.pipeline.statement.NarcolepticFilter;
-import org.nextprot.pipeline.statement.Pump;
-import org.nextprot.pipeline.statement.elements.NxFlatTableSink;
-import org.nextprot.pipeline.statement.elements.Sink;
-import org.nextprot.pipeline.statement.elements.Source;
-import org.nextprot.pipeline.statement.ports.SinkPipePort;
-
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-
 public class DemultiplexerTest {
 
 	/*@Test

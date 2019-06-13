@@ -6,7 +6,9 @@ import org.nextprot.pipeline.statement.muxdemux.Demultiplexer;
 import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.URL;
 import java.util.function.Function;
 
 public class PipelineBuilder implements Pipeline.StartStep {
@@ -21,6 +23,14 @@ public class PipelineBuilder implements Pipeline.StartStep {
 	}
 
 	public class SourceStep implements Pipeline.SourceStep {
+
+		@Override
+		public Pipeline.FilterStep source(String urlString, int capacity) throws IOException {
+
+			URL url = new URL(urlString);
+			Reader reader = new InputStreamReader(url.openStream());
+			return source(reader, capacity);
+		}
 
 		@Override
 		public Pipeline.FilterStep source(Reader reader, int capacity) {

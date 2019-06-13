@@ -1,8 +1,7 @@
-package org.nextprot.pipeline.statement;
+package org.nextprot.pipeline.statement.elements;
 
 
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.elements.BaseFilter;
 import org.nextprot.pipeline.statement.ports.SinkPipePort;
 import org.nextprot.pipeline.statement.ports.SourcePipePort;
 

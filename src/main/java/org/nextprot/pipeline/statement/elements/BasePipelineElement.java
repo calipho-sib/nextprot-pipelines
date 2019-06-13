@@ -16,8 +16,6 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 
 	private final int capacity;
 
-	protected final ThreadLocal<Boolean> endOfFlow;
-
 	/**
 	 * The ports through which pipeline elements communicate with each other.
 	 * There exists
@@ -29,8 +27,8 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 	 * - sink elements only contain sink pipe ports
 	 * - and filter elements contain both.
 	 */
-	private SourcePipePort sourcePipePort;
-	private SinkPipePort sinkPipePort;
+	private final SourcePipePort sourcePipePort;
+	private final SinkPipePort sinkPipePort;
 
 	private boolean hasStarted;
 
@@ -41,7 +39,6 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 		this.capacity = capacity;
 		this.sinkPipePort = sinkPipePort;
 		this.sourcePipePort = sourcePipePort;
-		this.endOfFlow = ThreadLocal.withInitial(() -> false);
 	}
 
 	/**
@@ -100,9 +97,11 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 			List<Statement> buffer = new ArrayList<>();
 			elementOpened(capacity);
 
-			while (!endOfFlow.get()) {
+			boolean endOfFlow = false;
 
-				endOfFlow.set(handleFlow(buffer));
+			while (!endOfFlow) {
+
+				endOfFlow = handleFlow(buffer);
 				buffer.clear();
 			}
 			endOfFlow();

@@ -2,6 +2,7 @@ package org.nextprot.pipeline.statement;
 
 
 import org.junit.Test;
+import org.nextprot.pipeline.statement.elements.NarcolepticFilter;
 import org.nextprot.pipeline.statement.elements.NxFlatTableSink;
 
 import java.io.IOException;
@@ -19,14 +20,13 @@ public class PipelineBuilderTest {
 	@Test
 	public void testPipeline() throws IOException {
 
-		URL url = new URL("http://kant.sib.swiss:9001/glyconnect/2019-01-22/all-entries.json");
-		Reader reader = new InputStreamReader(url.openStream());
+		String url = "http://kant.sib.swiss:9001/glyconnect/2019-01-22/all-entries.json";
 
 		Timer timer = new Timer();
 
 		Pipeline pipeline = new PipelineBuilder()
 				.start(timer)
-				.source(reader, 5000)
+				.source(url, 5000)
 				.filter(c -> new NarcolepticFilter(c, 100))
 				.sink(c -> new NxFlatTableSink(NxFlatTableSink.Table.entry_mapped_statements))
 				.build();
