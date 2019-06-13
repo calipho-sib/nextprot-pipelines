@@ -5,10 +5,12 @@ import org.nextprot.commons.statements.reader.BufferableStatementReader;
 import org.nextprot.commons.statements.reader.BufferedJsonStatementReader;
 import org.nextprot.pipeline.statement.PipelineElement;
 import org.nextprot.pipeline.statement.Pump;
-import org.nextprot.pipeline.statement.elements.runnable.AbstractRunnablePipelineElement;
+import org.nextprot.pipeline.statement.elements.runnable.BaseRunnablePipelineElement;
+import org.nextprot.pipeline.statement.elements.runnable.FlowEventHandler;
 import org.nextprot.pipeline.statement.ports.SinkPipePort;
 import org.nextprot.pipeline.statement.ports.SourcePipePort;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.List;
@@ -48,9 +50,9 @@ public class Source extends BasePipelineElement<PipelineElement> {
 	}
 
 	@Override
-	public RunnableSource newRunnableElement() {
+	public Runnable newRunnableElement() {
 
-		return new RunnableSource(this);
+		return new Runnable(this);
 	}
 
 	public static class StatementPump implements Pump<Statement> {
@@ -100,15 +102,17 @@ public class Source extends BasePipelineElement<PipelineElement> {
 		}
 	}
 
-	private static class RunnableSource extends AbstractRunnablePipelineElement<Source> {
+	private static class Runnable extends BaseRunnablePipelineElement<Source> {
 
-		private RunnableSource(Source source) {
+		private Runnable(Source source) {
 
 			super(source.pump.capacity(), source);
 		}
 
 		@Override
 		public boolean handleFlow(List<Statement> buffer) throws IOException {
+
+			FlowEventHandler eh = flowEventHandlerHolder.get();
 
 			int stmtsRead;
 
@@ -117,11 +121,44 @@ public class Source extends BasePipelineElement<PipelineElement> {
 			while ((stmtsRead = source.pump(buffer)) != -1) {
 
 				source.getSourcePipePort().write(buffer, 0, stmtsRead);
+				eh.statementsHandled(stmtsRead);
 				buffer.clear();
 			}
 
 			source.getSourcePipePort().write(END_OF_FLOW_TOKEN);
 			return true;
+		}
+
+		@Override
+		public FlowEventHandler createEventHandler() throws FileNotFoundException {
+
+			return new FlowLog(getThreadName());
+		}
+	}
+
+	private static class FlowLog extends BaseLog implements FlowEventHandler {
+
+		public FlowLog(String threadName) throws FileNotFoundException {
+
+			super(threadName, "logs");
+		}
+
+		@Override
+		public void elementOpened(int capacity) {
+
+			sendMessage("pump started (capacity=" + capacity + ")");
+		}
+
+		@Override
+		public void statementsHandled(int statementNum) {
+
+			sendMessage("pump "+statementNum + " statements");
+		}
+
+		@Override
+		public void endOfFlow() {
+
+			sendMessage("end of flow");
 		}
 	}
 }

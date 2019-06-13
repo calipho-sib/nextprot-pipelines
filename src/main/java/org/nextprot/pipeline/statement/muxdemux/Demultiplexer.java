@@ -3,12 +3,15 @@ package org.nextprot.pipeline.statement.muxdemux;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.PipelineElement;
+import org.nextprot.pipeline.statement.elements.BasePipelineElement;
+import org.nextprot.pipeline.statement.elements.ElementEventHandler;
 import org.nextprot.pipeline.statement.elements.Sink;
-import org.nextprot.pipeline.statement.elements.runnable.AbstractRunnablePipelineElement;
+import org.nextprot.pipeline.statement.elements.runnable.BaseRunnablePipelineElement;
 import org.nextprot.pipeline.statement.elements.runnable.RunnablePipelineElement;
 import org.nextprot.pipeline.statement.ports.SinkPipePort;
 import org.nextprot.pipeline.statement.ports.SourcePipePort;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -162,13 +165,20 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 		hasStarted = false;
 
 		sinkPipePort.close();
-		this.sinkPipePortUnpiped();
+		createEventHandler().sinkPipePortUnpiped();
 
 		for (PipelineElement outputPipelineElement : nextElements) {
 
 			outputPipelineElement.unpipe();
 		}
-		elementClosed();
+		createEventHandler().elementClosed();
+	}
+
+	@Override
+	public ElementEventHandler createEventHandler() throws FileNotFoundException {
+
+		//return new ElementEventHandler.Mute();
+		return new BasePipelineElement.ElementLog(getName());
 	}
 
 	public String getName() {
@@ -197,13 +207,6 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 		return nextElements.get(incrementer.incrementAndGet());
 	}
 
-	@Override
-	public void sinkPipePortUnpiped() {}
-	@Override
-	public void sourcePipePortUnpiped() {}
-	@Override
-	public void elementClosed() {}
-
 	public static class CircularList<E> extends ArrayList<E> {
 
 		@Override
@@ -212,7 +215,7 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 		}
 	}
 
-	private static class Runnable extends AbstractRunnablePipelineElement<Demultiplexer> {
+	private static class Runnable extends BaseRunnablePipelineElement<Demultiplexer> {
 
 		public Runnable(Demultiplexer demultiplexer) {
 
@@ -237,18 +240,11 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 				pipelineElement.getSourcePipePort(j++).write(buffer[i]);
 			}
 
-			statementsHandled(numOfStatements);
+			createEventHandler().statementsHandled(numOfStatements);
 
 			return buffer[numOfStatements-1] == END_OF_FLOW_TOKEN;
 		}
 
-		@Override
-		public void elementOpened(int capacity) {}
-		@Override
-		public void statementsHandled(int statements) {
 //		printlnTextInLog("distributing " + numOfStatements + " statements...");
-		}
-		@Override
-		public void endOfFlow() {}
 	}
 }

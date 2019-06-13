@@ -1,10 +1,11 @@
 package org.nextprot.pipeline.statement;
 
-import org.nextprot.pipeline.statement.elements.EventHandler;
+import org.nextprot.pipeline.statement.elements.ElementEventHandler;
 import org.nextprot.pipeline.statement.elements.runnable.RunnablePipelineElement;
 import org.nextprot.pipeline.statement.ports.SinkPipePort;
 import org.nextprot.pipeline.statement.ports.SourcePipePort;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
@@ -12,7 +13,7 @@ import java.util.List;
  * This class represent an element of the pipeline
  * @param <E> the type of the next element to pipe into
  */
-public interface PipelineElement<E extends PipelineElement> extends EventHandler {
+public interface PipelineElement<E extends PipelineElement> {
 
 	/** @return the name of pipeline element */
 	String getName();
@@ -43,9 +44,5 @@ public interface PipelineElement<E extends PipelineElement> extends EventHandler
 	 */
 	void unpipe() throws IOException;
 
-	void sinkPipePortUnpiped();
-
-	void sourcePipePortUnpiped();
-
-	void elementClosed();
+	ElementEventHandler createEventHandler() throws FileNotFoundException;
 }

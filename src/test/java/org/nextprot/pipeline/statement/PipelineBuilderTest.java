@@ -24,7 +24,7 @@ public class PipelineBuilderTest {
 
 		URL url = new URL("http://kant.sib.swiss:9001/glyconnect/2019-01-22/all-entries.json");
 		Reader reader = new InputStreamReader(url.openStream());
-		Pump<Statement> pump = new Source.StatementPump(reader, 5000);
+		Pump<Statement> pump = new Source.StatementPump(reader, 100);
 
 		Timer timer = new Timer();
 

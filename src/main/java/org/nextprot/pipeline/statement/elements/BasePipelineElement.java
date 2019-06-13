@@ -5,6 +5,7 @@ import org.nextprot.pipeline.statement.elements.runnable.RunnablePipelineElement
 import org.nextprot.pipeline.statement.ports.SinkPipePort;
 import org.nextprot.pipeline.statement.ports.SourcePipePort;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
@@ -24,15 +25,20 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 	 */
 	private final SourcePipePort sourcePipePort;
 	private final SinkPipePort sinkPipePort;
+	private final ElementEventHandler eventHandler;
 
 	private boolean hasStarted;
-
 	private E nextElement = null;
 
 	public BasePipelineElement(SinkPipePort sinkPipePort, SourcePipePort sourcePipePort) {
 
 		this.sinkPipePort = sinkPipePort;
 		this.sourcePipePort = sourcePipePort;
+		try {
+			eventHandler = createEventHandler();
+		} catch (FileNotFoundException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	/**
@@ -76,6 +82,13 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 	}
 
 	@Override
+	public ElementEventHandler createEventHandler() throws FileNotFoundException {
+
+		//return new ElementEventHandler.Mute();
+		return new ElementLog(getName());
+	}
+
+	@Override
 	public void run(List<Thread> collector) {
 
 		if (!hasStarted) {
@@ -103,22 +116,39 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 		if (sinkPipePort != null) {
 
 			sinkPipePort.close();
-			sinkPipePortUnpiped();
+			eventHandler.sinkPipePortUnpiped();
 		}
 		if (sourcePipePort != null) {
 
 			sourcePipePort.close();
-			sourcePipePortUnpiped();
+			eventHandler.sourcePipePortUnpiped();
 		}
-		elementClosed();
+		eventHandler.elementClosed();
 	}
 
-	@Override
-	public void sinkPipePortUnpiped() { }
+	public static class ElementLog extends BaseLog implements ElementEventHandler {
 
-	@Override
-	public void sourcePipePortUnpiped() { }
+		public ElementLog(String threadName) throws FileNotFoundException {
 
-	@Override
-	public void elementClosed() { }
+			super(threadName, "logs");
+		}
+
+		@Override
+		public void sinkPipePortUnpiped() {
+
+			sendMessage("sink port unpiped");
+		}
+
+		@Override
+		public void sourcePipePortUnpiped() {
+
+			sendMessage("source port unpiped");
+		}
+
+		@Override
+		public void elementClosed() {
+
+			sendMessage("element closed");
+		}
+	}
 }

@@ -2,6 +2,7 @@ package org.nextprot.pipeline.statement.elements;
 
 
 import org.nextprot.commons.statements.Statement;
+import org.nextprot.pipeline.statement.elements.runnable.FlowEventHandler;
 import org.nextprot.pipeline.statement.ports.SinkPipePort;
 import org.nextprot.pipeline.statement.ports.SourcePipePort;
 
@@ -51,6 +52,8 @@ public class NarcolepticFilter extends BaseFilter {
 		@Override
 		public boolean filter(SinkPipePort in, SourcePipePort out) throws IOException {
 
+			FlowEventHandler eh = flowEventHandlerHolder.get();
+
 			Statement[] buffer = new Statement[in.capacity()];
 
 			int numOfStatements = in.read(buffer, 0, in.capacity());
@@ -71,11 +74,10 @@ public class NarcolepticFilter extends BaseFilter {
 							System.err.println(e.getMessage());
 						}
 					}
-
-					statementsHandled(numOfStatements);
-					//printlnTextInLog("filter statement "+ buffer[i].getStatementId());
 				}
 			}
+
+			eh.statementsHandled(numOfStatements);
 
 			return false;
 		}
