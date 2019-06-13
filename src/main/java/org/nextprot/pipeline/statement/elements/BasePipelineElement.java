@@ -1,20 +1,15 @@
 package org.nextprot.pipeline.statement.elements;
 
-import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.PipelineElement;
+import org.nextprot.pipeline.statement.elements.runnable.RunnablePipelineElement;
 import org.nextprot.pipeline.statement.ports.SinkPipePort;
 import org.nextprot.pipeline.statement.ports.SourcePipePort;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 
-public abstract class BasePipelineElement<E extends PipelineElement> implements PipelineElement<E>, EventHandler {
-
-	public static final Statement END_OF_FLOW_TOKEN = null;
-
-	private final int capacity;
+public abstract class BasePipelineElement<E extends PipelineElement> implements PipelineElement<E> {
 
 	/**
 	 * The ports through which pipeline elements communicate with each other.
@@ -34,9 +29,8 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 
 	private E nextElement = null;
 
-	public BasePipelineElement(int capacity, SinkPipePort sinkPipePort, SourcePipePort sourcePipePort) {
+	public BasePipelineElement(SinkPipePort sinkPipePort, SourcePipePort sourcePipePort) {
 
-		this.capacity = capacity;
 		this.sinkPipePort = sinkPipePort;
 		this.sourcePipePort = sourcePipePort;
 	}
@@ -52,6 +46,12 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 
 		this.nextElement = nextElement;
 		sourcePipePort.connect(nextElement.getSinkPipePort());
+	}
+
+	@Override
+	public String getName() {
+
+		return getClass().getSimpleName();
 	}
 
 	@Override
@@ -76,67 +76,49 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 	}
 
 	@Override
-	public void start(List<Thread> collector) {
+	public void run(List<Thread> collector) {
 
 		if (!hasStarted) {
 			hasStarted = true;
-			Thread thread = new Thread(this, getThreadName());
+
+			RunnablePipelineElement runnable = newRunnableElement();
+
+			Thread thread = new Thread(runnable);
+			thread.setName(runnable.getThreadName());
 			thread.start();
+
 			collector.add(thread);
 		}
 
 		if (nextElement != null) {
-			nextElement.start(collector);
+			nextElement.run(collector);
 		}
 	}
 
 	@Override
-	public void run() {
-
-		try {
-			List<Statement> buffer = new ArrayList<>();
-			elementOpened(capacity);
-
-			boolean endOfFlow = false;
-
-			while (!endOfFlow) {
-
-				endOfFlow = handleFlow(buffer);
-				buffer.clear();
-			}
-			endOfFlow();
-		} catch (IOException e) {
-			System.err.println(Thread.currentThread().getName() +": "+e.getMessage());
-		}
-		finally {
-			try {
-				stop();
-			} catch (IOException e) {
-				System.err.println(Thread.currentThread().getName() + ": could not stop, e=" + e.getMessage());
-			}
-		}
-	}
-
-	public void stop() throws IOException {
+	public void unpipe() throws IOException {
 
 		hasStarted = false;
 
 		if (sinkPipePort != null) {
 
 			sinkPipePort.close();
-			sinkPipePortClosed();
+			sinkPipePortUnpiped();
 		}
 		if (sourcePipePort != null) {
 
 			sourcePipePort.close();
-			sourcePipePortClosed();
+			sourcePipePortUnpiped();
 		}
 		elementClosed();
 	}
 
-	//public void elementOpened(int capacity) {}
-	//public void endOfFlow() {}
-	public void sinkPipePortClosed() {}
-	public void sourcePipePortClosed() {}
-	public void elementClosed() {}
+	@Override
+	public void sinkPipePortUnpiped() { }
+
+	@Override
+	public void sourcePipePortUnpiped() { }
+
+	@Override
+	public void elementClosed() { }
 }

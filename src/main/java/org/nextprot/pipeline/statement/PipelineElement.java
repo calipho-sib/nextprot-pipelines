@@ -1,6 +1,7 @@
 package org.nextprot.pipeline.statement;
 
-import org.nextprot.commons.statements.Statement;
+import org.nextprot.pipeline.statement.elements.EventHandler;
+import org.nextprot.pipeline.statement.elements.runnable.RunnablePipelineElement;
 import org.nextprot.pipeline.statement.ports.SinkPipePort;
 import org.nextprot.pipeline.statement.ports.SourcePipePort;
 
@@ -11,10 +12,10 @@ import java.util.List;
  * This class represent an element of the pipeline
  * @param <E> the type of the next element to pipe into
  */
-public interface PipelineElement<E extends PipelineElement> extends Runnable {
+public interface PipelineElement<E extends PipelineElement> extends EventHandler {
 
-	/** @return the name of the thread */
-	String getThreadName();
+	/** @return the name of pipeline element */
+	String getName();
 
 	/** Pipe the next element after this element */
 	void pipe(E nextElement) throws IOException;
@@ -29,18 +30,22 @@ public interface PipelineElement<E extends PipelineElement> extends Runnable {
 	E nextElement();
 
 	/**
-	 * Start the processing in a new thread and the following connected element
-	 * @param collector collect running pipeline elements needed for thread management
+	 * Run the flow processing in a new thread and run subsequent pipeline elements
+	 * @param collector collect the running threads for management
 	 */
-	void start(List<Thread> collector);
+	void run(List<Thread> collector);
 
-	/** Stop the processing */
-	void stop() throws IOException;
+	RunnablePipelineElement newRunnableElement();
 
-	void elementOpened(int capacity);
+	/**
+	 * Disconnect sink and source pipes
+	 * @throws IOException
+	 */
+	void unpipe() throws IOException;
 
-	/** handle the current flow and @return true if the flow ends */
-	boolean handleFlow(List<Statement> buffer) throws IOException;
+	void sinkPipePortUnpiped();
 
-	void endOfFlow();
+	void sourcePipePortUnpiped();
+
+	void elementClosed();
 }

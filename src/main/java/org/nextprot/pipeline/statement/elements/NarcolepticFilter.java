@@ -13,10 +13,7 @@ import java.io.IOException;
  */
 public class NarcolepticFilter extends BaseFilter {
 
-	private static int COUNT = 0;
-
 	private final int takeANapInMillis;
-	private final int id;
 
 	public NarcolepticFilter(int capacity) {
 
@@ -27,8 +24,6 @@ public class NarcolepticFilter extends BaseFilter {
 
 		super(capacity);
 		this.takeANapInMillis = takeANapInMillis;
-
-		id = ++COUNT;
 	}
 
 	@Override
@@ -37,50 +32,52 @@ public class NarcolepticFilter extends BaseFilter {
 		return new NarcolepticFilter(capacity, this.takeANapInMillis);
 	}
 
-	@Override
-	public String getThreadName() {
-
-		return getClass().getSimpleName()+"-"+id;
+	public int getTakeANapInMillis() {
+		return takeANapInMillis;
 	}
 
 	@Override
-	public boolean filter(SinkPipePort in, SourcePipePort out) throws IOException {
+	public RunnableNarcolepticFilter newRunnableElement() {
 
-		Statement[] buffer = new Statement[in.capacity()];
+		return new RunnableNarcolepticFilter(this);
+	}
 
-		int numOfStatements = in.read(buffer, 0, in.capacity());
+	private static class RunnableNarcolepticFilter extends RunnableFilter<NarcolepticFilter> {
 
-		for (int i=0 ; i<numOfStatements ; i++) {
-
-			out.write(buffer[i]);
-
-			if (buffer[i] == END_OF_FLOW_TOKEN) {
-
-				return true;
-			} else {
-
-				if (takeANapInMillis > 0) {
-					try {
-						Thread.sleep(takeANapInMillis);
-					} catch (InterruptedException e) {
-						System.err.println(e.getMessage());
-					}
-				}
-
-				statementsHandled(numOfStatements);
-				//printlnTextInLog("filter statement "+ buffer[i].getStatementId());
-			}
+		private RunnableNarcolepticFilter(NarcolepticFilter pipelineElement) {
+			super(pipelineElement);
 		}
 
-		return false;
+		@Override
+		public boolean filter(SinkPipePort in, SourcePipePort out) throws IOException {
+
+			Statement[] buffer = new Statement[in.capacity()];
+
+			int numOfStatements = in.read(buffer, 0, in.capacity());
+
+			for (int i=0 ; i<numOfStatements ; i++) {
+
+				out.write(buffer[i]);
+
+				if (buffer[i] == END_OF_FLOW_TOKEN) {
+
+					return true;
+				} else {
+					int nap = pipelineElement.getTakeANapInMillis();
+					if (nap > 0) {
+						try {
+							Thread.sleep(nap);
+						} catch (InterruptedException e) {
+							System.err.println(e.getMessage());
+						}
+					}
+
+					statementsHandled(numOfStatements);
+					//printlnTextInLog("filter statement "+ buffer[i].getStatementId());
+				}
+			}
+
+			return false;
+		}
 	}
-
-	@Override
-	public void elementOpened(int capacity) { }
-
-	@Override
-	public void endOfFlow() { }
-
-	@Override
-	public void statementsHandled(int statements) { }
 }

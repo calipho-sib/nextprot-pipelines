@@ -1,14 +1,12 @@
 package org.nextprot.pipeline.statement;
 
+import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.elements.Sink;
 import org.nextprot.pipeline.statement.elements.Source;
 import org.nextprot.pipeline.statement.muxdemux.Demultiplexer;
 import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.URL;
 import java.util.function.Function;
 
 public class PipelineBuilder implements Pipeline.StartStep {
@@ -25,18 +23,9 @@ public class PipelineBuilder implements Pipeline.StartStep {
 	public class SourceStep implements Pipeline.SourceStep {
 
 		@Override
-		public Pipeline.FilterStep source(String urlString, int capacity) throws IOException {
+		public Pipeline.FilterStep source(Pump<Statement> pump) {
 
-			URL url = new URL(urlString);
-			Reader reader = new InputStreamReader(url.openStream());
-			return source(reader, capacity);
-		}
-
-		@Override
-		public Pipeline.FilterStep source(Reader reader, int capacity) {
-
-			final Source source = new Source(reader, capacity);
-
+			final Source source = new Source(pump);
 			dataCollector.setSource(source);
 
 			return new FilterStep(source);

@@ -35,19 +35,19 @@ public abstract class LogEvents implements EventHandler {
 		sendMessage("opened (capacity=" + capacity + ")");
 	}
 
-	@Override
+	//@Override
 	public void endOfFlow() {
 		sendMessage("end of flow");
 	}
 
 	@Override
-	public void sinkPipePortClosed() {
+	public void sinkPipePortUnpiped() {
 
 		sendMessage("sink pipe port closed");
 	}
 
 	@Override
-	public void sourcePipePortClosed() {
+	public void sourcePipePortUnpiped() {
 
 		sendMessage("source pipe port closed");
 	}

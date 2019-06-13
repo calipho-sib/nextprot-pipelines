@@ -10,7 +10,7 @@ public abstract class Sink extends BasePipelineElement<DuplicableElement> implem
 
 	protected Sink(int capacity) {
 
-		super(capacity, new SinkPipePort(capacity), null);
+		super(new SinkPipePort(capacity), null);
 	}
 
 	@Override
