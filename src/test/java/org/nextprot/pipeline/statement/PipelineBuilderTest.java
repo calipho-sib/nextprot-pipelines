@@ -8,8 +8,6 @@ import org.nextprot.pipeline.statement.elements.NxFlatTableSink;
 import org.nextprot.pipeline.statement.elements.Source;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
@@ -23,8 +21,7 @@ public class PipelineBuilderTest {
 	public void testPipeline() throws IOException {
 
 		URL url = new URL("http://kant.sib.swiss:9001/glyconnect/2019-01-22/all-entries.json");
-		Reader reader = new InputStreamReader(url.openStream());
-		Pump<Statement> pump = new Source.StatementPump(reader, 100);
+		Pump<Statement> pump = new Source.WebStatementPump(url, 100);
 
 		Timer timer = new Timer();
 
@@ -32,7 +29,7 @@ public class PipelineBuilderTest {
 				.start(timer)
 				.source(pump)
 				.filter(NarcolepticFilter::new)
-				.sink(c -> new NxFlatTableSink(NxFlatTableSink.Table.entry_mapped_statements))
+				.sink(() -> new NxFlatTableSink(NxFlatTableSink.Table.entry_mapped_statements))
 				.build();
 
 		pipeline.open();
@@ -51,8 +48,7 @@ public class PipelineBuilderTest {
 	public void testPipelineWithDemux() throws IOException {
 
 		URL url = new URL("http://kant.sib.swiss:9001/glyconnect/2019-01-22/all-entries.json");
-		Reader reader = new InputStreamReader(url.openStream());
-		Pump<Statement> pump = new Source.StatementPump(reader, 5000);
+		Pump<Statement> pump = new Source.WebStatementPump(url, 5000);
 
 		Timer timer = new Timer();
 
@@ -60,7 +56,7 @@ public class PipelineBuilderTest {
 				.start(timer)
 				.source(pump)
 				.demuxFilter(c -> new NarcolepticFilter(c, 100), 10)
-				.sink(c -> new NxFlatTableSink(NxFlatTableSink.Table.entry_mapped_statements))
+				.sink(() -> new NxFlatTableSink(NxFlatTableSink.Table.entry_mapped_statements))
 				.build();
 
 		pipeline.open();

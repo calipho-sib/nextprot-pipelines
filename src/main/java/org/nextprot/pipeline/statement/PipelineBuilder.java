@@ -6,8 +6,8 @@ import org.nextprot.pipeline.statement.elements.Source;
 import org.nextprot.pipeline.statement.muxdemux.Demultiplexer;
 import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
 
-import java.io.IOException;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class PipelineBuilder implements Pipeline.StartStep {
 
@@ -43,18 +43,18 @@ public class PipelineBuilder implements Pipeline.StartStep {
 		}
 
 		@Override
-		public Pipeline.FilterStep filter(Function<Integer, DuplicableElement> filterProvider) throws IOException {
+		public Pipeline.FilterStep filter(Function<Integer, DuplicableElement> filterProvider) {
 
-			DuplicableElement pipedFilter = filterProvider.apply(previousElement.getSourcePipePort().capacity());
+			DuplicableElement pipedFilter = filterProvider.apply(previousElement.getSourcePipePort().remainingCapacity());
 			previousElement.pipe(pipedFilter);
 
 			return new FilterStep(pipedFilter);
 		}
 
 		@Override
-		public Pipeline.FilterStep demuxFilter(Function<Integer, DuplicableElement> filterProvider, int sourcePipePortCount) throws IOException {
+		public Pipeline.FilterStep demuxFilter(Function<Integer, DuplicableElement> filterProvider, int sourcePipePortCount) {
 
-			DuplicableElement pipedFilter = filterProvider.apply(previousElement.getSourcePipePort().capacity());
+			DuplicableElement pipedFilter = filterProvider.apply(previousElement.getSourcePipePort().remainingCapacity());
 			previousElement.pipe(pipedFilter);
 
 			dataCollector.setDemuxSourcePipePortCount(sourcePipePortCount);
@@ -64,9 +64,9 @@ public class PipelineBuilder implements Pipeline.StartStep {
 		}
 
 		@Override
-		public Pipeline.TerminateStep sink(Function<Integer, Sink> sinkProvider) throws IOException {
+		public Pipeline.TerminateStep sink(Supplier<Sink> sinkProvider) {
 
-			Sink sink = sinkProvider.apply(1);
+			Sink sink = sinkProvider.get();
 			previousElement.pipe(sink);
 
 			return new TerminateStep();
@@ -75,7 +75,7 @@ public class PipelineBuilder implements Pipeline.StartStep {
 		public class TerminateStep implements Pipeline.TerminateStep {
 
 			@Override
-			public Pipeline build() throws IOException {
+			public Pipeline build() {
 
 				if (dataCollector.getDemuxFromElement() != null) {
 
@@ -85,9 +85,7 @@ public class PipelineBuilder implements Pipeline.StartStep {
 							dataCollector.getDemuxSourcePipePortCount());
 
 					demultiplexer.pipe(fromElement);
-
-					dataCollector.getElementBeforeDemux().getSourcePipePort().disconnectSink();
-					dataCollector.getSource().pipe(demultiplexer);
+					dataCollector.getElementBeforeDemux().pipe(demultiplexer);
 				}
 
 				return new Pipeline(dataCollector);

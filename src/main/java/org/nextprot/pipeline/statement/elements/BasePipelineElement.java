@@ -1,39 +1,35 @@
 package org.nextprot.pipeline.statement.elements;
 
+import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.PipelineElement;
 import org.nextprot.pipeline.statement.elements.runnable.RunnablePipelineElement;
-import org.nextprot.pipeline.statement.ports.SinkPipePort;
-import org.nextprot.pipeline.statement.ports.SourcePipePort;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 
 public abstract class BasePipelineElement<E extends PipelineElement> implements PipelineElement<E> {
 
-	/**
-	 * The ports through which pipeline elements communicate with each other.
-	 * There exists
-	 * - sink pipe port, through which Statements enter from the previous element
-	 * - source pipe port, through which Statements exit to the next element.
-	 * <p>
-	 * It follows naturally that
-	 * - source elements only contain source pipe ports
-	 * - sink elements only contain sink pipe ports
-	 * - and filter elements contain both.
-	 */
-	private final SourcePipePort sourcePipePort;
-	private final SinkPipePort sinkPipePort;
 	private final ElementEventHandler eventHandler;
 
 	private boolean hasStarted;
 	private E nextElement = null;
 
-	public BasePipelineElement(SinkPipePort sinkPipePort, SourcePipePort sourcePipePort) {
+	private final BlockingQueue<Statement> sourcePipePort;
+	private BlockingQueue<Statement> sinkPipePort;
 
-		this.sinkPipePort = sinkPipePort;
+	public BasePipelineElement(int sourceCapacity) {
+
+		this(new LinkedBlockingQueue<>(sourceCapacity));
+	}
+
+	public BasePipelineElement(BlockingQueue<Statement> sourcePipePort) {
+
 		this.sourcePipePort = sourcePipePort;
+
 		try {
 			eventHandler = createEventHandler();
 		} catch (FileNotFoundException e) {
@@ -48,10 +44,10 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 	 * @throws IOException
 	 */
 	@Override
-	public void pipe(E nextElement) throws IOException {
+	public void pipe(E nextElement) {
 
 		this.nextElement = nextElement;
-		sourcePipePort.connect(nextElement.getSinkPipePort());
+		nextElement.setSinkPipePort(sourcePipePort);
 	}
 
 	@Override
@@ -62,6 +58,7 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 
 	@Override
 	public E nextElement() {
+
 		return nextElement;
 	}
 
@@ -70,13 +67,19 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 	 * a PipedInputPort thread so that another Pipe thread can connect to it.
 	 **/
 	@Override
-	public SinkPipePort getSinkPipePort() {
+	public BlockingQueue<Statement> getSinkPipePort() {
 
 		return sinkPipePort;
 	}
 
 	@Override
-	public SourcePipePort getSourcePipePort() {
+	public void setSinkPipePort(BlockingQueue<Statement> queue) {
+
+		this.sinkPipePort = queue;
+	}
+
+	@Override
+	public BlockingQueue<Statement> getSourcePipePort() {
 
 		return sourcePipePort;
 	}
@@ -115,12 +118,12 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 
 		if (sinkPipePort != null) {
 
-			sinkPipePort.close();
+			sinkPipePort.clear(); // drained
 			eventHandler.sinkPipePortUnpiped();
 		}
 		if (sourcePipePort != null) {
 
-			sourcePipePort.close();
+			sourcePipePort.clear(); // drained
 			eventHandler.sourcePipePortUnpiped();
 		}
 		eventHandler.elementClosed();

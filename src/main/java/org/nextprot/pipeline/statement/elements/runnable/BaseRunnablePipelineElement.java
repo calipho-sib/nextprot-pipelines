@@ -5,12 +5,10 @@ import org.nextprot.pipeline.statement.PipelineElement;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public abstract class BaseRunnablePipelineElement<E extends PipelineElement> implements RunnablePipelineElement {
 
-	protected static final Statement END_OF_FLOW_TOKEN = null;
+	public static final Statement END_OF_FLOW_TOKEN = new Statement();
 	private static int FLOW_INIT_NUMBER;
 
 	private static synchronized int NEXT_FLOW_NUM() {
@@ -19,14 +17,12 @@ public abstract class BaseRunnablePipelineElement<E extends PipelineElement> imp
 
 	protected final E pipelineElement;
 	private final String name;
-	private final int capacity;
 	protected final ThreadLocal<FlowEventHandler> flowEventHandlerHolder = new ThreadLocal<>();
 
-	public BaseRunnablePipelineElement(int capacity, E pipelineElement) {
+	public BaseRunnablePipelineElement(E pipelineElement) {
 
 		this.pipelineElement = pipelineElement;
 		this.name = this.pipelineElement.getName()+ "-" + NEXT_FLOW_NUM();
-		this.capacity = capacity;
 	}
 
 	@Override
@@ -42,18 +38,16 @@ public abstract class BaseRunnablePipelineElement<E extends PipelineElement> imp
 			FlowEventHandler eh = createEventHandler();
 			flowEventHandlerHolder.set(eh);
 
-			List<Statement> buffer = new ArrayList<>();
-			eh.elementOpened(capacity);
+			eh.elementOpened();
 
 			boolean endOfFlow = false;
 
 			while (!endOfFlow) {
 
-				endOfFlow = handleFlow(buffer);
-				buffer.clear();
+				endOfFlow = handleFlow();
 			}
 			eh.endOfFlow();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			System.err.println(Thread.currentThread().getName() +": "+e.getMessage());
 		}
 		finally {
@@ -71,9 +65,8 @@ public abstract class BaseRunnablePipelineElement<E extends PipelineElement> imp
 		return name;
 	}
 
-	@Override
 	public int capacity() {
 
-		return capacity;
+		return pipelineElement.getSinkPipePort().remainingCapacity();
 	}
 }

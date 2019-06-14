@@ -1,13 +1,13 @@
 package org.nextprot.pipeline.statement;
 
+import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.elements.ElementEventHandler;
 import org.nextprot.pipeline.statement.elements.runnable.RunnablePipelineElement;
-import org.nextprot.pipeline.statement.ports.SinkPipePort;
-import org.nextprot.pipeline.statement.ports.SourcePipePort;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * This class represent an element of the pipeline
@@ -19,13 +19,14 @@ public interface PipelineElement<E extends PipelineElement> {
 	String getName();
 
 	/** Pipe the next element after this element */
-	void pipe(E nextElement) throws IOException;
+	void pipe(E nextElement);
 
 	/** @return the sink pipe port or null */
-	SinkPipePort getSinkPipePort();
+	BlockingQueue<Statement> getSinkPipePort();
+	void setSinkPipePort(BlockingQueue<Statement> queue);
 
 	/** @return the source pipe port or null */
-	SourcePipePort getSourcePipePort();
+	BlockingQueue<Statement> getSourcePipePort();
 
 	/** @return the next element connected to this element */
 	E nextElement();

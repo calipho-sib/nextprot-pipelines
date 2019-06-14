@@ -7,6 +7,9 @@ import org.nextprot.pipeline.statement.ports.SinkPipePort;
 import org.nextprot.pipeline.statement.ports.SourcePipePort;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * This filter just transmit statements from PipedInputPort to PipedOutputPort
@@ -50,36 +53,29 @@ public class NarcolepticFilter extends BaseFilter {
 		}
 
 		@Override
-		public boolean filter(SinkPipePort in, SourcePipePort out) throws IOException {
+		public boolean filter(BlockingQueue<Statement> in, BlockingQueue<Statement> out) throws Exception {
 
 			FlowEventHandler eh = flowEventHandlerHolder.get();
 
-			Statement[] buffer = new Statement[in.capacity()];
+			Statement current = in.take();
+			eh.statementHandled(current);
 
-			int numOfStatements = in.read(buffer, 0, in.capacity());
+			takeANap(pipelineElement.getTakeANapInMillis());
 
-			for (int i=0 ; i<numOfStatements ; i++) {
+			out.put(current);
 
-				out.write(buffer[i]);
+			return current == END_OF_FLOW_TOKEN;
+		}
 
-				if (buffer[i] == END_OF_FLOW_TOKEN) {
+		private void takeANap(int nap) {
 
-					return true;
-				} else {
-					int nap = pipelineElement.getTakeANapInMillis();
-					if (nap > 0) {
-						try {
-							Thread.sleep(nap);
-						} catch (InterruptedException e) {
-							System.err.println(e.getMessage());
-						}
-					}
+			if (nap > 0) {
+				try {
+					Thread.sleep(nap);
+				} catch (InterruptedException e) {
+					System.err.println(e.getMessage());
 				}
 			}
-
-			eh.statementsHandled(numOfStatements);
-
-			return false;
 		}
 	}
 }

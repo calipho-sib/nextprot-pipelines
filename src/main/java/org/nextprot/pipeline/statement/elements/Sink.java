@@ -1,20 +1,21 @@
 package org.nextprot.pipeline.statement.elements;
 
 
+import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
-import org.nextprot.pipeline.statement.ports.SinkPipePort;
-import org.nextprot.pipeline.statement.ports.SourcePipePort;
+
+import java.util.concurrent.BlockingQueue;
 
 
 public abstract class Sink extends BasePipelineElement<DuplicableElement> implements DuplicableElement {
 
-	protected Sink(int capacity) {
+	protected Sink() {
 
-		super(new SinkPipePort(capacity), null);
+		super(null);
 	}
 
 	@Override
-	public SourcePipePort getSourcePipePort() {
+	public BlockingQueue<Statement> getSourcePipePort() {
 
 		throw new Error("It is a sink, can't connect to a PipelineElement through this pipe!");
 	}

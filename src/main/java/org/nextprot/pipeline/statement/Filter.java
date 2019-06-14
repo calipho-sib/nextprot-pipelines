@@ -1,10 +1,10 @@
 package org.nextprot.pipeline.statement;
 
 
-import org.nextprot.pipeline.statement.ports.SinkPipePort;
-import org.nextprot.pipeline.statement.ports.SourcePipePort;
+import org.nextprot.commons.statements.Statement;
 
 import java.io.IOException;
+import java.util.concurrent.BlockingQueue;
 
 public interface Filter {
 
@@ -16,5 +16,5 @@ public interface Filter {
 	 * @return true if the flow has ended
 	 * @throws IOException
 	 */
-	boolean filter(SinkPipePort in, SourcePipePort out) throws IOException;
+	boolean filter(BlockingQueue<Statement> in, BlockingQueue<Statement> out) throws Exception;
 }

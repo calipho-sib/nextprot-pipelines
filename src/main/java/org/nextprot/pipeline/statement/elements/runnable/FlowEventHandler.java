@@ -1,18 +1,20 @@
 package org.nextprot.pipeline.statement.elements.runnable;
 
+import org.nextprot.commons.statements.Statement;
+
 public interface FlowEventHandler {
 
-	void elementOpened(int capacity);
-	void statementsHandled(int statementNum);
+	void elementOpened();
+	void statementHandled(Statement statement);
 	void endOfFlow();
 
 	class Mute implements FlowEventHandler {
 
 		@Override
-		public void elementOpened(int capacity) { }
+		public void elementOpened() { }
 
 		@Override
-		public void statementsHandled(int statements) { }
+		public void statementHandled(Statement statement) { }
 
 		@Override
 		public void endOfFlow() { }

@@ -7,25 +7,21 @@ import org.nextprot.pipeline.statement.Filter;
 import org.nextprot.pipeline.statement.elements.runnable.BaseRunnablePipelineElement;
 import org.nextprot.pipeline.statement.elements.runnable.FlowEventHandler;
 import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
-import org.nextprot.pipeline.statement.ports.SinkPipePort;
-import org.nextprot.pipeline.statement.ports.SourcePipePort;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.List;
 
 
 public abstract class BaseFilter extends BasePipelineElement<DuplicableElement> implements DuplicableElement {
 
 	protected BaseFilter(int capacity) {
 
-		super(new SinkPipePort(capacity), new SourcePipePort(capacity));
+		super(capacity);
 	}
 
 	public static abstract class RunnableFilter<F extends BaseFilter> extends BaseRunnablePipelineElement<F> implements Filter {
 
 		public RunnableFilter(F pipelineElement) {
-			super(pipelineElement.getSinkPipePort().capacity(), pipelineElement);
+			super(pipelineElement);
 		}
 
 		@Override
@@ -35,7 +31,7 @@ public abstract class BaseFilter extends BasePipelineElement<DuplicableElement> 
 		}
 
 		@Override
-		public boolean handleFlow(List<Statement> buffer) throws IOException {
+		public boolean handleFlow() throws Exception {
 
 			return filter(pipelineElement.getSinkPipePort(), pipelineElement.getSourcePipePort());
 		}
@@ -49,16 +45,15 @@ public abstract class BaseFilter extends BasePipelineElement<DuplicableElement> 
 		}
 
 		@Override
-		public void elementOpened(int capacity) {
+		public void elementOpened() {
 
-			sendMessage("filter started (capacity=" + capacity + ")");
+			sendMessage("filter started");
 		}
 
 		@Override
-		public void statementsHandled(int statementNum) {
+		public void statementHandled(Statement statement) {
 
-			sendMessage("filter "+statementNum + " statements");
-			//printlnTextInLog("filter statement "+ buffer[i].getStatementId());
+			sendMessage("filter statement "+ statement.getStatementId());
 		}
 
 		@Override

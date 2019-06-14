@@ -7,13 +7,17 @@ import org.nextprot.pipeline.statement.PipelineElement;
 import org.nextprot.pipeline.statement.Pump;
 import org.nextprot.pipeline.statement.elements.runnable.BaseRunnablePipelineElement;
 import org.nextprot.pipeline.statement.elements.runnable.FlowEventHandler;
-import org.nextprot.pipeline.statement.ports.SinkPipePort;
-import org.nextprot.pipeline.statement.ports.SourcePipePort;
+import sun.net.www.protocol.http.HttpURLConnection;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.Reader;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+
+import static org.nextprot.pipeline.statement.elements.runnable.BaseRunnablePipelineElement.END_OF_FLOW_TOKEN;
 
 /**
  * This class is a source of data for a pipe of threads.
@@ -27,8 +31,13 @@ public class Source extends BasePipelineElement<PipelineElement> {
 
 	public Source(Pump<Statement> pump) {
 
-		super(null, new SourcePipePort(pump.capacity()));
+		super(pump.capacity());
 		this.pump = pump;
+	}
+
+	private Statement pump() throws IOException {
+
+		return pump.pump();
 	}
 
 	private int pump(List<Statement> buffer) throws IOException {
@@ -44,7 +53,7 @@ public class Source extends BasePipelineElement<PipelineElement> {
 	}
 
 	@Override
-	public SinkPipePort getSinkPipePort() {
+	public BlockingQueue<Statement> getSinkPipePort() {
 
 		throw new Error("It is a Source, can't connect to a PipelineElement through this pipe!");
 	}
@@ -55,20 +64,44 @@ public class Source extends BasePipelineElement<PipelineElement> {
 		return new Runnable(this);
 	}
 
-	public static class StatementPump implements Pump<Statement> {
+	public static class WebStatementPump implements Pump<Statement> {
 
 		private final BufferableStatementReader reader;
 		private final int capacity;
 
-		public StatementPump(Reader reader) throws IOException {
+		public WebStatementPump(URL url) throws IOException {
 
-			this(reader, 100);
+			this(url, 100);
 		}
 
-		public StatementPump(Reader reader, int capacity) throws IOException {
+		public WebStatementPump(URL url, int capacity) throws IOException {
 
-			this.reader = new BufferedJsonStatementReader(reader, capacity);
+			if (!isServiceUp(url)) {
+				throw new IOException("Cannot create a pump: " + url + " is not reachable");
+			}
+
 			this.capacity = capacity;
+			this.reader = new BufferedJsonStatementReader(new InputStreamReader(url.openStream()), capacity);
+		}
+
+		private static boolean isServiceUp(URL url) throws IOException {
+
+			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+			connection.setRequestMethod("HEAD");
+			connection.setConnectTimeout(3000);
+			connection.setReadTimeout(3000);
+
+			try {
+				connection.connect();
+
+				return connection.getResponseCode() == HttpURLConnection.HTTP_OK;
+			} catch (IOException e) {
+
+				throw new IOException("statement service " + url + " does not respond: " + e.getMessage());
+			} finally {
+
+				connection.disconnect();
+			}
 		}
 
 		@Override
@@ -106,27 +139,26 @@ public class Source extends BasePipelineElement<PipelineElement> {
 
 		private Runnable(Source source) {
 
-			super(source.pump.capacity(), source);
+			super(source);
 		}
 
 		@Override
-		public boolean handleFlow(List<Statement> buffer) throws IOException {
+		public boolean handleFlow() throws Exception {
 
 			FlowEventHandler eh = flowEventHandlerHolder.get();
 
-			int stmtsRead;
-
 			Source source = pipelineElement;
 
-			while ((stmtsRead = source.pump(buffer)) != -1) {
+			Statement statement = source.pump();
 
-				source.getSourcePipePort().write(buffer, 0, stmtsRead);
-				eh.statementsHandled(stmtsRead);
-				buffer.clear();
+			if (statement == null) {
+				statement = END_OF_FLOW_TOKEN;
 			}
 
-			source.getSourcePipePort().write(END_OF_FLOW_TOKEN);
-			return true;
+			source.getSourcePipePort().put(statement);
+			eh.statementHandled(statement);
+
+			return statement == END_OF_FLOW_TOKEN;
 		}
 
 		@Override
@@ -144,15 +176,15 @@ public class Source extends BasePipelineElement<PipelineElement> {
 		}
 
 		@Override
-		public void elementOpened(int capacity) {
+		public void elementOpened() {
 
-			sendMessage("pump started (capacity=" + capacity + ")");
+			sendMessage("pump started (capacity= )");
 		}
 
 		@Override
-		public void statementsHandled(int statementNum) {
+		public void statementHandled(Statement statement) {
 
-			sendMessage("pump "+statementNum + " statements");
+			sendMessage("pump statement " + ((statement == END_OF_FLOW_TOKEN) ? "END_OF_FLOW_TOKEN" : statement.getStatementId()));
 		}
 
 		@Override

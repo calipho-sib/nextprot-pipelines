@@ -7,14 +7,14 @@ import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.elements.Source;
 
 import java.io.IOException;
-import java.io.Reader;
+import java.net.URL;
 
-public class StatementPumpTest {
+public class WebStatementPumpTest {
 
 	@Test
 	public void pump() throws IOException {
 
-		Source.StatementPump pump = new Source.StatementPump(mockReader());
+		Source.WebStatementPump pump = new Source.WebStatementPump(mockURL());
 
 		Assert.assertNotNull(pump.pump());
 		Assert.assertNull(pump.pump());
@@ -23,7 +23,7 @@ public class StatementPumpTest {
 	@Test
 	public void isNotEmpty() throws IOException {
 
-		Source.StatementPump pump = new Source.StatementPump(mockReader());
+		Source.WebStatementPump pump = new Source.WebStatementPump(mockURL());
 
 		Assert.assertFalse(pump.isEmpty());
 	}
@@ -31,15 +31,15 @@ public class StatementPumpTest {
 	@Test
 	public void isEmptyAfterOnePump() throws IOException {
 
-		Source.StatementPump pump = new Source.StatementPump(mockReader());
+		Source.WebStatementPump pump = new Source.WebStatementPump(mockURL());
 
 		Assert.assertFalse(pump.isEmpty());
 		Assert.assertTrue(pump.isEmpty());
 	}
 
-	public static Reader mockReader() throws IOException {
+	public static URL mockURL() throws IOException {
 
-		Reader reader = Mockito.mock(Reader.class);
+		URL reader = Mockito.mock(URL.class);
 
 		Statement statement = new Statement();
 

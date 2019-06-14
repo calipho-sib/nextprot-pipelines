@@ -10,6 +10,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class Pipeline {
 
@@ -67,7 +68,7 @@ public class Pipeline {
 
 		FilterStep demuxFilter(Function<Integer, DuplicableElement> filterProvider, int sourcePipePortCount) throws IOException;
 
-		TerminateStep sink(Function<Integer, Sink> sinkProvider) throws IOException;
+		TerminateStep sink(Supplier<Sink> sinkProvider) throws IOException;
 	}
 
 	interface TerminateStep {
