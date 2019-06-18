@@ -45,7 +45,7 @@ public class NxFlatTableSink extends Sink {
 
 			//FlowEventHandler eh = flowEventHandlerHolder.get();
 
-			Statement statement = pipelineElement.getSinkPipePort().take();
+			Statement statement = getPipelineElement().getSinkPipePort().take();
 			//eh.statementHandled(statement);
 
 			return statement == END_OF_FLOW_TOKEN;
@@ -54,7 +54,7 @@ public class NxFlatTableSink extends Sink {
 		@Override
 		public FlowEventHandler createEventHandler() throws FileNotFoundException {
 
-			return new FlowLog(getThreadName(), pipelineElement.table);
+			return new FlowLog(getThreadName(), getPipelineElement().table);
 		}
 	}
 
@@ -64,12 +64,12 @@ public class NxFlatTableSink extends Sink {
 
 		public FlowLog(String threadName, Table table) throws FileNotFoundException {
 
-			super(threadName, "logs");
+			super(threadName);
 			this.table = table;
 		}
 
 		@Override
-		public void elementOpened() {
+		public void beginOfFlow() {
 
 			sendMessage("opened");
 		}

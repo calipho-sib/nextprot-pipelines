@@ -13,7 +13,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
@@ -46,10 +45,10 @@ public class Source extends BasePipelineElement<PipelineElement> {
 	}
 
 	@Override
-	public void unpipe() throws IOException {
+	public void closeValves() throws IOException {
 
 		pump.stop();
-		super.unpipe();
+		super.closeValves();
 	}
 
 	@Override
@@ -147,7 +146,7 @@ public class Source extends BasePipelineElement<PipelineElement> {
 
 			FlowEventHandler eh = flowEventHandlerHolder.get();
 
-			Source source = pipelineElement;
+			Source source = getPipelineElement();
 
 			Statement statement = source.pump();
 
@@ -172,11 +171,11 @@ public class Source extends BasePipelineElement<PipelineElement> {
 
 		public FlowLog(String threadName) throws FileNotFoundException {
 
-			super(threadName, "logs");
+			super(threadName);
 		}
 
 		@Override
-		public void elementOpened() {
+		public void beginOfFlow() {
 
 			sendMessage("pump started (capacity= )");
 		}
@@ -184,7 +183,7 @@ public class Source extends BasePipelineElement<PipelineElement> {
 		@Override
 		public void statementHandled(Statement statement) {
 
-			sendMessage("pump statement " + ((statement == END_OF_FLOW_TOKEN) ? "END_OF_FLOW_TOKEN" : statement.getStatementId()));
+			sendMessage("pump statement " + getStatementId(statement));
 		}
 
 		@Override

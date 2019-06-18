@@ -6,7 +6,6 @@ import org.nextprot.pipeline.statement.elements.Source;
 import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
 
 import java.io.IOException;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -24,14 +23,14 @@ public class Pipeline {
 		monitorable = dataCollector.getMonitorable();
 	}
 
-	public void open() {
+	public void openValves() {
 
 		threads = new ArrayList<>();
 
-		source.run(threads);
+		source.openValves(threads);
 
 		for (Thread thread : threads) {
-			System.out.println("Thread "+thread.getName() + ": created");
+			System.out.println(thread.getName() + " valves: opened");
 		}
 		monitorable.started();
 	}
@@ -39,13 +38,26 @@ public class Pipeline {
 	/**
 	 * Wait for all threads in the pipe to terminate
 	 */
-	public void waitForThePipesToComplete() throws InterruptedException {
+	public void waitForThePipesToComplete() throws InterruptedException, IOException {
 
 		for (Thread thread : threads) {
 			thread.join();
-			System.out.println("Thread "+thread.getName() + ": died");
+			System.out.println(thread.getName() + " valves: closed");
 		}
+		unpipeElements();
+
 		monitorable.ended();
+	}
+
+	private void unpipeElements() throws IOException {
+
+		PipelineElement element = source;
+
+		do {
+			element.closeValves();
+			element = element.nextElement();
+		}
+		while(element != null);
 	}
 
 	interface StartStep {

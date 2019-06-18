@@ -3,12 +3,7 @@ package org.nextprot.pipeline.statement.elements;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.elements.runnable.FlowEventHandler;
-import org.nextprot.pipeline.statement.ports.SinkPipePort;
-import org.nextprot.pipeline.statement.ports.SourcePipePort;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 /**
@@ -17,14 +12,14 @@ import java.util.concurrent.BlockingQueue;
  */
 public class NarcolepticFilter extends BaseFilter {
 
-	private final int takeANapInMillis;
+	private final long takeANapInMillis;
 
 	public NarcolepticFilter(int capacity) {
 
 		this(capacity, -1);
 	}
 
-	public NarcolepticFilter(int capacity, int takeANapInMillis) {
+	public NarcolepticFilter(int capacity, long takeANapInMillis) {
 
 		super(capacity);
 		this.takeANapInMillis = takeANapInMillis;
@@ -36,10 +31,6 @@ public class NarcolepticFilter extends BaseFilter {
 		return new NarcolepticFilter(capacity, this.takeANapInMillis);
 	}
 
-	public int getTakeANapInMillis() {
-		return takeANapInMillis;
-	}
-
 	@Override
 	public RunnableNarcolepticFilter newRunnableElement() {
 
@@ -48,8 +39,12 @@ public class NarcolepticFilter extends BaseFilter {
 
 	private static class RunnableNarcolepticFilter extends RunnableFilter<NarcolepticFilter> {
 
+		private final long napTime;
+
 		private RunnableNarcolepticFilter(NarcolepticFilter pipelineElement) {
 			super(pipelineElement);
+
+			napTime = pipelineElement.takeANapInMillis;
 		}
 
 		@Override
@@ -60,14 +55,14 @@ public class NarcolepticFilter extends BaseFilter {
 			Statement current = in.take();
 			eh.statementHandled(current);
 
-			takeANap(pipelineElement.getTakeANapInMillis());
+			takeANap(napTime);
 
 			out.put(current);
 
 			return current == END_OF_FLOW_TOKEN;
 		}
 
-		private void takeANap(int nap) {
+		private void takeANap(long nap) {
 
 			if (nap > 0) {
 				try {

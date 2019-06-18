@@ -15,7 +15,7 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 
 	private final ElementEventHandler eventHandler;
 
-	private boolean hasStarted;
+	private volatile boolean valvesOpened;
 	private E nextElement = null;
 
 	private final BlockingQueue<Statement> sourcePipePort;
@@ -92,10 +92,10 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 	}
 
 	@Override
-	public void run(List<Thread> collector) {
+	public void openValves(List<Thread> collector) {
 
-		if (!hasStarted) {
-			hasStarted = true;
+		if (!valvesOpened) {
+			valvesOpened = true;
 
 			RunnablePipelineElement runnable = newRunnableElement();
 
@@ -103,55 +103,72 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 			thread.setName(runnable.getThreadName());
 			thread.start();
 
+			eventHandler.valvesOpened();
+
 			collector.add(thread);
 		}
 
 		if (nextElement != null) {
-			nextElement.run(collector);
+			nextElement.openValves(collector);
 		}
 	}
 
 	@Override
-	public void unpipe() throws IOException {
+	public void closeValves() throws IOException {
 
-		hasStarted = false;
+		valvesOpened = false;
+
+		eventHandler.valvesClosed();
 
 		if (sinkPipePort != null) {
 
 			sinkPipePort.clear(); // drained
-			eventHandler.sinkPipePortUnpiped();
+			eventHandler.sinkUnpiped();
 		}
 		if (sourcePipePort != null) {
 
 			sourcePipePort.clear(); // drained
-			eventHandler.sourcePipePortUnpiped();
+			eventHandler.sourceUnpiped();
 		}
-		eventHandler.elementClosed();
+
+		eventHandler.disconnected();
 	}
 
 	public static class ElementLog extends BaseLog implements ElementEventHandler {
 
 		public ElementLog(String threadName) throws FileNotFoundException {
 
-			super(threadName, "logs");
+			super(threadName);
 		}
 
 		@Override
-		public void sinkPipePortUnpiped() {
+		public void valvesOpened() {
 
-			sendMessage("sink port unpiped");
+			sendMessage("valves opened");
 		}
 
 		@Override
-		public void sourcePipePortUnpiped() {
+		public void sinkUnpiped() {
 
-			sendMessage("source port unpiped");
+			sendMessage("sink disconnected");
 		}
 
 		@Override
-		public void elementClosed() {
+		public void sourceUnpiped() {
 
-			sendMessage("element closed");
+			sendMessage("source disconnected");
+		}
+
+		@Override
+		public void valvesClosed() {
+
+			sendMessage("valves closed");
+		}
+
+		@Override
+		public void disconnected() {
+
+			sendMessage("disconnected");
 		}
 	}
 }

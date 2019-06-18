@@ -10,6 +10,8 @@ import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
 
 import java.io.FileNotFoundException;
 
+import static org.nextprot.pipeline.statement.elements.runnable.BaseRunnablePipelineElement.END_OF_FLOW_TOKEN;
+
 
 public abstract class BaseFilter extends BasePipelineElement<DuplicableElement> implements DuplicableElement {
 
@@ -33,7 +35,9 @@ public abstract class BaseFilter extends BasePipelineElement<DuplicableElement> 
 		@Override
 		public boolean handleFlow() throws Exception {
 
-			return filter(pipelineElement.getSinkPipePort(), pipelineElement.getSourcePipePort());
+			F element = getPipelineElement();
+
+			return filter(element.getSinkPipePort(), element.getSourcePipePort());
 		}
 	}
 
@@ -41,19 +45,19 @@ public abstract class BaseFilter extends BasePipelineElement<DuplicableElement> 
 
 		public FlowLog(String threadName) throws FileNotFoundException {
 
-			super(threadName, "logs");
+			super(threadName);
 		}
 
 		@Override
-		public void elementOpened() {
+		public void beginOfFlow() {
 
-			sendMessage("filter started");
+			sendMessage("start filtering flow");
 		}
 
 		@Override
 		public void statementHandled(Statement statement) {
 
-			sendMessage("filter statement "+ statement.getStatementId());
+			sendMessage("filter statement "+ getStatementId(statement));
 		}
 
 		@Override

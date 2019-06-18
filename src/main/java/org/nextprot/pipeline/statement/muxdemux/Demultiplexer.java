@@ -126,7 +126,7 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 	}
 
 	@Override
-	public void run(List<Thread> collector) {
+	public void openValves(List<Thread> collector) {
 
 		if (!hasStarted) {
 			hasStarted = true;
@@ -141,7 +141,7 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 
 		// start the next elements into their own thread
 		for (PipelineElement pipelineElement : nextElements) {
-			pipelineElement.run(collector);
+			pipelineElement.openValves(collector);
 		}
 	}
 
@@ -152,18 +152,18 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 	}
 
 	@Override
-	public void unpipe() throws IOException {
+	public void closeValves() throws IOException {
 
 		hasStarted = false;
 
 		sinkPipePort.clear();
-		createEventHandler().sinkPipePortUnpiped();
+		createEventHandler().sinkUnpiped();
 
 		for (PipelineElement outputPipelineElement : nextElements) {
 
-			outputPipelineElement.unpipe();
+			outputPipelineElement.closeValves();
 		}
-		createEventHandler().elementClosed();
+		createEventHandler().valvesClosed();
 	}
 
 	@Override
@@ -223,6 +223,8 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 		@Override
 		public boolean handleFlow() throws Exception {
 
+			Demultiplexer pipelineElement = getPipelineElement();
+
 			BlockingQueue<Statement> sinkPipePort = pipelineElement.getSinkPipePort();
 
 			// 1. get input
@@ -241,7 +243,6 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 
 				createEventHandler().statementHandled(current);
 			}
-
 
 			return buffer.get(buffer.size()-1) == END_OF_FLOW_TOKEN;
 		}

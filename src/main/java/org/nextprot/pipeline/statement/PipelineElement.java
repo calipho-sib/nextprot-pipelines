@@ -32,18 +32,23 @@ public interface PipelineElement<E extends PipelineElement> {
 	E nextElement();
 
 	/**
-	 * Run the flow processing in a new thread and run subsequent pipeline elements
+	 * Open the flow processing in a new thread and open also subsequent pipeline elements
 	 * @param collector collect the running threads for management
 	 */
-	void run(List<Thread> collector);
-
-	RunnablePipelineElement newRunnableElement();
+	void openValves(List<Thread> collector);
 
 	/**
 	 * Disconnect sink and source pipes
 	 * @throws IOException
 	 */
-	void unpipe() throws IOException;
+	void closeValves() throws IOException;
+
+	RunnablePipelineElement newRunnableElement();
 
 	ElementEventHandler createEventHandler() throws FileNotFoundException;
+
+	default boolean hasNextElement() {
+
+		return nextElement() != null;
+	}
 }

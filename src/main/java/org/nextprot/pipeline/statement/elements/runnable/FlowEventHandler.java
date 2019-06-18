@@ -4,14 +4,14 @@ import org.nextprot.commons.statements.Statement;
 
 public interface FlowEventHandler {
 
-	void elementOpened();
+	void beginOfFlow();
 	void statementHandled(Statement statement);
 	void endOfFlow();
 
 	class Mute implements FlowEventHandler {
 
 		@Override
-		public void elementOpened() { }
+		public void beginOfFlow() { }
 
 		@Override
 		public void statementHandled(Statement statement) { }

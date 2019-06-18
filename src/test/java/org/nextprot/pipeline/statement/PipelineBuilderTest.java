@@ -32,7 +32,7 @@ public class PipelineBuilderTest {
 				.sink(() -> new NxFlatTableSink(NxFlatTableSink.Table.entry_mapped_statements))
 				.build();
 
-		pipeline.open();
+		pipeline.openValves();
 
 		// Wait for the pipe to complete
 		try {
@@ -59,7 +59,7 @@ public class PipelineBuilderTest {
 				.sink(() -> new NxFlatTableSink(NxFlatTableSink.Table.entry_mapped_statements))
 				.build();
 
-		pipeline.open();
+		pipeline.openValves();
 
 		// Wait for the pipe to complete
 		try {

@@ -4,7 +4,6 @@ import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.PipelineElement;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 
 public abstract class BaseRunnablePipelineElement<E extends PipelineElement> implements RunnablePipelineElement {
 
@@ -15,7 +14,7 @@ public abstract class BaseRunnablePipelineElement<E extends PipelineElement> imp
 		return FLOW_INIT_NUMBER++;
 	}
 
-	protected final E pipelineElement;
+	private final E pipelineElement;
 	private final String name;
 	protected final ThreadLocal<FlowEventHandler> flowEventHandlerHolder = new ThreadLocal<>();
 
@@ -31,6 +30,10 @@ public abstract class BaseRunnablePipelineElement<E extends PipelineElement> imp
 		return new FlowEventHandler.Mute();
 	}
 
+	public final E getPipelineElement() {
+		return pipelineElement;
+	}
+
 	@Override
 	public void run() {
 
@@ -38,7 +41,7 @@ public abstract class BaseRunnablePipelineElement<E extends PipelineElement> imp
 			FlowEventHandler eh = createEventHandler();
 			flowEventHandlerHolder.set(eh);
 
-			eh.elementOpened();
+			eh.beginOfFlow();
 
 			boolean endOfFlow = false;
 
@@ -49,13 +52,6 @@ public abstract class BaseRunnablePipelineElement<E extends PipelineElement> imp
 			eh.endOfFlow();
 		} catch (Exception e) {
 			System.err.println(Thread.currentThread().getName() +": "+e.getMessage());
-		}
-		finally {
-			try {
-				pipelineElement.unpipe();
-			} catch (IOException e) {
-				System.err.println(Thread.currentThread().getName() + ": could not stop, e=" + e.getMessage());
-			}
 		}
 	}
 

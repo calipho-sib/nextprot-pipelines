@@ -3,19 +3,27 @@ package org.nextprot.pipeline.statement.elements;
 
 public interface ElementEventHandler {
 
-	void sinkPipePortUnpiped();
-	void sourcePipePortUnpiped();
-	void elementClosed();
+	void valvesOpened();
+	void sinkUnpiped();
+	void sourceUnpiped();
+	void valvesClosed();
+	void disconnected();
 
 	class Mute implements ElementEventHandler {
 
 		@Override
-		public void sinkPipePortUnpiped() { }
+		public void valvesOpened() { }
 
 		@Override
-		public void sourcePipePortUnpiped() { }
+		public void sinkUnpiped() { }
 
 		@Override
-		public void elementClosed() { }
+		public void sourceUnpiped() { }
+
+		@Override
+		public void valvesClosed() { }
+
+		@Override
+		public void disconnected() { }
 	}
 }
