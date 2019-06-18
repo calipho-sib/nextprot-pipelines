@@ -10,6 +10,8 @@ import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
 
 import java.io.FileNotFoundException;
 
+import static org.nextprot.pipeline.statement.elements.runnable.BaseFlowablePipelineElement.END_OF_FLOW_TOKEN;
+
 
 public abstract class BaseFilter extends BasePipelineElement<DuplicableElement> implements DuplicableElement {
 
@@ -55,7 +57,9 @@ public abstract class BaseFilter extends BasePipelineElement<DuplicableElement> 
 		@Override
 		public void statementHandled(Statement statement) {
 
-			sendMessage("filter statement "+ getStatementId(statement));
+			if (statement != END_OF_FLOW_TOKEN) {
+				sendMessage("filter statement "+ getStatementId(statement));
+			}
 		}
 
 		@Override

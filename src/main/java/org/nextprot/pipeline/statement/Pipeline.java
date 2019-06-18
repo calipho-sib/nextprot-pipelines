@@ -44,12 +44,12 @@ public class Pipeline {
 			thread.join();
 			System.out.println(thread.getName() + " valves: closed");
 		}
-		unpipeElements();
+		closePipelineValves();
 
 		monitorable.ended();
 	}
 
-	private void unpipeElements() throws IOException {
+	private void closePipelineValves() throws IOException {
 
 		PipelineElement element = source;
 

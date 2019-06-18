@@ -32,16 +32,16 @@ public class NarcolepticFilter extends BaseFilter {
 	}
 
 	@Override
-	public FlowableNarcolepticFilter newFlowable() {
+	public Flowable newFlowable() {
 
-		return new FlowableNarcolepticFilter(this);
+		return new Flowable(this);
 	}
 
-	private static class FlowableNarcolepticFilter extends FlowableFilter<NarcolepticFilter> {
+	private static class Flowable extends FlowableFilter<NarcolepticFilter> {
 
 		private final long napTime;
 
-		private FlowableNarcolepticFilter(NarcolepticFilter pipelineElement) {
+		private Flowable(NarcolepticFilter pipelineElement) {
 			super(pipelineElement);
 
 			napTime = pipelineElement.takeANapInMillis;

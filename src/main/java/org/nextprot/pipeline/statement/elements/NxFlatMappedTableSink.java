@@ -1,24 +1,22 @@
 package org.nextprot.pipeline.statement.elements;
 
 import org.nextprot.commons.statements.Statement;
+import org.nextprot.pipeline.statement.NxFlatTable;
 import org.nextprot.pipeline.statement.elements.runnable.BaseFlowablePipelineElement;
 import org.nextprot.pipeline.statement.elements.runnable.FlowEventHandler;
 
 import java.io.FileNotFoundException;
 
-public class NxFlatTableSink extends Sink {
+import static org.nextprot.pipeline.statement.elements.runnable.BaseFlowablePipelineElement.END_OF_FLOW_TOKEN;
 
-	public enum Table {
-		raw_statements,
-		entry_mapped_statements
-	}
+public class NxFlatMappedTableSink extends Sink {
 
-	private final Table table;
+	private final NxFlatTable table;
 
-	public NxFlatTableSink(Table table) {
+	public NxFlatMappedTableSink() {
 		super();
 
-		this.table = table;
+		this.table = NxFlatTable.entry_mapped_statements;
 	}
 
 	@Override
@@ -28,24 +26,24 @@ public class NxFlatTableSink extends Sink {
 	}
 
 	@Override
-	public NxFlatTableSink duplicate(int capacity) {
+	public NxFlatMappedTableSink duplicate(int capacity) {
 
-		return new NxFlatTableSink(table);
+		return new NxFlatMappedTableSink();
 	}
 
-	private static class Flowable extends BaseFlowablePipelineElement<NxFlatTableSink> {
+	private static class Flowable extends BaseFlowablePipelineElement<NxFlatMappedTableSink> {
 
-		private Flowable(NxFlatTableSink sink) {
+		private Flowable(NxFlatMappedTableSink sink) {
 			super(sink);
 		}
 
 		@Override
 		public boolean handleFlow() throws Exception {
 
-			//FlowEventHandler eh = flowEventHandlerHolder.get();
+			FlowEventHandler eh = flowEventHandlerHolder.get();
 
 			Statement statement = getPipelineElement().getSinkPipePort().take();
-			//eh.statementHandled(statement);
+			eh.statementHandled(statement);
 
 			return statement == END_OF_FLOW_TOKEN;
 		}
@@ -59,9 +57,9 @@ public class NxFlatTableSink extends Sink {
 
 	private static class FlowLog extends BaseLog implements FlowEventHandler {
 
-		private final Table table;
+		private final NxFlatTable table;
 
-		public FlowLog(String threadName, Table table) throws FileNotFoundException {
+		public FlowLog(String threadName, NxFlatTable table) throws FileNotFoundException {
 
 			super(threadName);
 			this.table = table;
@@ -76,13 +74,15 @@ public class NxFlatTableSink extends Sink {
 		@Override
 		public void statementHandled(Statement statement) {
 
-			sendMessage("write statement " + statement.getStatementId() + " in table "+ table);
+			if (statement != END_OF_FLOW_TOKEN) {
+				sendMessage("load statement " + statement.getStatementId() + " in table "+ table);
+			}
 		}
 
 		@Override
 		public void endOfFlow() {
 
-			sendMessage("i statements evacuated");
+			sendMessage("i statements loaded");
 		}
 	}
 }

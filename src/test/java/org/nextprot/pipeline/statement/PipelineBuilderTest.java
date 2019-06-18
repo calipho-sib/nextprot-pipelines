@@ -4,7 +4,8 @@ package org.nextprot.pipeline.statement;
 import org.junit.Test;
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.elements.NarcolepticFilter;
-import org.nextprot.pipeline.statement.elements.NxFlatTableSink;
+import org.nextprot.pipeline.statement.elements.NxFlatRawTableFilter;
+import org.nextprot.pipeline.statement.elements.NxFlatMappedTableSink;
 import org.nextprot.pipeline.statement.elements.Source;
 
 import java.io.IOException;
@@ -28,8 +29,9 @@ public class PipelineBuilderTest {
 		Pipeline pipeline = new PipelineBuilder()
 				.start(timer)
 				.source(pump)
+				.filter(NxFlatRawTableFilter::new)
 				.filter(NarcolepticFilter::new)
-				.sink(() -> new NxFlatTableSink(NxFlatTableSink.Table.entry_mapped_statements))
+				.sink(NxFlatMappedTableSink::new)
 				.build();
 
 		pipeline.openValves();
@@ -55,8 +57,9 @@ public class PipelineBuilderTest {
 		Pipeline pipeline = new PipelineBuilder()
 				.start(timer)
 				.source(pump)
-				.demuxFilter(c -> new NarcolepticFilter(c, 100), 10)
-				.sink(() -> new NxFlatTableSink(NxFlatTableSink.Table.entry_mapped_statements))
+				.demuxFilter(c -> new NxFlatRawTableFilter(100), 10)
+				.filter(c -> new NarcolepticFilter(c, 100))
+				.sink(NxFlatMappedTableSink::new)
 				.build();
 
 		pipeline.openValves();
