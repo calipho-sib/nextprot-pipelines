@@ -3,7 +3,7 @@ package org.nextprot.pipeline.statement.elements.runnable;
 
 import java.io.FileNotFoundException;
 
-public interface RunnablePipelineElement extends Runnable {
+public interface FlowablePipelineElement extends Runnable {
 
 	/** handle the current flow and @return true if the flow ends */
 	boolean handleFlow() throws Exception;

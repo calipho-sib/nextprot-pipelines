@@ -5,7 +5,7 @@ import org.nextprot.pipeline.statement.PipelineElement;
 
 import java.io.FileNotFoundException;
 
-public abstract class BaseRunnablePipelineElement<E extends PipelineElement> implements RunnablePipelineElement {
+public abstract class BaseFlowablePipelineElement<E extends PipelineElement> implements FlowablePipelineElement {
 
 	public static final Statement END_OF_FLOW_TOKEN = new Statement();
 	private static int FLOW_INIT_NUMBER;
@@ -18,7 +18,7 @@ public abstract class BaseRunnablePipelineElement<E extends PipelineElement> imp
 	private final String name;
 	protected final ThreadLocal<FlowEventHandler> flowEventHandlerHolder = new ThreadLocal<>();
 
-	public BaseRunnablePipelineElement(E pipelineElement) {
+	public BaseFlowablePipelineElement(E pipelineElement) {
 
 		this.pipelineElement = pipelineElement;
 		this.name = this.pipelineElement.getName()+ "-" + NEXT_FLOW_NUM();

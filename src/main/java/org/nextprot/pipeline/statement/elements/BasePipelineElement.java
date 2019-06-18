@@ -2,7 +2,7 @@ package org.nextprot.pipeline.statement.elements;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.PipelineElement;
-import org.nextprot.pipeline.statement.elements.runnable.RunnablePipelineElement;
+import org.nextprot.pipeline.statement.elements.runnable.FlowablePipelineElement;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -97,7 +97,7 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 		if (!valvesOpened) {
 			valvesOpened = true;
 
-			RunnablePipelineElement runnable = newRunnableElement();
+			FlowablePipelineElement runnable = newFlowable();
 
 			Thread thread = new Thread(runnable);
 			thread.setName(runnable.getThreadName());

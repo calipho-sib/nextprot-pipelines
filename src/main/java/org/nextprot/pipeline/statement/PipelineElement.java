@@ -2,7 +2,7 @@ package org.nextprot.pipeline.statement;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.elements.ElementEventHandler;
-import org.nextprot.pipeline.statement.elements.runnable.RunnablePipelineElement;
+import org.nextprot.pipeline.statement.elements.runnable.FlowablePipelineElement;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -43,12 +43,7 @@ public interface PipelineElement<E extends PipelineElement> {
 	 */
 	void closeValves() throws IOException;
 
-	RunnablePipelineElement newRunnableElement();
+	FlowablePipelineElement newFlowable();
 
 	ElementEventHandler createEventHandler() throws FileNotFoundException;
-
-	default boolean hasNextElement() {
-
-		return nextElement() != null;
-	}
 }

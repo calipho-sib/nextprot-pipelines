@@ -6,8 +6,8 @@ import org.nextprot.pipeline.statement.PipelineElement;
 import org.nextprot.pipeline.statement.elements.BasePipelineElement;
 import org.nextprot.pipeline.statement.elements.ElementEventHandler;
 import org.nextprot.pipeline.statement.elements.Sink;
-import org.nextprot.pipeline.statement.elements.runnable.BaseRunnablePipelineElement;
-import org.nextprot.pipeline.statement.elements.runnable.RunnablePipelineElement;
+import org.nextprot.pipeline.statement.elements.runnable.BaseFlowablePipelineElement;
+import org.nextprot.pipeline.statement.elements.runnable.FlowablePipelineElement;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -130,7 +130,7 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 
 		if (!hasStarted) {
 			hasStarted = true;
-			RunnablePipelineElement runnable = newRunnableElement();
+			FlowablePipelineElement runnable = newFlowable();
 
 			Thread thread = new Thread(runnable);
 			thread.setName(runnable.getThreadName());
@@ -146,9 +146,9 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 	}
 
 	@Override
-	public RunnablePipelineElement newRunnableElement() {
+	public FlowablePipelineElement newFlowable() {
 
-		return new Runnable(this);
+		return new Flowable(this);
 	}
 
 	@Override
@@ -213,9 +213,9 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 		}
 	}
 
-	private static class Runnable extends BaseRunnablePipelineElement<Demultiplexer> {
+	private static class Flowable extends BaseFlowablePipelineElement<Demultiplexer> {
 
-		public Runnable(Demultiplexer demultiplexer) {
+		public Flowable(Demultiplexer demultiplexer) {
 
 			super(demultiplexer);
 		}

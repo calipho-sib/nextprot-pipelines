@@ -5,7 +5,7 @@ import org.nextprot.commons.statements.reader.BufferableStatementReader;
 import org.nextprot.commons.statements.reader.BufferedJsonStatementReader;
 import org.nextprot.pipeline.statement.PipelineElement;
 import org.nextprot.pipeline.statement.Pump;
-import org.nextprot.pipeline.statement.elements.runnable.BaseRunnablePipelineElement;
+import org.nextprot.pipeline.statement.elements.runnable.BaseFlowablePipelineElement;
 import org.nextprot.pipeline.statement.elements.runnable.FlowEventHandler;
 import sun.net.www.protocol.http.HttpURLConnection;
 
@@ -15,8 +15,6 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
-
-import static org.nextprot.pipeline.statement.elements.runnable.BaseRunnablePipelineElement.END_OF_FLOW_TOKEN;
 
 /**
  * This class is a source of data for a pipe of threads.
@@ -58,9 +56,9 @@ public class Source extends BasePipelineElement<PipelineElement> {
 	}
 
 	@Override
-	public Runnable newRunnableElement() {
+	public Flowable newFlowable() {
 
-		return new Runnable(this);
+		return new Flowable(this);
 	}
 
 	public static class WebStatementPump implements Pump<Statement> {
@@ -134,9 +132,9 @@ public class Source extends BasePipelineElement<PipelineElement> {
 		}
 	}
 
-	private static class Runnable extends BaseRunnablePipelineElement<Source> {
+	private static class Flowable extends BaseFlowablePipelineElement<Source> {
 
-		private Runnable(Source source) {
+		private Flowable(Source source) {
 
 			super(source);
 		}

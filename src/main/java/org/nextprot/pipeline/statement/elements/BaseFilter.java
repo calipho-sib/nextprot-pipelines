@@ -4,13 +4,11 @@ package org.nextprot.pipeline.statement.elements;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.Filter;
-import org.nextprot.pipeline.statement.elements.runnable.BaseRunnablePipelineElement;
+import org.nextprot.pipeline.statement.elements.runnable.BaseFlowablePipelineElement;
 import org.nextprot.pipeline.statement.elements.runnable.FlowEventHandler;
 import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
 
 import java.io.FileNotFoundException;
-
-import static org.nextprot.pipeline.statement.elements.runnable.BaseRunnablePipelineElement.END_OF_FLOW_TOKEN;
 
 
 public abstract class BaseFilter extends BasePipelineElement<DuplicableElement> implements DuplicableElement {
@@ -20,9 +18,9 @@ public abstract class BaseFilter extends BasePipelineElement<DuplicableElement> 
 		super(capacity);
 	}
 
-	public static abstract class RunnableFilter<F extends BaseFilter> extends BaseRunnablePipelineElement<F> implements Filter {
+	public static abstract class FlowableFilter<F extends BaseFilter> extends BaseFlowablePipelineElement<F> implements Filter {
 
-		public RunnableFilter(F pipelineElement) {
+		public FlowableFilter(F pipelineElement) {
 			super(pipelineElement);
 		}
 

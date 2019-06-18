@@ -1,11 +1,10 @@
 package org.nextprot.pipeline.statement.elements;
 
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.elements.runnable.BaseRunnablePipelineElement;
+import org.nextprot.pipeline.statement.elements.runnable.BaseFlowablePipelineElement;
 import org.nextprot.pipeline.statement.elements.runnable.FlowEventHandler;
 
 import java.io.FileNotFoundException;
-import java.util.List;
 
 public class NxFlatTableSink extends Sink {
 
@@ -23,9 +22,9 @@ public class NxFlatTableSink extends Sink {
 	}
 
 	@Override
-	public Runnable newRunnableElement() {
+	public Flowable newFlowable() {
 
-		return new Runnable(this);
+		return new Flowable(this);
 	}
 
 	@Override
@@ -34,9 +33,9 @@ public class NxFlatTableSink extends Sink {
 		return new NxFlatTableSink(table);
 	}
 
-	private static class Runnable extends BaseRunnablePipelineElement<NxFlatTableSink> {
+	private static class Flowable extends BaseFlowablePipelineElement<NxFlatTableSink> {
 
-		private Runnable(NxFlatTableSink sink) {
+		private Flowable(NxFlatTableSink sink) {
 			super(sink);
 		}
 
