@@ -7,7 +7,7 @@ import org.nextprot.pipeline.statement.elements.runnable.FlowEventHandler;
 
 import java.io.FileNotFoundException;
 
-import static org.nextprot.pipeline.statement.elements.runnable.BaseFlowablePipelineElement.END_OF_FLOW_TOKEN;
+import static org.nextprot.pipeline.statement.elements.runnable.BaseFlowablePipelineElement.END_OF_FLOW_STATEMENT;
 
 public class NxFlatMappedTableSink extends Sink {
 
@@ -33,25 +33,29 @@ public class NxFlatMappedTableSink extends Sink {
 
 	private static class Flowable extends BaseFlowablePipelineElement<NxFlatMappedTableSink> {
 
+		private final NxFlatTable table;
+
 		private Flowable(NxFlatMappedTableSink sink) {
 			super(sink);
+
+			this.table = sink.table;
 		}
 
 		@Override
-		public boolean handleFlow() throws Exception {
+		public boolean handleFlow(NxFlatMappedTableSink sink) throws Exception {
 
 			FlowEventHandler eh = flowEventHandlerHolder.get();
 
-			Statement statement = getPipelineElement().getSinkPipePort().take();
+			Statement statement = sink.getSinkPipePort().take();
 			eh.statementHandled(statement);
 
-			return statement == END_OF_FLOW_TOKEN;
+			return statement == END_OF_FLOW_STATEMENT;
 		}
 
 		@Override
 		public FlowEventHandler createEventHandler() throws FileNotFoundException {
 
-			return new FlowLog(getThreadName(), getPipelineElement().table);
+			return new FlowLog(getThreadName(), table);
 		}
 	}
 
@@ -74,7 +78,7 @@ public class NxFlatMappedTableSink extends Sink {
 		@Override
 		public void statementHandled(Statement statement) {
 
-			if (statement != END_OF_FLOW_TOKEN) {
+			if (statement != END_OF_FLOW_STATEMENT) {
 				sendMessage("load statement " + statement.getStatementId() + " in table "+ table);
 			}
 		}

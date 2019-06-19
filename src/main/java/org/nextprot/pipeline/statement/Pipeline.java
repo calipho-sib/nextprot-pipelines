@@ -25,7 +25,7 @@ public class Pipeline {
 
 	public void openValves() {
 
-		threads = new ArrayList<>();
+	threads = new ArrayList<>();
 
 		source.openValves(threads);
 

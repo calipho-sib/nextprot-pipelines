@@ -7,8 +7,8 @@ import org.nextprot.pipeline.statement.elements.runnable.FlowablePipelineElement
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 
 public abstract class BasePipelineElement<E extends PipelineElement> implements PipelineElement<E> {
@@ -23,7 +23,7 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 
 	public BasePipelineElement(int sourceCapacity) {
 
-		this(new LinkedBlockingQueue<>(sourceCapacity));
+		this(new ArrayBlockingQueue<>(sourceCapacity));
 	}
 
 	public BasePipelineElement(BlockingQueue<Statement> sourcePipePort) {

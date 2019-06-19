@@ -7,7 +7,7 @@ import org.nextprot.pipeline.statement.elements.runnable.FlowEventHandler;
 import java.io.FileNotFoundException;
 import java.util.concurrent.BlockingQueue;
 
-import static org.nextprot.pipeline.statement.elements.runnable.BaseFlowablePipelineElement.END_OF_FLOW_TOKEN;
+import static org.nextprot.pipeline.statement.elements.runnable.BaseFlowablePipelineElement.END_OF_FLOW_STATEMENT;
 
 public class NxFlatRawTableFilter extends BaseFilter {
 
@@ -33,14 +33,17 @@ public class NxFlatRawTableFilter extends BaseFilter {
 
 	private static class Flowable extends FlowableFilter<NxFlatRawTableFilter> {
 
+		private final NxFlatTable table;
+
 		private Flowable(NxFlatRawTableFilter filter) {
 			super(filter);
+			this.table = filter.table;
 		}
 
 		@Override
 		public FlowEventHandler createEventHandler() throws FileNotFoundException {
 
-			return new FlowLog(getThreadName(), getPipelineElement().table);
+			return new FlowLog(getThreadName(), table);
 		}
 
 		@Override
@@ -52,7 +55,7 @@ public class NxFlatRawTableFilter extends BaseFilter {
 
 			out.put(current);
 
-			return current == END_OF_FLOW_TOKEN;
+			return current == END_OF_FLOW_STATEMENT;
 		}
 
 		private void load(Statement statement) {
@@ -80,7 +83,7 @@ public class NxFlatRawTableFilter extends BaseFilter {
 		@Override
 		public void statementHandled(Statement statement) {
 
-			if (statement == END_OF_FLOW_TOKEN) {
+			if (statement == END_OF_FLOW_STATEMENT) {
 				sendMessage(getStatementId(statement) + " transmitted to next filter");
 			}
 			else {

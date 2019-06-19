@@ -9,8 +9,11 @@ import java.util.List;
  */
 public interface Pump<E> {
 
+	/** @return the next statement or null if not more to pump */
 	E pump() throws IOException;
+
 	int capacity();
+
 	int pump(List<E> collector) throws IOException;
 	boolean isEmpty() throws IOException;
 	void stop() throws IOException;;

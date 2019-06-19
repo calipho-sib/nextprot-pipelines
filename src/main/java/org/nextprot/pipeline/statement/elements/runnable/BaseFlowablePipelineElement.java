@@ -5,9 +5,9 @@ import org.nextprot.pipeline.statement.PipelineElement;
 
 import java.io.FileNotFoundException;
 
-public abstract class BaseFlowablePipelineElement<E extends PipelineElement> implements FlowablePipelineElement {
+public abstract class BaseFlowablePipelineElement<E extends PipelineElement> implements FlowablePipelineElement<E> {
 
-	public static final Statement END_OF_FLOW_TOKEN = new Statement();
+	public static final Statement END_OF_FLOW_STATEMENT = new Statement();
 	private static int FLOW_INIT_NUMBER;
 
 	private static synchronized int NEXT_FLOW_NUM() {
@@ -30,10 +30,6 @@ public abstract class BaseFlowablePipelineElement<E extends PipelineElement> imp
 		return new FlowEventHandler.Mute();
 	}
 
-	public final E getPipelineElement() {
-		return pipelineElement;
-	}
-
 	@Override
 	public void run() {
 
@@ -47,7 +43,7 @@ public abstract class BaseFlowablePipelineElement<E extends PipelineElement> imp
 
 			while (!endOfFlow) {
 
-				endOfFlow = handleFlow();
+				endOfFlow = handleFlow(pipelineElement);
 			}
 			eh.endOfFlow();
 		} catch (Exception e) {

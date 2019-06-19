@@ -81,7 +81,7 @@ public class PipelineBuilder implements Pipeline.StartStep {
 
 					DuplicableElement fromElement = dataCollector.getDemuxFromElement();
 
-					Demultiplexer demultiplexer = new Demultiplexer(fromElement.getSinkPipePort(),
+					Demultiplexer demultiplexer = new Demultiplexer(fromElement.getSinkPipePort().remainingCapacity(),
 							dataCollector.getDemuxSourcePipePortCount());
 
 					demultiplexer.pipe(fromElement);

@@ -140,22 +140,20 @@ public class Source extends BasePipelineElement<PipelineElement> {
 		}
 
 		@Override
-		public boolean handleFlow() throws Exception {
+		public boolean handleFlow(Source source) throws Exception {
 
 			FlowEventHandler eh = flowEventHandlerHolder.get();
-
-			Source source = getPipelineElement();
 
 			Statement statement = source.pump();
 
 			if (statement == null) {
-				statement = END_OF_FLOW_TOKEN;
+				statement = END_OF_FLOW_STATEMENT;
 			}
 
 			source.getSourcePipePort().put(statement);
 			eh.statementHandled(statement);
 
-			return statement == END_OF_FLOW_TOKEN;
+			return statement == END_OF_FLOW_STATEMENT;
 		}
 
 		@Override

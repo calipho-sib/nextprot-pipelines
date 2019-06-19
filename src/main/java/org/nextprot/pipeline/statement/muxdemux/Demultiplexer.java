@@ -13,8 +13,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -26,21 +26,22 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 
 	private boolean hasStarted;
 
+	private final int sinkCapacity;
 	private BlockingQueue<Statement> sinkPipePort;
 	private final CircularList<BlockingQueue<Statement>> sourcePipePorts;
 	private final List<DuplicableElement> nextElements;
 
-	private final AtomicInteger incrementer = new AtomicInteger (0);
+	private final AtomicInteger incrementer = new AtomicInteger (-1);
 
-	public Demultiplexer(BlockingQueue<Statement> sinkPipePort, int sourcePipePortCount) {
+	public Demultiplexer(int sinkCapacity, int sourcePipePortCount) {
 
-		this.sinkPipePort = sinkPipePort;
+		this.sinkCapacity = sinkCapacity;
 		this.nextElements = new ArrayList<>();
-		this.sourcePipePorts = createSourcePipePorts(sinkPipePort.size(), sourcePipePortCount);
+		this.sourcePipePorts = createSourcePipePorts(sinkCapacity, sourcePipePortCount);
 
 		if (sourcePipePorts.isEmpty()) {
 
-			throw new IllegalArgumentException(getName()+": cannot create src ports");
+			throw new IllegalArgumentException(getName()+": cannot create source ports");
 		}
 	}
 
@@ -52,7 +53,7 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 
 		for (int i=0 ; i<sourcePipePortCount ; i++) {
 
-			spp.add(new LinkedBlockingQueue<>(newCapacity));
+			spp.add(new ArrayBlockingQueue<>(newCapacity));
 		}
 
 		return spp;
@@ -76,7 +77,7 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 
 			// copy elements until sink
 			List<DuplicableElement> copiedElements = duplicablePipeline.stream()
-					.map(elt -> elt.duplicate(port.size()))
+					.map(elt -> elt.duplicate(port.remainingCapacity()))
 					.collect(Collectors.toList());
 
 			if (! (copiedElements.get(copiedElements.size()-1) instanceof Sink) ) {
@@ -85,12 +86,9 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 			}
 
 			// ... -> F0(src)    (snk)F1 -> F2 -> .... -> SINK
-			DuplicableElement first = pipe(copiedElements);
+			DuplicableElement head = pipe(copiedElements);
 
-			// ... -> F0(src) -> (snk)F1 -> F2 -> .... -> SINK
-			//port.connect(first.getSinkPipePort());
-
-			nextElements.add(first);
+			nextElements.add(head);
 		}
 	}
 
@@ -116,6 +114,8 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 		List<DuplicableElement> pipelineElementList = new ArrayList<>();
 
 		pipelineElementList.add(element);
+
+		incrementer.set(0);
 
 		while ((element = element.nextElement()) != null) {
 
@@ -185,24 +185,25 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 	@Override
 	public void setSinkPipePort(BlockingQueue<Statement> queue) {
 
-		throw new Error("Already connected to a source PipelineElement through this pipe!");
+		if (sinkCapacity != queue.remainingCapacity()) {
+
+			throw new Error("Cannot set sink pipe with capacity "+queue.remainingCapacity() + " in port of capacity "+ sinkPipePort);
+		}
+
+		this.sinkPipePort = queue;
 	}
 
 	@Override
 	public BlockingQueue<Statement> getSourcePipePort() {
 
-		return null;
-	}
-
-	public BlockingQueue<Statement> getSourcePipePort(int i) {
-
-		return sourcePipePorts.get(i);
+		return sourcePipePorts.get(incrementer.incrementAndGet());
 	}
 
 	@Override
 	public DuplicableElement nextElement() {
 
-		return nextElements.get(incrementer.incrementAndGet());
+		//return nextElements.get(incrementer.get());
+		throw new Error("Cannot call nextElement() on demux");
 	}
 
 	public static class CircularList<E> extends ArrayList<E> {
@@ -221,30 +222,17 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 		}
 
 		@Override
-		public boolean handleFlow() throws Exception {
+		public boolean handleFlow(Demultiplexer demultiplexer) throws Exception {
 
-			Demultiplexer pipelineElement = getPipelineElement();
+			Statement current = demultiplexer.getSinkPipePort().take();
 
-			BlockingQueue<Statement> sinkPipePort = pipelineElement.getSinkPipePort();
+			// 2. split in n output batch
+			// 3. distribute to all output
+			demultiplexer.getSourcePipePort().put(current);
 
-			// 1. get input
-			List<Statement> buffer = new ArrayList<>(sinkPipePort.size());
+			createEventHandler().statementHandled(current);
 
-			sinkPipePort.drainTo(buffer);
-
-			int j = 0;
-			for (int i = 0; i < buffer.size(); i++) {
-
-				Statement current = buffer.get(i);
-
-				// 2. split in n output batch
-				// 3. distribute to all output
-				pipelineElement.getSourcePipePort(j++).put(current);
-
-				createEventHandler().statementHandled(current);
-			}
-
-			return buffer.get(buffer.size()-1) == END_OF_FLOW_TOKEN;
+			return current == END_OF_FLOW_STATEMENT;
 		}
 
 //		printlnTextInLog("distributing " + numOfStatements + " statements...");

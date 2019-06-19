@@ -59,7 +59,7 @@ public class NarcolepticFilter extends BaseFilter {
 
 			out.put(current);
 
-			return current == END_OF_FLOW_TOKEN;
+			return current == END_OF_FLOW_STATEMENT;
 		}
 
 		private void takeANap(long nap) {
