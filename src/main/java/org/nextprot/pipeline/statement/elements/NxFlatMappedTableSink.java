@@ -2,6 +2,7 @@ package org.nextprot.pipeline.statement.elements;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.NxFlatTable;
+import org.nextprot.pipeline.statement.elements.runnable.BaseFlowLog;
 import org.nextprot.pipeline.statement.elements.runnable.BaseFlowablePipelineElement;
 import org.nextprot.pipeline.statement.elements.runnable.FlowEventHandler;
 
@@ -59,7 +60,7 @@ public class NxFlatMappedTableSink extends Sink {
 		}
 	}
 
-	private static class FlowLog extends BaseLog implements FlowEventHandler {
+	private static class FlowLog extends BaseFlowLog {
 
 		private final NxFlatTable table;
 
@@ -78,15 +79,17 @@ public class NxFlatMappedTableSink extends Sink {
 		@Override
 		public void statementHandled(Statement statement) {
 
+			super.statementHandled(statement);
+
 			if (statement != END_OF_FLOW_STATEMENT) {
-				sendMessage("load statement " + statement.getStatementId() + " in table "+ table);
+				sendMessage("load statement " + statement.getStatementId());
 			}
 		}
 
 		@Override
 		public void endOfFlow() {
 
-			sendMessage("i statements loaded");
+			sendMessage(getStatementCount()+" statements loaded in table "+ table);
 		}
 	}
 }

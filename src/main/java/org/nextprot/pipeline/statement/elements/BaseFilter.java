@@ -4,6 +4,7 @@ package org.nextprot.pipeline.statement.elements;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.Filter;
+import org.nextprot.pipeline.statement.elements.runnable.BaseFlowLog;
 import org.nextprot.pipeline.statement.elements.runnable.BaseFlowablePipelineElement;
 import org.nextprot.pipeline.statement.elements.runnable.FlowEventHandler;
 import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
@@ -39,7 +40,7 @@ public abstract class BaseFilter extends BasePipelineElement<DuplicableElement> 
 		}
 	}
 
-	private static class FlowLog extends BaseLog implements FlowEventHandler {
+	private static class FlowLog extends BaseFlowLog {
 
 		public FlowLog(String threadName) throws FileNotFoundException {
 
@@ -55,6 +56,8 @@ public abstract class BaseFilter extends BasePipelineElement<DuplicableElement> 
 		@Override
 		public void statementHandled(Statement statement) {
 
+			super.statementHandled(statement);
+
 			if (statement != END_OF_FLOW_STATEMENT) {
 				sendMessage("filter statement "+ getStatementId(statement));
 			}
@@ -63,7 +66,7 @@ public abstract class BaseFilter extends BasePipelineElement<DuplicableElement> 
 		@Override
 		public void endOfFlow() {
 
-			sendMessage("end of flow");
+			sendMessage(getStatementCount()+ " filtered");
 		}
 	}
 }

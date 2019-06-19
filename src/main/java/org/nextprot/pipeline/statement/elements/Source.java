@@ -5,6 +5,7 @@ import org.nextprot.commons.statements.reader.BufferableStatementReader;
 import org.nextprot.commons.statements.reader.BufferedJsonStatementReader;
 import org.nextprot.pipeline.statement.PipelineElement;
 import org.nextprot.pipeline.statement.Pump;
+import org.nextprot.pipeline.statement.elements.runnable.BaseFlowLog;
 import org.nextprot.pipeline.statement.elements.runnable.BaseFlowablePipelineElement;
 import org.nextprot.pipeline.statement.elements.runnable.FlowEventHandler;
 import sun.net.www.protocol.http.HttpURLConnection;
@@ -58,7 +59,7 @@ public class Source extends BasePipelineElement<PipelineElement> {
 	@Override
 	public Flowable newFlowable() {
 
-		return new Flowable(this);
+		return new Flowable(this, pump.capacity());
 	}
 
 	public static class WebStatementPump implements Pump<Statement> {
@@ -134,9 +135,12 @@ public class Source extends BasePipelineElement<PipelineElement> {
 
 	private static class Flowable extends BaseFlowablePipelineElement<Source> {
 
-		private Flowable(Source source) {
+		private final int capacity;
+
+		private Flowable(Source source, int capacity) {
 
 			super(source);
+			this.capacity = capacity;
 		}
 
 		@Override
@@ -159,33 +163,37 @@ public class Source extends BasePipelineElement<PipelineElement> {
 		@Override
 		public FlowEventHandler createEventHandler() throws FileNotFoundException {
 
-			return new FlowLog(getThreadName());
+			return new FlowLog(getThreadName(), capacity);
 		}
 	}
 
-	private static class FlowLog extends BaseLog implements FlowEventHandler {
+	private static class FlowLog extends BaseFlowLog {
 
-		public FlowLog(String threadName) throws FileNotFoundException {
+		private final int capacity;
+
+		public FlowLog(String threadName, int capacity) throws FileNotFoundException {
 
 			super(threadName);
+			this.capacity = capacity;
 		}
 
 		@Override
 		public void beginOfFlow() {
 
-			sendMessage("pump started (capacity= )");
+			sendMessage("pump started (capacity="+ capacity + ")");
 		}
 
 		@Override
 		public void statementHandled(Statement statement) {
 
+			super.statementHandled(statement);
 			sendMessage("pump statement " + getStatementId(statement));
 		}
 
 		@Override
 		public void endOfFlow() {
 
-			sendMessage("end of flow");
+			sendMessage(getStatementCount()+" statements pumped");
 		}
 	}
 }

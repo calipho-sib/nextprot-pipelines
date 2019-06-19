@@ -2,6 +2,7 @@ package org.nextprot.pipeline.statement.elements;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.NxFlatTable;
+import org.nextprot.pipeline.statement.elements.runnable.BaseFlowLog;
 import org.nextprot.pipeline.statement.elements.runnable.FlowEventHandler;
 
 import java.io.FileNotFoundException;
@@ -64,7 +65,7 @@ public class NxFlatRawTableFilter extends BaseFilter {
 		}
 	}
 
-	private static class FlowLog extends BaseLog implements FlowEventHandler {
+	private static class FlowLog extends BaseFlowLog {
 
 		private final NxFlatTable table;
 
@@ -74,7 +75,6 @@ public class NxFlatRawTableFilter extends BaseFilter {
 			this.table = table;
 		}
 
-		@Override
 		public void beginOfFlow() {
 
 			sendMessage("opened");
@@ -83,18 +83,20 @@ public class NxFlatRawTableFilter extends BaseFilter {
 		@Override
 		public void statementHandled(Statement statement) {
 
+			super.statementHandled(statement);
+
 			if (statement == END_OF_FLOW_STATEMENT) {
 				sendMessage(getStatementId(statement) + " transmitted to next filter");
 			}
 			else {
-				sendMessage("load statement " + statement.getStatementId() + " in table "+ table + " and transmitted to next filter");
+				sendMessage("load statement " + statement.getStatementId() + " and passed to next filter");
 			}
 		}
 
 		@Override
 		public void endOfFlow() {
 
-			sendMessage("i statements loaded");
+			sendMessage(getStatementCount()+" statements loaded in table "+ table + " and passed to next filter");
 		}
 	}
 }
