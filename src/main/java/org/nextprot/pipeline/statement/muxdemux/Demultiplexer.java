@@ -35,11 +35,11 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 
 	private final AtomicInteger incrementer = new AtomicInteger (-1);
 
-	public Demultiplexer(int sinkCapacity, int sourcePipePortCount) {
+	public Demultiplexer(int sinkCapacity, int sourceChannelCount) {
 
 		this.sinkCapacity = sinkCapacity;
 		this.nextElements = new ArrayList<>();
-		this.sourceChannels = createSourceChannels(sinkCapacity, sourcePipePortCount);
+		this.sourceChannels = createSourceChannels(sinkCapacity, sourceChannelCount);
 
 		if (sourceChannels.isEmpty()) {
 
@@ -83,8 +83,6 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 	public void pipe(DuplicableElement head) {
 
 		List<DuplicableElement> originalElements = getElementsFromHead(head);
-
-
 
 		for (int i = 0; i < sourceChannels.size(); i++) {
 
@@ -235,11 +233,14 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 		return sourceChannels.get(incrementer.incrementAndGet());
 	}
 
+	public int countSourceChannels() {
+		return sourceChannels.size();
+	}
+
 	@Override
 	public DuplicableElement nextElement() {
 
-		//return nextElements.get(incrementer.get());
-		throw new Error("Cannot call nextElement() on demux");
+		return nextElements.get(incrementer.get());
 	}
 
 	private static class CircularList<E> extends ArrayList<E> {
@@ -251,6 +252,8 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 	}
 
 	private static class Flowable extends BaseFlowablePipelineElement<Demultiplexer> {
+
+		private int poisonedStatementReceived = 0;
 
 		public Flowable(Demultiplexer demultiplexer) {
 
@@ -268,7 +271,11 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 
 			((FlowLog)flowEventHandlerHolder.get()).statementHandled(current, demultiplexer.sinkChannel, sourceChannel);
 
-			return current == END_OF_FLOW_STATEMENT;
+			if (current == POISONED_STATEMENT) {
+				poisonedStatementReceived++;
+			}
+
+			return poisonedStatementReceived == demultiplexer.countSourceChannels();
 		}
 
 		@Override
@@ -300,7 +307,7 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 		@Override
 		public void endOfFlow() {
 
-			sendMessage(getStatementCount()+" statements distributed");
+			sendMessage(getStatementCount()+" healthy statements distributed");
 		}
 	}
 }

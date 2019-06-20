@@ -1,17 +1,15 @@
 package org.nextprot.pipeline.statement.elements.runnable;
 
-import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.PipelineElement;
 
 import java.io.FileNotFoundException;
 
 public abstract class BaseFlowablePipelineElement<E extends PipelineElement> implements FlowablePipelineElement<E> {
 
-	public static final Statement END_OF_FLOW_STATEMENT = new Statement();
-	private static int FLOW_INIT_NUMBER;
+	private static int FLOWABLE_NUMBER;
 
-	private static synchronized int NEXT_FLOW_NUM() {
-		return FLOW_INIT_NUMBER++;
+	private static synchronized int NEXT_FLOWABLE_NUM() {
+		return FLOWABLE_NUMBER++;
 	}
 
 	private final E pipelineElement;
@@ -21,7 +19,7 @@ public abstract class BaseFlowablePipelineElement<E extends PipelineElement> imp
 	public BaseFlowablePipelineElement(E pipelineElement) {
 
 		this.pipelineElement = pipelineElement;
-		this.name = this.pipelineElement.getName()+ "-" + NEXT_FLOW_NUM();
+		this.name = this.pipelineElement.getName()+ "-" + NEXT_FLOWABLE_NUM();
 	}
 
 	@Override
@@ -55,10 +53,5 @@ public abstract class BaseFlowablePipelineElement<E extends PipelineElement> imp
 	public String getThreadName() {
 
 		return name;
-	}
-
-	public int capacity() {
-
-		return pipelineElement.getSinkChannel().remainingCapacity();
 	}
 }

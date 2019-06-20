@@ -8,6 +8,7 @@ import org.nextprot.pipeline.statement.Pump;
 import org.nextprot.pipeline.statement.elements.runnable.BaseFlowLog;
 import org.nextprot.pipeline.statement.elements.runnable.BaseFlowablePipelineElement;
 import org.nextprot.pipeline.statement.elements.runnable.FlowEventHandler;
+import org.nextprot.pipeline.statement.muxdemux.Demultiplexer;
 import sun.net.www.protocol.http.HttpURLConnection;
 
 import java.io.FileNotFoundException;
@@ -38,11 +39,6 @@ public class Source extends BasePipelineElement<PipelineElement> {
 		return pump.pump();
 	}
 
-	private int pump(List<Statement> buffer) throws IOException {
-
-		return pump.pump(buffer);
-	}
-
 	@Override
 	public void closeValves() throws IOException {
 
@@ -59,7 +55,20 @@ public class Source extends BasePipelineElement<PipelineElement> {
 	@Override
 	public Flowable newFlowable() {
 
-		return new Flowable(this, pump.capacity());
+		return new Flowable(this, pump.capacity(), countPillsToProduce());
+	}
+
+	private int countPillsToProduce() {
+
+		PipelineElement element = this;
+
+		while ((element = element.nextElement()) != null) {
+
+			if (element instanceof Demultiplexer) {
+				return ((Demultiplexer)element).countSourceChannels();
+			}
+		}
+		return 1;
 	}
 
 	public static class WebStatementPump implements Pump<Statement> {
@@ -136,11 +145,13 @@ public class Source extends BasePipelineElement<PipelineElement> {
 	private static class Flowable extends BaseFlowablePipelineElement<Source> {
 
 		private final int capacity;
+		private final int pills;
 
-		private Flowable(Source source, int capacity) {
+		private Flowable(Source source, int capacity, int pills) {
 
 			super(source);
 			this.capacity = capacity;
+			this.pills = pills;
 		}
 
 		@Override
@@ -151,13 +162,24 @@ public class Source extends BasePipelineElement<PipelineElement> {
 			Statement statement = source.pump();
 
 			if (statement == null) {
-				statement = END_OF_FLOW_STATEMENT;
+				poisonChannel(source.getSourceChannel());
+				log.poisonedStatementReleased(pills, source.getSourceChannel());
+				return true;
+			}
+			else {
+				source.getSourceChannel().put(statement);
+				log.statementHandled(statement, source.getSourceChannel());
 			}
 
-			source.getSourceChannel().put(statement);
-			log.statementHandled(statement, source.getSourceChannel());
+			return false;
+		}
 
-			return statement == END_OF_FLOW_STATEMENT;
+		private void poisonChannel(BlockingQueue<Statement> sourceChannel) throws InterruptedException {
+
+			for (int i=0 ; i<pills ; i++) {
+
+				sourceChannel.put(POISONED_STATEMENT);
+			}
 		}
 
 		@Override
@@ -186,6 +208,11 @@ public class Source extends BasePipelineElement<PipelineElement> {
 		private void statementHandled(Statement statement, BlockingQueue<Statement> sourceChannel) {
 
 			statementHandled("pump", statement, null, sourceChannel);
+		}
+
+		private void poisonedStatementReleased(int pills, BlockingQueue<Statement> sourceChannel) {
+
+			sendMessage(pills+" poisoned statement"+(pills>1 ? "s":"")+" released into the source channel #" + sourceChannel.hashCode());
 		}
 
 		@Override

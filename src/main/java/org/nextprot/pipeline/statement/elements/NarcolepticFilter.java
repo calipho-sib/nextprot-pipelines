@@ -5,6 +5,7 @@ import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.elements.runnable.FlowEventHandler;
 import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
 
+import java.io.FileNotFoundException;
 import java.util.concurrent.BlockingQueue;
 
 /**
@@ -51,17 +52,23 @@ public class NarcolepticFilter extends BaseFilter {
 		@Override
 		public boolean filter(BlockingQueue<Statement> in, BlockingQueue<Statement> out) throws Exception {
 
-			FlowEventHandler eh = flowEventHandlerHolder.get();
+			FlowLog eh = (FlowLog) flowEventHandlerHolder.get();
 
 			Statement current = in.take();
 			eh.statementHandled(current);
-			((BaseFilter.FlowLog)eh).statementHandled(current, in, out);
+			eh.statementHandled(current, in, out);
 
 			takeANap(napTime);
 
 			out.put(current);
 
-			return current == END_OF_FLOW_STATEMENT;
+			return current == POISONED_STATEMENT;
+		}
+
+		@Override
+		public FlowLog createEventHandler() throws FileNotFoundException {
+
+			return new FlowLog(getThreadName());
 		}
 
 		private void takeANap(long nap) {
@@ -73,6 +80,14 @@ public class NarcolepticFilter extends BaseFilter {
 					System.err.println(e.getMessage());
 				}
 			}
+		}
+	}
+
+	private static class FlowLog extends BaseFilter.FlowLog {
+
+		private FlowLog(String threadName) throws FileNotFoundException {
+
+			super(threadName);
 		}
 	}
 }

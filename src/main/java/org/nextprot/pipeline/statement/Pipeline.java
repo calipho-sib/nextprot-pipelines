@@ -44,7 +44,7 @@ public class Pipeline {
 			thread.join();
 			System.out.println(thread.getName() + " valves: closed");
 		}
-		closePipelineValves();
+		//closePipelineValves();
 
 		monitorable.ended();
 	}

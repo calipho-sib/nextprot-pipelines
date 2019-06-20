@@ -7,7 +7,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 
-import static org.nextprot.pipeline.statement.elements.runnable.BaseFlowablePipelineElement.END_OF_FLOW_STATEMENT;
+import static org.nextprot.pipeline.statement.elements.runnable.BaseFlowablePipelineElement.POISONED_STATEMENT;
 
 public abstract class BaseLog {
 
@@ -39,6 +39,6 @@ public abstract class BaseLog {
 
 	protected synchronized String getStatementId(Statement statement) {
 
-		return ((statement == END_OF_FLOW_STATEMENT) ? "END_OF_FLOW_TOKEN" : statement.getStatementId());
+		return ((statement == POISONED_STATEMENT) ? "END_OF_FLOW_TOKEN" : statement.getStatementId());
 	}
 }

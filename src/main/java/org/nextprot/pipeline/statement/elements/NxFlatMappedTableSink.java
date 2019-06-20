@@ -8,7 +8,7 @@ import org.nextprot.pipeline.statement.elements.runnable.FlowEventHandler;
 
 import java.io.FileNotFoundException;
 
-import static org.nextprot.pipeline.statement.elements.runnable.BaseFlowablePipelineElement.END_OF_FLOW_STATEMENT;
+import static org.nextprot.pipeline.statement.elements.runnable.BaseFlowablePipelineElement.POISONED_STATEMENT;
 
 public class NxFlatMappedTableSink extends Sink {
 
@@ -49,7 +49,7 @@ public class NxFlatMappedTableSink extends Sink {
 			Statement statement = sink.getSinkChannel().take();
 			eh.statementHandled(statement);
 
-			return statement == END_OF_FLOW_STATEMENT;
+			return statement == POISONED_STATEMENT;
 		}
 
 		@Override
@@ -80,7 +80,7 @@ public class NxFlatMappedTableSink extends Sink {
 
 			super.statementHandled(statement);
 
-			if (statement != END_OF_FLOW_STATEMENT) {
+			if (statement != POISONED_STATEMENT) {
 				sendMessage("load statement " + statement.getStatementId());
 			}
 		}

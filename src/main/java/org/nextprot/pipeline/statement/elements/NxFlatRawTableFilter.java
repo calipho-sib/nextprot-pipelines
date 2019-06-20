@@ -4,12 +4,9 @@ import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.NxFlatTable;
 import org.nextprot.pipeline.statement.elements.runnable.BaseFlowLog;
 import org.nextprot.pipeline.statement.elements.runnable.FlowEventHandler;
-import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
 
 import java.io.FileNotFoundException;
 import java.util.concurrent.BlockingQueue;
-
-import static org.nextprot.pipeline.statement.elements.runnable.BaseFlowablePipelineElement.END_OF_FLOW_STATEMENT;
 
 public class NxFlatRawTableFilter extends BaseFilter {
 
@@ -56,7 +53,7 @@ public class NxFlatRawTableFilter extends BaseFilter {
 
 			out.put(current);
 
-			return current == END_OF_FLOW_STATEMENT;
+			return current == POISONED_STATEMENT;
 		}
 	}
 
@@ -84,7 +81,7 @@ public class NxFlatRawTableFilter extends BaseFilter {
 		@Override
 		public void endOfFlow() {
 
-			sendMessage(getStatementCount()+" statements loaded in table "+ table + " and passed to next filter");
+			sendMessage(getStatementCount()+" healthy statements loaded in table "+ table + " and passed to next filter");
 		}
 	}
 }

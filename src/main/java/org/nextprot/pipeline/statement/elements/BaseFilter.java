@@ -6,7 +6,6 @@ import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.Filter;
 import org.nextprot.pipeline.statement.elements.runnable.BaseFlowLog;
 import org.nextprot.pipeline.statement.elements.runnable.BaseFlowablePipelineElement;
-import org.nextprot.pipeline.statement.elements.runnable.FlowEventHandler;
 import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
 
 import java.io.FileNotFoundException;
@@ -24,12 +23,6 @@ public abstract class BaseFilter extends BasePipelineElement<DuplicableElement> 
 
 		public FlowableFilter(F pipelineElement) {
 			super(pipelineElement);
-		}
-
-		@Override
-		public FlowEventHandler createEventHandler() throws FileNotFoundException {
-
-			return new FlowLog(getThreadName());
 		}
 
 		@Override
@@ -61,7 +54,7 @@ public abstract class BaseFilter extends BasePipelineElement<DuplicableElement> 
 		@Override
 		public void endOfFlow() {
 
-			sendMessage(getStatementCount()+ " filtered");
+			sendMessage(getStatementCount()+ " healthy statements filtered");
 		}
 	}
 }
