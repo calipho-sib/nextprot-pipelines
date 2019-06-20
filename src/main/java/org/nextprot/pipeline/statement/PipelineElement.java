@@ -22,11 +22,11 @@ public interface PipelineElement<E extends PipelineElement> {
 	void pipe(E nextElement);
 
 	/** @return the sink pipe port or null */
-	BlockingQueue<Statement> getSinkPipePort();
-	void setSinkPipePort(BlockingQueue<Statement> queue);
+	BlockingQueue<Statement> getSinkChannel();
+	void setSinkChannel(BlockingQueue<Statement> queue);
 
 	/** @return the source pipe port or null */
-	BlockingQueue<Statement> getSourcePipePort();
+	BlockingQueue<Statement> getSourceChannel();
 
 	/** @return the next element connected to this element */
 	E nextElement();

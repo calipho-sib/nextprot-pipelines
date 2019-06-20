@@ -47,7 +47,7 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 	public void pipe(E nextElement) {
 
 		this.nextElement = nextElement;
-		nextElement.setSinkPipePort(sourcePipePort);
+		nextElement.setSinkChannel(sourcePipePort);
 	}
 
 	@Override
@@ -67,19 +67,19 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 	 * a PipedInputPort thread so that another Pipe thread can connect to it.
 	 **/
 	@Override
-	public BlockingQueue<Statement> getSinkPipePort() {
+	public BlockingQueue<Statement> getSinkChannel() {
 
 		return sinkPipePort;
 	}
 
 	@Override
-	public void setSinkPipePort(BlockingQueue<Statement> queue) {
+	public void setSinkChannel(BlockingQueue<Statement> queue) {
 
 		this.sinkPipePort = queue;
 	}
 
 	@Override
-	public BlockingQueue<Statement> getSourcePipePort() {
+	public BlockingQueue<Statement> getSourceChannel() {
 
 		return sourcePipePort;
 	}

@@ -4,6 +4,7 @@ import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.NxFlatTable;
 import org.nextprot.pipeline.statement.elements.runnable.BaseFlowLog;
 import org.nextprot.pipeline.statement.elements.runnable.FlowEventHandler;
+import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
 
 import java.io.FileNotFoundException;
 import java.util.concurrent.BlockingQueue;
@@ -12,12 +13,11 @@ import static org.nextprot.pipeline.statement.elements.runnable.BaseFlowablePipe
 
 public class NxFlatRawTableFilter extends BaseFilter {
 
-	private final NxFlatTable table;
+	private final NxFlatTable table = NxFlatTable.raw_statements;
 
 	public NxFlatRawTableFilter(int capacity) {
-		super(capacity);
 
-		this.table = NxFlatTable.raw_statements;
+		super(capacity);
 	}
 
 	@Override
@@ -27,9 +27,9 @@ public class NxFlatRawTableFilter extends BaseFilter {
 	}
 
 	@Override
-	public NxFlatRawTableFilter duplicate(int capacity) {
+	public NxFlatRawTableFilter duplicate(int newCapacity) {
 
-		return new NxFlatRawTableFilter(capacity);
+		return new NxFlatRawTableFilter(newCapacity);
 	}
 
 	private static class Flowable extends FlowableFilter<NxFlatRawTableFilter> {

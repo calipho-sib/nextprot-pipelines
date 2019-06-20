@@ -57,8 +57,8 @@ public class PipelineBuilderTest {
 		Pipeline pipeline = new PipelineBuilder()
 				.start(timer)
 				.source(pump)
-				.demuxFilter(c -> new NxFlatRawTableFilter(100), 10)
-				.filter(c -> new NarcolepticFilter(c, 100))
+				//.demuxFilter(c -> new NxFlatRawTableFilter(100), 10)
+				.demuxFilter(c -> new NarcolepticFilter(c, 100), 2)
 				.sink(NxFlatMappedTableSink::new)
 				.build();
 

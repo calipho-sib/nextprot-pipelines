@@ -3,6 +3,7 @@ package org.nextprot.pipeline.statement.elements;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.elements.runnable.FlowEventHandler;
+import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
 
 import java.util.concurrent.BlockingQueue;
 
@@ -26,9 +27,9 @@ public class NarcolepticFilter extends BaseFilter {
 	}
 
 	@Override
-	public NarcolepticFilter duplicate(int capacity) {
+	public DuplicableElement duplicate(int newCapacity) {
 
-		return new NarcolepticFilter(capacity, this.takeANapInMillis);
+		return new NarcolepticFilter(newCapacity, this.takeANapInMillis);
 	}
 
 	@Override

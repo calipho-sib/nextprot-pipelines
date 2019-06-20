@@ -51,9 +51,9 @@ public class Source extends BasePipelineElement<PipelineElement> {
 	}
 
 	@Override
-	public BlockingQueue<Statement> getSinkPipePort() {
+	public BlockingQueue<Statement> getSinkChannel() {
 
-		throw new Error("It is a Source, can't connect to a PipelineElement through this pipe!");
+		throw new Error("It is a Source element, can't connect to a PipelineElement through this channel!");
 	}
 
 	@Override
@@ -154,7 +154,7 @@ public class Source extends BasePipelineElement<PipelineElement> {
 				statement = END_OF_FLOW_STATEMENT;
 			}
 
-			source.getSourcePipePort().put(statement);
+			source.getSourceChannel().put(statement);
 			eh.statementHandled(statement);
 
 			return statement == END_OF_FLOW_STATEMENT;

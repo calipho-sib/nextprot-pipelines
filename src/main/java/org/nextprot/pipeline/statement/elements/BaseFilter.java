@@ -36,7 +36,7 @@ public abstract class BaseFilter extends BasePipelineElement<DuplicableElement> 
 		@Override
 		public boolean handleFlow(F filter) throws Exception {
 
-			return filter(filter.getSinkPipePort(), filter.getSourcePipePort());
+			return filter(filter.getSinkChannel(), filter.getSourceChannel());
 		}
 	}
 

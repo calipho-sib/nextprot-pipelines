@@ -59,6 +59,6 @@ public abstract class BaseFlowablePipelineElement<E extends PipelineElement> imp
 
 	public int capacity() {
 
-		return pipelineElement.getSinkPipePort().remainingCapacity();
+		return pipelineElement.getSinkChannel().remainingCapacity();
 	}
 }

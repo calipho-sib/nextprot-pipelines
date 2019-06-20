@@ -12,12 +12,11 @@ import static org.nextprot.pipeline.statement.elements.runnable.BaseFlowablePipe
 
 public class NxFlatMappedTableSink extends Sink {
 
-	private final NxFlatTable table;
+	private final NxFlatTable table = NxFlatTable.entry_mapped_statements;
 
 	public NxFlatMappedTableSink() {
-		super();
 
-		this.table = NxFlatTable.entry_mapped_statements;
+		super();
 	}
 
 	@Override
@@ -27,7 +26,7 @@ public class NxFlatMappedTableSink extends Sink {
 	}
 
 	@Override
-	public NxFlatMappedTableSink duplicate(int capacity) {
+	public NxFlatMappedTableSink duplicate(int newCapacity) {
 
 		return new NxFlatMappedTableSink();
 	}
@@ -47,7 +46,7 @@ public class NxFlatMappedTableSink extends Sink {
 
 			FlowEventHandler eh = flowEventHandlerHolder.get();
 
-			Statement statement = sink.getSinkPipePort().take();
+			Statement statement = sink.getSinkChannel().take();
 			eh.statementHandled(statement);
 
 			return statement == END_OF_FLOW_STATEMENT;

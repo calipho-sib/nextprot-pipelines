@@ -15,8 +15,8 @@ public abstract class Sink extends BasePipelineElement<DuplicableElement> implem
 	}
 
 	@Override
-	public BlockingQueue<Statement> getSourcePipePort() {
+	public BlockingQueue<Statement> getSourceChannel() {
 
-		throw new Error("It is a sink, can't connect to a PipelineElement through this pipe!");
+		throw new Error("It is a Sink element, can't connect to a PipelineElement through this channel!");
 	}
 }
