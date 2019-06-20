@@ -29,7 +29,7 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 	private boolean hasStarted;
 
 	private final int sinkCapacity;
-	private BlockingQueue<Statement> sinkPipePort;
+	private BlockingQueue<Statement> sinkChannel;
 	private final CircularList<BlockingQueue<Statement>> sourceChannels;
 	private final List<DuplicableElement> nextElements;
 
@@ -192,7 +192,7 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 
 		hasStarted = false;
 
-		sinkPipePort.clear();
+		sinkChannel.clear();
 		createEventHandler().sinkUnpiped();
 
 		for (PipelineElement outputPipelineElement : nextElements) {
@@ -215,7 +215,7 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 
 	@Override
 	public BlockingQueue<Statement> getSinkChannel() {
-		return sinkPipePort;
+		return sinkChannel;
 	}
 
 	@Override
@@ -223,10 +223,10 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 
 		if (sinkCapacity != channel.remainingCapacity()) {
 
-			throw new Error("Cannot set sink channel with capacity "+channel.remainingCapacity() + " in channel port of capacity "+ sinkPipePort);
+			throw new Error("Cannot set sink channel with capacity "+channel.remainingCapacity() + " in channel port of capacity "+ sinkChannel.remainingCapacity());
 		}
 
-		this.sinkPipePort = channel;
+		this.sinkChannel = channel;
 	}
 
 	@Override
@@ -266,7 +266,7 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 
 			sourceChannel.put(current);
 
-			flowEventHandlerHolder.get().statementHandled(current);
+			((FlowLog)flowEventHandlerHolder.get()).statementHandled(current, demultiplexer.sinkChannel, sourceChannel);
 
 			return current == END_OF_FLOW_STATEMENT;
 		}
@@ -280,7 +280,7 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 
 	private static class FlowLog extends BaseFlowLog {
 
-		public FlowLog(String threadName) throws FileNotFoundException {
+		private FlowLog(String threadName) throws FileNotFoundException {
 
 			super(threadName);
 		}
@@ -291,11 +291,10 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 			sendMessage("start distributing flow");
 		}
 
-		@Override
-		public void statementHandled(Statement statement) {
+		private void statementHandled(Statement statement, BlockingQueue<Statement> sinkChannel,
+		                             BlockingQueue<Statement> sourceChannel) {
 
-			super.statementHandled(statement);
-			sendMessage("distributing " + getStatementId(statement) + " to element ");
+			statementHandled("distributing", statement, sinkChannel, sourceChannel);
 		}
 
 		@Override

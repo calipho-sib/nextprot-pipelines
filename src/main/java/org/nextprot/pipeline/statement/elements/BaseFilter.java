@@ -10,8 +10,7 @@ import org.nextprot.pipeline.statement.elements.runnable.FlowEventHandler;
 import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
 
 import java.io.FileNotFoundException;
-
-import static org.nextprot.pipeline.statement.elements.runnable.BaseFlowablePipelineElement.END_OF_FLOW_STATEMENT;
+import java.util.concurrent.BlockingQueue;
 
 
 public abstract class BaseFilter extends BasePipelineElement<DuplicableElement> implements DuplicableElement {
@@ -40,7 +39,7 @@ public abstract class BaseFilter extends BasePipelineElement<DuplicableElement> 
 		}
 	}
 
-	private static class FlowLog extends BaseFlowLog {
+	public static class FlowLog extends BaseFlowLog {
 
 		public FlowLog(String threadName) throws FileNotFoundException {
 
@@ -53,14 +52,10 @@ public abstract class BaseFilter extends BasePipelineElement<DuplicableElement> 
 			sendMessage("start filtering flow");
 		}
 
-		@Override
-		public void statementHandled(Statement statement) {
+		protected void statementHandled(Statement statement, BlockingQueue<Statement> sinkChannel,
+		                              BlockingQueue<Statement> sourceChannel) {
 
-			super.statementHandled(statement);
-
-			if (statement != END_OF_FLOW_STATEMENT) {
-				sendMessage("filter statement "+ getStatementId(statement));
-			}
+			statementHandled("filtering", statement, sinkChannel, sourceChannel);
 		}
 
 		@Override

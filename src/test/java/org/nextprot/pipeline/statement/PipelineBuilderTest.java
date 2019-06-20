@@ -50,7 +50,7 @@ public class PipelineBuilderTest {
 	public void testPipelineWithDemux() throws IOException {
 
 		URL url = new URL("http://kant.sib.swiss:9001/glyconnect/2019-01-22/all-entries.json");
-		Pump<Statement> pump = new Source.WebStatementPump(url, 5000);
+		Pump<Statement> pump = new Source.WebStatementPump(url, 500);
 
 		Timer timer = new Timer();
 
@@ -58,7 +58,7 @@ public class PipelineBuilderTest {
 				.start(timer)
 				.source(pump)
 				//.demuxFilter(c -> new NxFlatRawTableFilter(100), 10)
-				.demuxFilter(c -> new NarcolepticFilter(c, 100), 2)
+				.demuxFilter(NarcolepticFilter::new, 2)
 				.sink(NxFlatMappedTableSink::new)
 				.build();
 

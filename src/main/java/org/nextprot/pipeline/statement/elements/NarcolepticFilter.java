@@ -55,6 +55,7 @@ public class NarcolepticFilter extends BaseFilter {
 
 			Statement current = in.take();
 			eh.statementHandled(current);
+			((BaseFilter.FlowLog)eh).statementHandled(current, in, out);
 
 			takeANap(napTime);
 

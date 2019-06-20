@@ -146,7 +146,7 @@ public class Source extends BasePipelineElement<PipelineElement> {
 		@Override
 		public boolean handleFlow(Source source) throws Exception {
 
-			FlowEventHandler eh = flowEventHandlerHolder.get();
+			FlowLog log = (FlowLog) flowEventHandlerHolder.get();
 
 			Statement statement = source.pump();
 
@@ -155,7 +155,7 @@ public class Source extends BasePipelineElement<PipelineElement> {
 			}
 
 			source.getSourceChannel().put(statement);
-			eh.statementHandled(statement);
+			log.statementHandled(statement, source.getSourceChannel());
 
 			return statement == END_OF_FLOW_STATEMENT;
 		}
@@ -183,11 +183,9 @@ public class Source extends BasePipelineElement<PipelineElement> {
 			sendMessage("pump started (capacity="+ capacity + ")");
 		}
 
-		@Override
-		public void statementHandled(Statement statement) {
+		private void statementHandled(Statement statement, BlockingQueue<Statement> sourceChannel) {
 
-			super.statementHandled(statement);
-			sendMessage("pump statement " + getStatementId(statement));
+			statementHandled("pump", statement, null, sourceChannel);
 		}
 
 		@Override

@@ -52,16 +52,11 @@ public class NxFlatRawTableFilter extends BaseFilter {
 
 			Statement current = in.take();
 
-			load(current);
+			((FlowLog)flowEventHandlerHolder.get()).statementHandled(current, in, out);
 
 			out.put(current);
 
 			return current == END_OF_FLOW_STATEMENT;
-		}
-
-		private void load(Statement statement) {
-
-			flowEventHandlerHolder.get().statementHandled(statement);
 		}
 	}
 
@@ -80,17 +75,10 @@ public class NxFlatRawTableFilter extends BaseFilter {
 			sendMessage("opened");
 		}
 
-		@Override
-		public void statementHandled(Statement statement) {
+		private void statementHandled(Statement statement, BlockingQueue<Statement> sinkChannel,
+		                              BlockingQueue<Statement> sourceChannel) {
 
-			super.statementHandled(statement);
-
-			if (statement == END_OF_FLOW_STATEMENT) {
-				sendMessage(getStatementId(statement) + " transmitted to next filter");
-			}
-			else {
-				sendMessage("load statement " + statement.getStatementId() + " and passed to next filter");
-			}
+			statementHandled("load and transmit", statement, sinkChannel, sourceChannel);
 		}
 
 		@Override
