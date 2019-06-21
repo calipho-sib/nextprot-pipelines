@@ -12,18 +12,18 @@ import java.util.concurrent.BlockingQueue;
  * but cannot serve as a receiver for any other Pipe: it must always be at the beginning,
  * or "source" of the pipe.
  **/
-public class PumpBasedSource extends Source {
+public class PumpingSource extends Source {
 
 	private final Pump<Statement> pump;
 
-	public PumpBasedSource(Pump<Statement> pump) {
+	public PumpingSource(Pump<Statement> pump) {
 
 		super(pump.capacity());
 		this.pump = pump;
 	}
 
 	@Override
-	protected synchronized Statement mine() throws IOException {
+	protected synchronized Statement extract() throws IOException {
 
 		return pump.pump();
 	}

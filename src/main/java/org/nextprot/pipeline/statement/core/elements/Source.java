@@ -4,8 +4,6 @@ import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.PipelineElement;
 import org.nextprot.pipeline.statement.core.elements.flowable.BaseFlowLog;
 import org.nextprot.pipeline.statement.core.elements.flowable.BaseFlowablePipelineElement;
-import org.nextprot.pipeline.statement.core.elements.flowable.FlowEventHandler;
-import org.nextprot.pipeline.statement.core.elements.source.PumpBasedSource;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -59,7 +57,7 @@ public abstract class Source extends BasePipelineElement<PipelineElement> {
 		return new Flowable(this, extractionCapacity(), countPoisonedPillsToProduce());
 	}
 
-	protected abstract Statement mine() throws IOException;
+	protected abstract Statement extract() throws IOException;
 
 	protected abstract int extractionCapacity();
 
@@ -78,9 +76,9 @@ public abstract class Source extends BasePipelineElement<PipelineElement> {
 		@Override
 		public boolean handleFlow(Source source) throws Exception {
 
-			MinerLog log = (MinerLog) getFlowEventHandler();
+			FlowLog log = (FlowLog) getFlowEventHandler();
 
-			Statement statement = source.mine();
+			Statement statement = source.extract();
 
 			if (statement == null) {
 				poisonChannel(source.getSourceChannel());
@@ -104,16 +102,16 @@ public abstract class Source extends BasePipelineElement<PipelineElement> {
 		}
 
 		@Override
-		protected MinerLog createFlowEventHandler() throws FileNotFoundException {
+		protected FlowLog createFlowEventHandler() throws FileNotFoundException {
 
-			return new MinerLog(getThreadName(), capacity);
+			return new FlowLog(getThreadName(), capacity);
 		}
 
-		private static class MinerLog extends BaseFlowLog {
+		private static class FlowLog extends BaseFlowLog {
 
 			private final int capacity;
 
-			private MinerLog(String threadName, int capacity) throws FileNotFoundException {
+			private FlowLog(String threadName, int capacity) throws FileNotFoundException {
 
 				super(threadName);
 				this.capacity = capacity;
@@ -122,12 +120,12 @@ public abstract class Source extends BasePipelineElement<PipelineElement> {
 			@Override
 			public void beginOfFlow() {
 
-				sendMessage("statement mining started (capacity="+ capacity + ")");
+				sendMessage("statement extraction started (capacity="+ capacity + ")");
 			}
 
 			private void statementHandled(Statement statement, BlockingQueue<Statement> sourceChannel) {
 
-				statementHandled("mine", statement, null, sourceChannel);
+				statementHandled("extract", statement, null, sourceChannel);
 			}
 
 			private void poisonedStatementReleased(int pills, BlockingQueue<Statement> sourceChannel) {
@@ -138,7 +136,7 @@ public abstract class Source extends BasePipelineElement<PipelineElement> {
 			@Override
 			public void endOfFlow() {
 
-				sendMessage(getStatementCount()+" statements mined");
+				sendMessage(getStatementCount()+" statements extracted");
 			}
 		}
 	}
