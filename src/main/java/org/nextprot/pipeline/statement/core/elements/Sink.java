@@ -7,6 +7,13 @@ import org.nextprot.pipeline.statement.core.elements.demux.DuplicableElement;
 import java.util.concurrent.BlockingQueue;
 
 
+/**
+ * A sink is a terminal pipeline element - it cannot pipe to another element
+ *
+ *    -----    ------
+ * ==:  F  :==: Sink X
+ *    -----    ------
+ */
 public abstract class Sink extends BasePipelineElement<DuplicableElement> implements DuplicableElement {
 
 	protected Sink() {
@@ -15,8 +22,14 @@ public abstract class Sink extends BasePipelineElement<DuplicableElement> implem
 	}
 
 	@Override
+	public void pipe(DuplicableElement nextElement) {
+
+		throw new Error("It is a SINK element, cannot pipe anything through this channel!");
+	}
+
+	@Override
 	public BlockingQueue<Statement> getSourceChannel() {
 
-		throw new Error("It is a Sink element, can't connect to a PipelineElement through this channel!");
+		throw new Error("It is a SINK element, cannot pipe anything through this channel!");
 	}
 }

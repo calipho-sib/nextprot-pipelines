@@ -2,8 +2,8 @@ package org.nextprot.pipeline.statement.core;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.elements.Sink;
+import org.nextprot.pipeline.statement.core.elements.Source;
 import org.nextprot.pipeline.statement.core.elements.source.Pump;
-import org.nextprot.pipeline.statement.core.elements.source.PumpBasedSource;
 import org.nextprot.pipeline.statement.core.elements.demux.DuplicableElement;
 
 import java.io.FileNotFoundException;
@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 
 public class Pipeline {
 
-	private PumpBasedSource source;
+	private Source source;
 	private List<Thread> threads;
 	private final Monitorable monitorable;
 	private final Log log;
@@ -60,7 +60,7 @@ public class Pipeline {
 
 		do {
 			element.closeValves();
-			element = element.nextElement();
+			element = element.nextSink();
 		}
 		while(element != null);
 	}
@@ -111,7 +111,7 @@ public class Pipeline {
 
 	static class DataCollector {
 
-		private PumpBasedSource source;
+		private Source source;
 		private Monitorable monitorable;
 		private int demuxSourcePipePortCount;
 		private PipelineElement elementBeforeDemux;
@@ -138,11 +138,11 @@ public class Pipeline {
 			this.fromElement = fromElement;
 		}
 
-		public PumpBasedSource getSource() {
+		public Source getSource() {
 			return source;
 		}
 
-		public void setSource(PumpBasedSource source) {
+		public void setSource(Source source) {
 			this.source = source;
 		}
 

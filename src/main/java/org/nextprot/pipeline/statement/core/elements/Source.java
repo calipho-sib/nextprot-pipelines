@@ -5,6 +5,13 @@ import org.nextprot.pipeline.statement.core.PipelineElement;
 
 import java.util.concurrent.BlockingQueue;
 
+/**
+ * A Source is a terminal pipeline element - it cannot pipe to another element
+ *
+ *    -----    ------
+ * ==:  F  :==: Sink X
+ *    -----    ------
+ */
 public abstract class Source extends BasePipelineElement<PipelineElement> {
 
 	/** poisoned statement pill */
@@ -16,16 +23,22 @@ public abstract class Source extends BasePipelineElement<PipelineElement> {
 	}
 
 	@Override
+	public void setSinkChannel(BlockingQueue<Statement> sinkChannel) {
+
+		throw new Error("Cannot set a pipeline element into a SOURCE");
+	}
+
+	@Override
 	public BlockingQueue<Statement> getSinkChannel() {
 
-		throw new Error("It is a Source element, can't connect to a PipelineElement through this channel!");
+		throw new Error("It is a SOURCE element, cannot pipe to a pipeline element through this channel!");
 	}
 
 	protected int countPoisonedPillsToProduce() {
 
 		PipelineElement element = this;
 
-		while ((element = element.nextElement()) != null) {
+		while ((element = element.nextSink()) != null) {
 
 			if (element instanceof Demux) {
 				return ((Demux)element).countSourceChannels();

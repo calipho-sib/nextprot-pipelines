@@ -34,7 +34,7 @@ public class Demultiplexer implements Demux, PipelineElement<DuplicableElement> 
 	private final int sinkCapacity;
 	private BlockingQueue<Statement> sinkChannel;
 	private final CircularList<BlockingQueue<Statement>> sourceChannels;
-	private final List<DuplicableElement> nextElements;
+	private final List<DuplicableElement> nextConnectedSinks;
 	private final ElementEventHandler eventHandler;
 
 	private final AtomicInteger incrementer = new AtomicInteger (-1);
@@ -42,7 +42,7 @@ public class Demultiplexer implements Demux, PipelineElement<DuplicableElement> 
 	public Demultiplexer(int sinkCapacity, int sourceChannelCount) {
 
 		this.sinkCapacity = sinkCapacity;
-		this.nextElements = new ArrayList<>();
+		this.nextConnectedSinks = new ArrayList<>();
 		this.sourceChannels = createSourceChannels(sinkCapacity, sourceChannelCount);
 
 		if (sourceChannels.isEmpty()) {
@@ -103,7 +103,7 @@ public class Demultiplexer implements Demux, PipelineElement<DuplicableElement> 
 
 			duplicatedHead.setSinkChannel(sourceChannel);
 
-			nextElements.add(duplicatedHead);
+			nextConnectedSinks.add(duplicatedHead);
 		}
 
 		// unpipe original (TODO: make elements eligible for GC)
@@ -161,7 +161,7 @@ public class Demultiplexer implements Demux, PipelineElement<DuplicableElement> 
 
 		DuplicableElement element = head;
 
-		while ((element = element.nextElement()) != null) {
+		while ((element = element.nextSink()) != null) {
 
 			pipelineElementList.add(element);
 		}
@@ -187,8 +187,8 @@ public class Demultiplexer implements Demux, PipelineElement<DuplicableElement> 
 		}
 
 		// start the next elements into their own thread
-		for (PipelineElement pipelineElement : nextElements) {
-			pipelineElement.openValves(collector);
+		for (PipelineElement sink : nextConnectedSinks) {
+			sink.openValves(collector);
 		}
 	}
 
@@ -201,9 +201,9 @@ public class Demultiplexer implements Demux, PipelineElement<DuplicableElement> 
 
 		eventHandler.sinkUnpiped();
 
-		for (PipelineElement outputPipelineElement : nextElements) {
+		for (PipelineElement sink : nextConnectedSinks) {
 
-			outputPipelineElement.closeValves();
+			sink.closeValves();
 		}
 	}
 
@@ -250,7 +250,7 @@ public class Demultiplexer implements Demux, PipelineElement<DuplicableElement> 
 	}
 
 	@Override
-	public DuplicableElement nextElement() {
+	public DuplicableElement nextSink() {
 
 		return null;
 	}

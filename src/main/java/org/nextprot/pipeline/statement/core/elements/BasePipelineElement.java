@@ -13,8 +13,8 @@ import java.util.concurrent.BlockingQueue;
 
 
 /**
- * A base class representing a pipeline element with a source channel and a
- * pluggable sink ready to connect through the pipe() method
+ * A base class representing a pipeline element with a source channel and
+ * a pluggable sink ready to connect through the pipe(E) method
  *
  * 1. One unconnected element E1:
  *    -----
@@ -24,10 +24,6 @@ import java.util.concurrent.BlockingQueue;
  *    -----    -----
  *   : E1  :==: E2  :==
  *    -----    -----
- *
- *
- *
- *
  *
  * @param <E>
  *
@@ -78,7 +74,7 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 	}
 
 	@Override
-	public E nextElement() {
+	public E nextSink() {
 
 		return nextElement;
 	}

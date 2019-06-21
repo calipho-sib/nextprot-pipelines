@@ -16,18 +16,18 @@ public interface PipelineElement<E extends PipelineElement> {
 	/** @return the name of pipeline element */
 	String getName();
 
-	/** Pipe the next element after this element */
-	void pipe(E nextElement);
+	/** Pipe the sink element after this element */
+	void pipe(E sink);
 
 	/** @return the sink pipe port or null */
 	BlockingQueue<Statement> getSinkChannel();
-	void setSinkChannel(BlockingQueue<Statement> queue);
+	void setSinkChannel(BlockingQueue<Statement> sinkChannel);
 
 	/** @return the source pipe port or null */
 	BlockingQueue<Statement> getSourceChannel();
 
 	/** @return the next piped element */
-	E nextElement();
+	E nextSink();
 
 	/**
 	 * Open the flow processing in a new thread and open also subsequent pipeline elements
