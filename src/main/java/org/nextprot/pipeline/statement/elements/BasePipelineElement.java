@@ -11,27 +11,47 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 
+/**
+ * A base class representing a pipeline element with a source channel and a
+ * pluggable sink ready to connect through the pipe() method
+ *
+ * 1. One unconnected element E1:
+ *    -----
+ *   : E1  :==
+ *    -----
+ * 2. Two connected elements (after E1.pipe(E2))
+ *    -----    -----
+ *   : E1  :==: E2  :==
+ *    -----    -----
+ *
+ *
+ *
+ *
+ *
+ * @param <E>
+ *
+ * WARNING: Not thread safe, should run on a single thread !
+ */
 public abstract class BasePipelineElement<E extends PipelineElement> implements PipelineElement<E> {
 
-	private final ElementEventHandler eventHandler;
-
-	private volatile boolean valvesOpened;
+	private boolean valvesOpened;
 	private E nextElement = null;
 
-	private final BlockingQueue<Statement> sourcePipePort;
-	private BlockingQueue<Statement> sinkPipePort;
+	private final BlockingQueue<Statement> sourceChannel;
+	private BlockingQueue<Statement> sinkChannel;
+	private final ElementEventHandler eventHandler;
 
 	public BasePipelineElement(int sourceCapacity) {
 
 		this(new ArrayBlockingQueue<>(sourceCapacity));
 	}
 
-	public BasePipelineElement(BlockingQueue<Statement> sourcePipePort) {
+	public BasePipelineElement(BlockingQueue<Statement> sourceChannel) {
 
-		this.sourcePipePort = sourcePipePort;
+		this.sourceChannel = sourceChannel;
 
 		try {
-			eventHandler = createEventHandler();
+			eventHandler = createElementEventHandler();
 		} catch (FileNotFoundException e) {
 			throw new IllegalStateException(e);
 		}
@@ -47,7 +67,7 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 	public void pipe(E nextElement) {
 
 		this.nextElement = nextElement;
-		nextElement.setSinkChannel(sourcePipePort);
+		nextElement.setSinkChannel(sourceChannel);
 	}
 
 	@Override
@@ -69,23 +89,23 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 	@Override
 	public BlockingQueue<Statement> getSinkChannel() {
 
-		return sinkPipePort;
+		return sinkChannel;
 	}
 
 	@Override
-	public void setSinkChannel(BlockingQueue<Statement> queue) {
+	public void setSinkChannel(BlockingQueue<Statement> sinkChannel) {
 
-		this.sinkPipePort = queue;
+		this.sinkChannel = sinkChannel;
+		eventHandler.sinkPiped();
 	}
 
 	@Override
 	public BlockingQueue<Statement> getSourceChannel() {
 
-		return sourcePipePort;
+		return sourceChannel;
 	}
 
-	@Override
-	public ElementEventHandler createEventHandler() throws FileNotFoundException {
+	protected ElementEventHandler createElementEventHandler() throws FileNotFoundException {
 
 		//return new ElementEventHandler.Mute();
 		return new ElementLog(getName());
@@ -120,18 +140,14 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 
 		eventHandler.valvesClosed();
 
-		if (sinkPipePort != null) {
+		if (sinkChannel != null) {
 
-			sinkPipePort.clear(); // drained
 			eventHandler.sinkUnpiped();
 		}
-		if (sourcePipePort != null) {
+		if (sourceChannel != null) {
 
-			sourcePipePort.clear(); // drained
 			eventHandler.sourceUnpiped();
 		}
-
-		eventHandler.disconnected();
 	}
 
 	public static class ElementLog extends BaseLog implements ElementEventHandler {
@@ -148,27 +164,27 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 		}
 
 		@Override
+		public void sinkPiped() {
+
+			sendMessage("sink channel port connected");
+		}
+
+		@Override
 		public void sinkUnpiped() {
 
-			sendMessage("sink disconnected");
+			sendMessage("sink channel port disconnected");
 		}
 
 		@Override
 		public void sourceUnpiped() {
 
-			sendMessage("source disconnected");
+			sendMessage("source channel port disconnected");
 		}
 
 		@Override
 		public void valvesClosed() {
 
 			sendMessage("valves closed");
-		}
-
-		@Override
-		public void disconnected() {
-
-			sendMessage("disconnected");
 		}
 	}
 }

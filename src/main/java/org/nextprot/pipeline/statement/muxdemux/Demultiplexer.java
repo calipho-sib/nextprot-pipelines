@@ -26,12 +26,13 @@ import java.util.stream.Collectors;
  */
 public class Demultiplexer implements PipelineElement<DuplicableElement> {
 
-	private boolean hasStarted;
+	private boolean valvesOpened;
 
 	private final int sinkCapacity;
 	private BlockingQueue<Statement> sinkChannel;
 	private final CircularList<BlockingQueue<Statement>> sourceChannels;
 	private final List<DuplicableElement> nextElements;
+	private final ElementEventHandler eventHandler;
 
 	private final AtomicInteger incrementer = new AtomicInteger (-1);
 
@@ -44,6 +45,12 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 		if (sourceChannels.isEmpty()) {
 
 			throw new IllegalArgumentException(getName()+": cannot create source channels");
+		}
+
+		try {
+			eventHandler = createElementEventHandler();
+		} catch (FileNotFoundException e) {
+			throw new IllegalStateException(e);
 		}
 	}
 
@@ -162,13 +169,16 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 	@Override
 	public void openValves(List<Thread> collector) {
 
-		if (!hasStarted) {
-			hasStarted = true;
+		if (!valvesOpened) {
+			valvesOpened = true;
+
 			FlowablePipelineElement runnable = newFlowable();
 
 			Thread thread = new Thread(runnable);
 			thread.setName(runnable.getThreadName());
 			thread.start();
+
+			eventHandler.valvesOpened();
 
 			collector.add(thread);
 		}
@@ -180,28 +190,27 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 	}
 
 	@Override
-	public FlowablePipelineElement newFlowable() {
-
-		return new Flowable(this);
-	}
-
-	@Override
 	public void closeValves() throws IOException {
 
-		hasStarted = false;
+		valvesOpened = false;
 
-		sinkChannel.clear();
-		createEventHandler().sinkUnpiped();
+		eventHandler.valvesClosed();
+
+		eventHandler.sinkUnpiped();
 
 		for (PipelineElement outputPipelineElement : nextElements) {
 
 			outputPipelineElement.closeValves();
 		}
-		createEventHandler().valvesClosed();
 	}
 
 	@Override
-	public ElementEventHandler createEventHandler() throws FileNotFoundException {
+	public FlowablePipelineElement newFlowable() {
+
+		return new Flowable(this);
+	}
+
+	private ElementEventHandler createElementEventHandler() throws FileNotFoundException {
 
 		//return new ElementEventHandler.Mute();
 		return new BasePipelineElement.ElementLog(getName());
@@ -240,7 +249,7 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 	@Override
 	public DuplicableElement nextElement() {
 
-		return nextElements.get(incrementer.get());
+		return null;
 	}
 
 	private static class CircularList<E> extends ArrayList<E> {

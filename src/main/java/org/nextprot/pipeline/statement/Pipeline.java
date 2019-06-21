@@ -25,12 +25,12 @@ public class Pipeline {
 
 	public void openValves() {
 
-	threads = new ArrayList<>();
+		threads = new ArrayList<>();
 
 		source.openValves(threads);
 
 		for (Thread thread : threads) {
-			System.out.println(thread.getName() + " valves: opened");
+			System.out.println("[Pipeline] "+thread.getName() + " valves: opened");
 		}
 		monitorable.started();
 	}
@@ -42,9 +42,9 @@ public class Pipeline {
 
 		for (Thread thread : threads) {
 			thread.join();
-			System.out.println(thread.getName() + " valves: closed");
+			System.out.println("[Pipeline] "+thread.getName() + " valves: closed");
 		}
-		//closePipelineValves();
+		closePipelineValves();
 
 		monitorable.ended();
 	}

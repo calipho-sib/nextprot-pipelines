@@ -26,7 +26,7 @@ import java.util.concurrent.BlockingQueue;
  **/
 public class Source extends BasePipelineElement<PipelineElement> {
 
-	private Pump<Statement> pump;
+	private final Pump<Statement> pump;
 
 	public Source(Pump<Statement> pump) {
 
@@ -34,13 +34,13 @@ public class Source extends BasePipelineElement<PipelineElement> {
 		this.pump = pump;
 	}
 
-	private Statement pump() throws IOException {
+	private synchronized Statement pump() throws IOException {
 
 		return pump.pump();
 	}
 
 	@Override
-	public void closeValves() throws IOException {
+	public synchronized void closeValves() throws IOException {
 
 		pump.stop();
 		super.closeValves();

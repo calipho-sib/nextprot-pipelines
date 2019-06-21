@@ -5,12 +5,13 @@ import org.nextprot.pipeline.statement.PipelineElement;
 
 public abstract class BaseFlowablePipelineElement<E extends PipelineElement> implements FlowablePipelineElement<E> {
 
-	private static int FLOWABLE_NUMBER;
+	private static int FLOWABLE_NUMBER = 0;
 
 	private static synchronized int NEXT_FLOWABLE_NUM() {
 		return FLOWABLE_NUMBER++;
 	}
 
+	// Warning: this is a mutable object that should perform synchronizations for this Flowable to remain thread-safe
 	private final E pipelineElement;
 	private final String name;
 	private FlowEventHandler flowEventHandler;
@@ -26,6 +27,7 @@ public abstract class BaseFlowablePipelineElement<E extends PipelineElement> imp
 		return new FlowEventHandler.Mute();
 	}
 
+	/* Thread-confined: owned exclusively by and confined to one Flowable thread */
 	@Override
 	public FlowEventHandler getFlowEventHandler() {
 
@@ -36,7 +38,6 @@ public abstract class BaseFlowablePipelineElement<E extends PipelineElement> imp
 	public void run() {
 
 		try {
-			// Thread-confined: owned exclusively by and confined to one Flowable thread
 			flowEventHandler = createFlowEventHandler();
 			flowEventHandler.beginOfFlow();
 

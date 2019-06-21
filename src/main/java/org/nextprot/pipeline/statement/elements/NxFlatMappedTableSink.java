@@ -61,7 +61,7 @@ public class NxFlatMappedTableSink extends Sink {
 
 		private final NxFlatTable table;
 
-		public FlowLog(String threadName, NxFlatTable table) throws FileNotFoundException {
+		private FlowLog(String threadName, NxFlatTable table) throws FileNotFoundException {
 
 			super(threadName);
 			this.table = table;

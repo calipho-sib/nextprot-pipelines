@@ -1,10 +1,8 @@
 package org.nextprot.pipeline.statement;
 
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.elements.ElementEventHandler;
 import org.nextprot.pipeline.statement.elements.runnable.FlowablePipelineElement;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -28,7 +26,7 @@ public interface PipelineElement<E extends PipelineElement> {
 	/** @return the source pipe port or null */
 	BlockingQueue<Statement> getSourceChannel();
 
-	/** @return the next element connected to this element */
+	/** @return the next piped element */
 	E nextElement();
 
 	/**
@@ -44,6 +42,4 @@ public interface PipelineElement<E extends PipelineElement> {
 	void closeValves() throws IOException;
 
 	FlowablePipelineElement newFlowable();
-
-	ElementEventHandler createEventHandler() throws FileNotFoundException;
 }
