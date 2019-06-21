@@ -6,7 +6,7 @@ import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.elements.NarcolepticFilter;
 import org.nextprot.pipeline.statement.elements.NxFlatRawTableFilter;
 import org.nextprot.pipeline.statement.elements.NxFlatMappedTableSink;
-import org.nextprot.pipeline.statement.elements.Source;
+import org.nextprot.pipeline.statement.elements.PumpBasedSource;
 
 import java.io.IOException;
 import java.net.URL;
@@ -22,7 +22,7 @@ public class PipelineBuilderTest {
 	public void testPipeline() throws IOException {
 
 		URL url = new URL("http://kant.sib.swiss:9001/glyconnect/2019-01-22/all-entries.json");
-		Pump<Statement> pump = new Source.WebStatementPump(url, 100);
+		Pump<Statement> pump = new PumpBasedSource.WebStatementPump(url, 100);
 
 		Timer timer = new Timer();
 
@@ -50,7 +50,7 @@ public class PipelineBuilderTest {
 	public void testPipelineWithDemux() throws IOException {
 
 		URL url = new URL("http://kant.sib.swiss:9001/glyconnect/2019-01-22/all-entries.json");
-		Pump<Statement> pump = new Source.WebStatementPump(url, 500);
+		Pump<Statement> pump = new PumpBasedSource.WebStatementPump(url, 500);
 
 		Timer timer = new Timer();
 

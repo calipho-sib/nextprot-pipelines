@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class StatementSourceServerTest {
+public class StatementPumpBasedSourceServerTest {
 
 	@Test
 	public void testConstr() throws IOException {

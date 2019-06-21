@@ -2,6 +2,7 @@ package org.nextprot.pipeline.statement.muxdemux;
 
 
 import org.nextprot.commons.statements.Statement;
+import org.nextprot.pipeline.statement.Demux;
 import org.nextprot.pipeline.statement.PipelineElement;
 import org.nextprot.pipeline.statement.elements.BasePipelineElement;
 import org.nextprot.pipeline.statement.elements.ElementEventHandler;
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
  * De-multiplexer receive statements via one source pipe and
  * load balance them to multiple sink pipes.
  */
-public class Demultiplexer implements PipelineElement<DuplicableElement> {
+public class Demultiplexer implements Demux, PipelineElement<DuplicableElement> {
 
 	private boolean valvesOpened;
 

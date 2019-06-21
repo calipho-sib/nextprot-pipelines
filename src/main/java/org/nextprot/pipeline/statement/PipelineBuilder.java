@@ -2,7 +2,7 @@ package org.nextprot.pipeline.statement;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.elements.Sink;
-import org.nextprot.pipeline.statement.elements.Source;
+import org.nextprot.pipeline.statement.elements.PumpBasedSource;
 import org.nextprot.pipeline.statement.muxdemux.Demultiplexer;
 import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
 
@@ -25,7 +25,7 @@ public class PipelineBuilder implements Pipeline.StartStep {
 		@Override
 		public Pipeline.FilterStep source(Pump<Statement> pump) {
 
-			final Source source = new Source(pump);
+			final PumpBasedSource source = new PumpBasedSource(pump);
 			dataCollector.setSource(source);
 
 			return new FilterStep(source);

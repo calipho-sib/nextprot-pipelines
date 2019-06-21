@@ -2,7 +2,7 @@ package org.nextprot.pipeline.statement;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.elements.Sink;
-import org.nextprot.pipeline.statement.elements.Source;
+import org.nextprot.pipeline.statement.elements.PumpBasedSource;
 import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
 
 import java.io.IOException;
@@ -13,7 +13,7 @@ import java.util.function.Supplier;
 
 public class Pipeline {
 
-	private Source source;
+	private PumpBasedSource source;
 	private List<Thread> threads;
 	private final Monitorable monitorable;
 
@@ -106,7 +106,7 @@ public class Pipeline {
 
 	static class DataCollector {
 
-		private Source source;
+		private PumpBasedSource source;
 		private Monitorable monitorable;
 		private int demuxSourcePipePortCount;
 		private PipelineElement elementBeforeDemux;
@@ -133,11 +133,11 @@ public class Pipeline {
 			this.fromElement = fromElement;
 		}
 
-		public Source getSource() {
+		public PumpBasedSource getSource() {
 			return source;
 		}
 
-		public void setSource(Source source) {
+		public void setSource(PumpBasedSource source) {
 			this.source = source;
 		}
 

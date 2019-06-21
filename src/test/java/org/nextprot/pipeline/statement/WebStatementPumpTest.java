@@ -4,7 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.elements.Source;
+import org.nextprot.pipeline.statement.elements.PumpBasedSource;
 
 import java.io.IOException;
 import java.net.URL;
@@ -14,7 +14,7 @@ public class WebStatementPumpTest {
 	@Test
 	public void pump() throws IOException {
 
-		Source.WebStatementPump pump = new Source.WebStatementPump(mockURL());
+		PumpBasedSource.WebStatementPump pump = new PumpBasedSource.WebStatementPump(mockURL());
 
 		Assert.assertNotNull(pump.pump());
 		Assert.assertNull(pump.pump());
@@ -23,7 +23,7 @@ public class WebStatementPumpTest {
 	@Test
 	public void isNotEmpty() throws IOException {
 
-		Source.WebStatementPump pump = new Source.WebStatementPump(mockURL());
+		PumpBasedSource.WebStatementPump pump = new PumpBasedSource.WebStatementPump(mockURL());
 
 		Assert.assertFalse(pump.isEmpty());
 	}
@@ -31,7 +31,7 @@ public class WebStatementPumpTest {
 	@Test
 	public void isEmptyAfterOnePump() throws IOException {
 
-		Source.WebStatementPump pump = new Source.WebStatementPump(mockURL());
+		PumpBasedSource.WebStatementPump pump = new PumpBasedSource.WebStatementPump(mockURL());
 
 		Assert.assertFalse(pump.isEmpty());
 		Assert.assertTrue(pump.isEmpty());
