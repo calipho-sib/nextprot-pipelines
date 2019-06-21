@@ -52,10 +52,9 @@ public class NarcolepticFilter extends BaseFilter {
 		@Override
 		public boolean filter(BlockingQueue<Statement> in, BlockingQueue<Statement> out) throws Exception {
 
-			FlowLog eh = (FlowLog) flowEventHandlerHolder.get();
+			FlowLog eh = (FlowLog) getFlowEventHandler();
 
 			Statement current = in.take();
-			eh.statementHandled(current);
 			eh.statementHandled(current, in, out);
 
 			takeANap(napTime);
@@ -66,7 +65,7 @@ public class NarcolepticFilter extends BaseFilter {
 		}
 
 		@Override
-		public FlowLog createEventHandler() throws FileNotFoundException {
+		protected FlowEventHandler createFlowEventHandler() throws FileNotFoundException {
 
 			return new FlowLog(getThreadName());
 		}
@@ -80,14 +79,6 @@ public class NarcolepticFilter extends BaseFilter {
 					System.err.println(e.getMessage());
 				}
 			}
-		}
-	}
-
-	private static class FlowLog extends BaseFilter.FlowLog {
-
-		private FlowLog(String threadName) throws FileNotFoundException {
-
-			super(threadName);
 		}
 	}
 }

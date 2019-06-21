@@ -157,7 +157,7 @@ public class Source extends BasePipelineElement<PipelineElement> {
 		@Override
 		public boolean handleFlow(Source source) throws Exception {
 
-			FlowLog log = (FlowLog) flowEventHandlerHolder.get();
+			FlowLog log = (FlowLog) getFlowEventHandler();
 
 			Statement statement = source.pump();
 
@@ -183,7 +183,7 @@ public class Source extends BasePipelineElement<PipelineElement> {
 		}
 
 		@Override
-		public FlowEventHandler createEventHandler() throws FileNotFoundException {
+		protected FlowEventHandler createFlowEventHandler() throws FileNotFoundException {
 
 			return new FlowLog(getThreadName(), capacity);
 		}
@@ -193,7 +193,7 @@ public class Source extends BasePipelineElement<PipelineElement> {
 
 		private final int capacity;
 
-		public FlowLog(String threadName, int capacity) throws FileNotFoundException {
+		private FlowLog(String threadName, int capacity) throws FileNotFoundException {
 
 			super(threadName);
 			this.capacity = capacity;

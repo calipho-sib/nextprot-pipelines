@@ -39,7 +39,7 @@ public class NxFlatRawTableFilter extends BaseFilter {
 		}
 
 		@Override
-		public FlowEventHandler createEventHandler() throws FileNotFoundException {
+		protected FlowEventHandler createFlowEventHandler() throws Exception {
 
 			return new FlowLog(getThreadName(), table);
 		}
@@ -49,7 +49,7 @@ public class NxFlatRawTableFilter extends BaseFilter {
 
 			Statement current = in.take();
 
-			((FlowLog)flowEventHandlerHolder.get()).statementHandled(current, in, out);
+			((FlowLog)getFlowEventHandler()).statementHandled(current, in, out);
 
 			out.put(current);
 

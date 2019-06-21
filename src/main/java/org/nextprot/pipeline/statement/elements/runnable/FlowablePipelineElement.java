@@ -4,8 +4,6 @@ package org.nextprot.pipeline.statement.elements.runnable;
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.PipelineElement;
 
-import java.io.FileNotFoundException;
-
 public interface FlowablePipelineElement<E extends PipelineElement> extends Runnable {
 
 	/** poisoned statement pill */
@@ -17,5 +15,5 @@ public interface FlowablePipelineElement<E extends PipelineElement> extends Runn
 	/** @return the name of thread handling this flow */
 	String getThreadName();
 
-	FlowEventHandler createEventHandler() throws FileNotFoundException;
+	FlowEventHandler getFlowEventHandler();
 }

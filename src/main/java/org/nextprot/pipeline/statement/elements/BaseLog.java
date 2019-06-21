@@ -39,6 +39,6 @@ public abstract class BaseLog {
 
 	protected synchronized String getStatementId(Statement statement) {
 
-		return ((statement == POISONED_STATEMENT) ? "END_OF_FLOW_TOKEN" : statement.getStatementId());
+		return ((statement == POISONED_STATEMENT) ? "POISONED_STATEMENT" : statement.getStatementId());
 	}
 }

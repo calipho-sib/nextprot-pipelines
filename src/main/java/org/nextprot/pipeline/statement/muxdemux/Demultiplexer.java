@@ -269,7 +269,7 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 
 			sourceChannel.put(current);
 
-			((FlowLog)flowEventHandlerHolder.get()).statementHandled(current, demultiplexer.sinkChannel, sourceChannel);
+			((FlowLog)getFlowEventHandler()).statementHandled(current, demultiplexer.sinkChannel, sourceChannel);
 
 			if (current == POISONED_STATEMENT) {
 				poisonedStatementReceived++;
@@ -279,7 +279,7 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 		}
 
 		@Override
-		public FlowEventHandler createEventHandler() throws FileNotFoundException {
+		protected FlowEventHandler createFlowEventHandler() throws FileNotFoundException {
 
 			return new FlowLog(getThreadName());
 		}

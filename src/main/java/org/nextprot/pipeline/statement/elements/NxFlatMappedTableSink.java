@@ -44,16 +44,14 @@ public class NxFlatMappedTableSink extends Sink {
 		@Override
 		public boolean handleFlow(NxFlatMappedTableSink sink) throws Exception {
 
-			FlowEventHandler eh = flowEventHandlerHolder.get();
-
 			Statement statement = sink.getSinkChannel().take();
-			eh.statementHandled(statement);
+			getFlowEventHandler().statementHandled(statement);
 
 			return statement == POISONED_STATEMENT;
 		}
 
 		@Override
-		public FlowEventHandler createEventHandler() throws FileNotFoundException {
+		protected FlowEventHandler createFlowEventHandler() throws FileNotFoundException {
 
 			return new FlowLog(getThreadName(), table);
 		}

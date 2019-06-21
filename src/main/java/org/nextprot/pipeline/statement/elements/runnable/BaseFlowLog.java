@@ -45,11 +45,11 @@ public abstract class BaseFlowLog extends BaseLog implements FlowEventHandler {
 				+ ((sourceChannel != null) ? " to source channel #" + sourceChannel.hashCode() : ""));
 	}
 
-	protected synchronized int incrStatementCount() {
+	private int incrStatementCount() {
 		return statementCount++;
 	}
 
-	protected synchronized int getStatementCount() {
+	protected int getStatementCount() {
 		return statementCount;
 	}
 }
