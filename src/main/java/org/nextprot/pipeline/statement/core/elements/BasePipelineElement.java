@@ -1,6 +1,7 @@
 package org.nextprot.pipeline.statement.core.elements;
 
 import org.nextprot.commons.statements.Statement;
+import org.nextprot.pipeline.statement.core.BaseLog;
 import org.nextprot.pipeline.statement.core.PipelineElement;
 import org.nextprot.pipeline.statement.core.elements.flowable.FlowablePipelineElement;
 

@@ -1,4 +1,4 @@
-package org.nextprot.pipeline.statement.core.elements;
+package org.nextprot.pipeline.statement.core;
 
 
 import org.nextprot.commons.statements.Statement;
@@ -35,7 +35,7 @@ public abstract class BaseLog {
 
 	protected synchronized void sendMessage(String message) {
 
-		printStream.println(threadName + ": " + message);
+		printStream.println("["+threadName + "] : " + message);
 	}
 
 	protected synchronized String getStatementId(Statement statement) {

@@ -2,7 +2,7 @@ package org.nextprot.pipeline.statement.core.elements.flowable;
 
 
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.core.elements.BaseLog;
+import org.nextprot.pipeline.statement.core.BaseLog;
 
 import java.io.FileNotFoundException;
 import java.util.concurrent.BlockingQueue;

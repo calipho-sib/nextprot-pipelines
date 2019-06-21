@@ -6,6 +6,7 @@ import org.nextprot.pipeline.statement.core.elements.source.Pump;
 import org.nextprot.pipeline.statement.core.elements.source.PumpBasedSource;
 import org.nextprot.pipeline.statement.core.elements.demux.DuplicableElement;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,11 +18,14 @@ public class Pipeline {
 	private PumpBasedSource source;
 	private List<Thread> threads;
 	private final Monitorable monitorable;
+	private final Log log;
 
-	public Pipeline(DataCollector dataCollector) {
+	public Pipeline(DataCollector dataCollector) throws FileNotFoundException {
 
 		source = dataCollector.getSource();
 		monitorable = dataCollector.getMonitorable();
+
+		log = new Log();
 	}
 
 	public void openValves() {
@@ -31,7 +35,7 @@ public class Pipeline {
 		source.openValves(threads);
 
 		for (Thread thread : threads) {
-			System.out.println("[Pipeline] "+thread.getName() + " valves: opened");
+			log.valvesOpened(thread);
 		}
 		monitorable.started();
 	}
@@ -43,7 +47,7 @@ public class Pipeline {
 
 		for (Thread thread : threads) {
 			thread.join();
-			System.out.println("[Pipeline] "+thread.getName() + " valves: closed");
+			log.valvesClosed(thread);
 		}
 		closePipelineValves();
 
@@ -86,7 +90,7 @@ public class Pipeline {
 
 	public interface TerminateStep {
 
-		Pipeline build() throws IOException;
+		Pipeline build() throws Exception;
 	}
 
 	public interface Monitorable {
@@ -150,4 +154,21 @@ public class Pipeline {
 			this.monitorable = monitorable;
 		}
 	}
-}
+
+	public static class Log extends BaseLog {
+
+		public Log() throws FileNotFoundException {
+
+			super("Pipeline");
+		}
+
+		public void valvesOpened(Thread thread) {
+
+			sendMessage(thread.getName() + " valves: opened");
+		}
+
+		public void valvesClosed(Thread thread) {
+
+			sendMessage(thread.getName() + " valves: closed");
+		}
+	}}

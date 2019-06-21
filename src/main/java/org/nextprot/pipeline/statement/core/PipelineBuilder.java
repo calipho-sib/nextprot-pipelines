@@ -76,7 +76,7 @@ public class PipelineBuilder implements Pipeline.StartStep {
 		public class TerminateStep implements Pipeline.TerminateStep {
 
 			@Override
-			public Pipeline build() {
+			public Pipeline build() throws Exception {
 
 				if (dataCollector.getDemuxFromElement() != null) {
 

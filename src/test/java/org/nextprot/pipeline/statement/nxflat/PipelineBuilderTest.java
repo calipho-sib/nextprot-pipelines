@@ -22,7 +22,7 @@ public class PipelineBuilderTest {
 
 	// 250" for 100ms naps
 	@Test
-	public void testPipeline() throws IOException {
+	public void testPipeline() throws Exception {
 
 		URL url = new URL("http://kant.sib.swiss:9001/glyconnect/2019-01-22/all-entries.json");
 		Pump<Statement> pump = new WebStatementPump(url, 100);
@@ -50,7 +50,7 @@ public class PipelineBuilderTest {
 
 	// 25" for 100ms naps
 	@Test
-	public void testPipelineWithDemux() throws IOException {
+	public void testPipelineWithDemux() throws Exception {
 
 		URL url = new URL("http://kant.sib.swiss:9001/glyconnect/2019-01-22/all-entries.json");
 		Pump<Statement> pump = new WebStatementPump(url, 500);
