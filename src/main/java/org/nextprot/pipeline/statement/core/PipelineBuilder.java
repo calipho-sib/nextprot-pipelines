@@ -53,12 +53,12 @@ public class PipelineBuilder implements Pipeline.StartStep {
 		}
 
 		@Override
-		public Pipeline.FilterStep demuxFilter(Function<Integer, DuplicableElement> filterProvider, int sourcePipePortCount) {
+		public Pipeline.FilterStep split(Function<Integer, DuplicableElement> filterProvider, int splitNumber) {
 
 			DuplicableElement pipedFilter = filterProvider.apply(previousElement.getSourceChannel().remainingCapacity());
 			previousElement.pipe(pipedFilter);
 
-			dataCollector.setDemuxSourcePipePortCount(sourcePipePortCount);
+			dataCollector.setDemuxSourcePipePortCount(splitNumber);
 			dataCollector.setDemuxFromElement(previousElement, pipedFilter);
 
 			return new FilterStep(pipedFilter);
