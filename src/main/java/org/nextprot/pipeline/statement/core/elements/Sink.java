@@ -10,9 +10,9 @@ import java.util.concurrent.BlockingQueue;
 /**
  * A sink is a terminal pipeline element - it cannot pipe to another element
  *
- *    -----    ------
- * ==:  F  :==: Sink X
- *    -----    ------
+ *        -----    ------
+ * ... ==<  F  >==< Sink |
+ *        -----    ------
  */
 public abstract class Sink extends BasePipelineElement<DuplicableElement> implements DuplicableElement {
 

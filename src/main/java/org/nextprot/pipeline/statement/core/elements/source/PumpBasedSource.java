@@ -2,11 +2,7 @@ package org.nextprot.pipeline.statement.core.elements.source;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.elements.Source;
-import org.nextprot.pipeline.statement.core.elements.flowable.BaseFlowLog;
-import org.nextprot.pipeline.statement.core.elements.flowable.BaseFlowablePipelineElement;
-import org.nextprot.pipeline.statement.core.elements.flowable.FlowEventHandler;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 
@@ -26,9 +22,16 @@ public class PumpBasedSource extends Source {
 		this.pump = pump;
 	}
 
-	private synchronized Statement pump() throws IOException {
+	@Override
+	protected synchronized Statement mine() throws IOException {
 
 		return pump.pump();
+	}
+
+	@Override
+	protected int extractionCapacity() {
+
+		return pump.capacity();
 	}
 
 	@Override
@@ -48,85 +51,5 @@ public class PumpBasedSource extends Source {
 	public Flowable newFlowable() {
 
 		return new Flowable(this, pump.capacity(), countPoisonedPillsToProduce());
-	}
-
-	private static class Flowable extends BaseFlowablePipelineElement<PumpBasedSource> {
-
-		private final int capacity;
-		private final int pills;
-
-		private Flowable(PumpBasedSource source, int capacity, int pills) {
-
-			super(source);
-			this.capacity = capacity;
-			this.pills = pills;
-		}
-
-		@Override
-		public boolean handleFlow(PumpBasedSource source) throws Exception {
-
-			FlowLog log = (FlowLog) getFlowEventHandler();
-
-			Statement statement = source.pump();
-
-			if (statement == null) {
-				poisonChannel(source.getSourceChannel());
-				log.poisonedStatementReleased(pills, source.getSourceChannel());
-				return true;
-			}
-			else {
-				source.getSourceChannel().put(statement);
-				log.statementHandled(statement, source.getSourceChannel());
-			}
-
-			return false;
-		}
-
-		private void poisonChannel(BlockingQueue<Statement> sourceChannel) throws InterruptedException {
-
-			for (int i=0 ; i<pills ; i++) {
-
-				sourceChannel.put(POISONED_STATEMENT);
-			}
-		}
-
-		@Override
-		protected FlowEventHandler createFlowEventHandler() throws FileNotFoundException {
-
-			return new FlowLog(getThreadName(), capacity);
-		}
-
-		private static class FlowLog extends BaseFlowLog {
-
-			private final int capacity;
-
-			private FlowLog(String threadName, int capacity) throws FileNotFoundException {
-
-				super(threadName);
-				this.capacity = capacity;
-			}
-
-			@Override
-			public void beginOfFlow() {
-
-				sendMessage("pump started (capacity="+ capacity + ")");
-			}
-
-			private void statementHandled(Statement statement, BlockingQueue<Statement> sourceChannel) {
-
-				statementHandled("pump", statement, null, sourceChannel);
-			}
-
-			private void poisonedStatementReleased(int pills, BlockingQueue<Statement> sourceChannel) {
-
-				sendMessage(pills+" poisoned statement"+(pills>1 ? "s":"")+" released into the source channel #" + sourceChannel.hashCode());
-			}
-
-			@Override
-			public void endOfFlow() {
-
-				sendMessage(getStatementCount()+" statements pumped");
-			}
-		}
 	}
 }
