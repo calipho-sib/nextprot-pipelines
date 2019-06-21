@@ -1,4 +1,4 @@
-package org.nextprot.pipeline.statement;
+package org.nextprot.pipeline.statement.elements;
 
 
 import org.nextprot.commons.statements.Statement;

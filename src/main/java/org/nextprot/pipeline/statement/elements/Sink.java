@@ -2,7 +2,7 @@ package org.nextprot.pipeline.statement.elements;
 
 
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
+import org.nextprot.pipeline.statement.elements.demux.DuplicableElement;
 
 import java.util.concurrent.BlockingQueue;
 

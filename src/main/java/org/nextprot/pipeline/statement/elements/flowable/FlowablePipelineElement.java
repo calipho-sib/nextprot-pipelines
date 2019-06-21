@@ -1,13 +1,9 @@
-package org.nextprot.pipeline.statement.elements.runnable;
+package org.nextprot.pipeline.statement.elements.flowable;
 
 
-import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.PipelineElement;
 
 public interface FlowablePipelineElement<E extends PipelineElement> extends Runnable {
-
-	/** poisoned statement pill */
-	Statement POISONED_STATEMENT = new Statement();
 
 	/** handle the current flow and @return true if the flow has been poisoned */
 	boolean handleFlow(E pipelineElement) throws Exception;

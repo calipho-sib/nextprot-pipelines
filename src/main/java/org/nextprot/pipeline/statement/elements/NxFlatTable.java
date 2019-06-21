@@ -1,4 +1,4 @@
-package org.nextprot.pipeline.statement;
+package org.nextprot.pipeline.statement.elements;
 
 public enum NxFlatTable {
 

@@ -7,7 +7,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 
-import static org.nextprot.pipeline.statement.elements.runnable.BaseFlowablePipelineElement.POISONED_STATEMENT;
+import static org.nextprot.pipeline.statement.elements.Source.POISONED_STATEMENT;
+
 
 public abstract class BaseLog {
 

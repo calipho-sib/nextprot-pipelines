@@ -1,4 +1,4 @@
-package org.nextprot.pipeline.statement.elements.runnable;
+package org.nextprot.pipeline.statement.elements.flowable;
 
 import org.nextprot.pipeline.statement.PipelineElement;
 

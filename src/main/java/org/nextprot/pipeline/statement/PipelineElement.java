@@ -1,7 +1,7 @@
 package org.nextprot.pipeline.statement;
 
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.elements.runnable.FlowablePipelineElement;
+import org.nextprot.pipeline.statement.elements.flowable.FlowablePipelineElement;
 
 import java.io.IOException;
 import java.util.List;

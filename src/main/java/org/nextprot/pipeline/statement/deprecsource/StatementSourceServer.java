@@ -1,4 +1,4 @@
-package org.nextprot.pipeline.statement.source;
+package org.nextprot.pipeline.statement.deprecsource;
 
 
 import org.apache.commons.io.IOUtils;

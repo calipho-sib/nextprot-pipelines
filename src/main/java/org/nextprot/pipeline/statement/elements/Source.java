@@ -1,34 +1,18 @@
 package org.nextprot.pipeline.statement.elements;
 
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.commons.statements.reader.BufferableStatementReader;
-import org.nextprot.commons.statements.reader.BufferedJsonStatementReader;
-import org.nextprot.pipeline.statement.Demux;
 import org.nextprot.pipeline.statement.PipelineElement;
-import org.nextprot.pipeline.statement.Pump;
-import org.nextprot.pipeline.statement.elements.runnable.BaseFlowLog;
-import org.nextprot.pipeline.statement.elements.runnable.BaseFlowablePipelineElement;
-import org.nextprot.pipeline.statement.elements.runnable.FlowEventHandler;
-import org.nextprot.pipeline.statement.muxdemux.Demultiplexer;
-import sun.net.www.protocol.http.HttpURLConnection;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 public abstract class Source extends BasePipelineElement<PipelineElement> {
 
+	/** poisoned statement pill */
+	public static final Statement POISONED_STATEMENT = new Statement();
+
 	protected Source(int sourceCapacity) {
 
 		super(sourceCapacity);
-	}
-
-	protected Source(BlockingQueue<Statement> sourceChannel) {
-
-		super(sourceChannel);
 	}
 
 	@Override

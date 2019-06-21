@@ -1,4 +1,4 @@
-package org.nextprot.pipeline.statement.muxdemux;
+package org.nextprot.pipeline.statement.elements.demux;
 
 
 import org.nextprot.pipeline.statement.PipelineElement;

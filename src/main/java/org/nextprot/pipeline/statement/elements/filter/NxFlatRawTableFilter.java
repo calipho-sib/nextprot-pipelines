@@ -1,12 +1,14 @@
-package org.nextprot.pipeline.statement.elements;
+package org.nextprot.pipeline.statement.elements.filter;
 
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.NxFlatTable;
-import org.nextprot.pipeline.statement.elements.runnable.BaseFlowLog;
-import org.nextprot.pipeline.statement.elements.runnable.FlowEventHandler;
+import org.nextprot.pipeline.statement.elements.NxFlatTable;
+import org.nextprot.pipeline.statement.elements.flowable.BaseFlowLog;
+import org.nextprot.pipeline.statement.elements.flowable.FlowEventHandler;
 
 import java.io.FileNotFoundException;
 import java.util.concurrent.BlockingQueue;
+
+import static org.nextprot.pipeline.statement.elements.Source.POISONED_STATEMENT;
 
 public class NxFlatRawTableFilter extends BaseFilter {
 
@@ -55,33 +57,33 @@ public class NxFlatRawTableFilter extends BaseFilter {
 
 			return current == POISONED_STATEMENT;
 		}
-	}
 
-	private static class FlowLog extends BaseFlowLog {
+		private static class FlowLog extends BaseFlowLog {
 
-		private final NxFlatTable table;
+			private final NxFlatTable table;
 
-		public FlowLog(String threadName, NxFlatTable table) throws FileNotFoundException {
+			private FlowLog(String threadName, NxFlatTable table) throws FileNotFoundException {
 
-			super(threadName);
-			this.table = table;
-		}
+				super(threadName);
+				this.table = table;
+			}
 
-		public void beginOfFlow() {
+			public void beginOfFlow() {
 
-			sendMessage("opened");
-		}
+				sendMessage("opened");
+			}
 
-		private void statementHandled(Statement statement, BlockingQueue<Statement> sinkChannel,
-		                              BlockingQueue<Statement> sourceChannel) {
+			private void statementHandled(Statement statement, BlockingQueue<Statement> sinkChannel,
+			                              BlockingQueue<Statement> sourceChannel) {
 
-			statementHandled("load and transmit", statement, sinkChannel, sourceChannel);
-		}
+				statementHandled("load and transmit", statement, sinkChannel, sourceChannel);
+			}
 
-		@Override
-		public void endOfFlow() {
+			@Override
+			public void endOfFlow() {
 
-			sendMessage(getStatementCount()+" healthy statements loaded in table "+ table + " and passed to next filter");
+				sendMessage(getStatementCount()+" healthy statements loaded in table "+ table + " and passed to next filter");
+			}
 		}
 	}
 }

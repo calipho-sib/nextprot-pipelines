@@ -2,8 +2,9 @@ package org.nextprot.pipeline.statement;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.elements.Sink;
-import org.nextprot.pipeline.statement.elements.PumpBasedSource;
-import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
+import org.nextprot.pipeline.statement.elements.source.Pump;
+import org.nextprot.pipeline.statement.elements.source.PumpBasedSource;
+import org.nextprot.pipeline.statement.elements.demux.DuplicableElement;
 
 import java.io.IOException;
 import java.util.ArrayList;

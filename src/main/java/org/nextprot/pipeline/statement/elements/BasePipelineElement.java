@@ -2,7 +2,7 @@ package org.nextprot.pipeline.statement.elements;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.PipelineElement;
-import org.nextprot.pipeline.statement.elements.runnable.FlowablePipelineElement;
+import org.nextprot.pipeline.statement.elements.flowable.FlowablePipelineElement;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

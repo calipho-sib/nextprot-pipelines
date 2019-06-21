@@ -1,12 +1,14 @@
-package org.nextprot.pipeline.statement.elements;
+package org.nextprot.pipeline.statement.elements.filter;
 
 
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.elements.runnable.FlowEventHandler;
-import org.nextprot.pipeline.statement.muxdemux.DuplicableElement;
+import org.nextprot.pipeline.statement.elements.flowable.FlowEventHandler;
+import org.nextprot.pipeline.statement.elements.demux.DuplicableElement;
 
 import java.io.FileNotFoundException;
 import java.util.concurrent.BlockingQueue;
+
+import static org.nextprot.pipeline.statement.elements.Source.POISONED_STATEMENT;
 
 /**
  * This filter just transmit statements from PipedInputPort to PipedOutputPort
@@ -52,7 +54,7 @@ public class NarcolepticFilter extends BaseFilter {
 		@Override
 		public boolean filter(BlockingQueue<Statement> in, BlockingQueue<Statement> out) throws Exception {
 
-			FlowLog eh = (FlowLog) getFlowEventHandler();
+			FilterFlowLog eh = (FilterFlowLog) getFlowEventHandler();
 
 			Statement current = in.take();
 			eh.statementHandled(current, in, out);
@@ -67,7 +69,7 @@ public class NarcolepticFilter extends BaseFilter {
 		@Override
 		protected FlowEventHandler createFlowEventHandler() throws FileNotFoundException {
 
-			return new FlowLog(getThreadName());
+			return new FilterFlowLog(getThreadName());
 		}
 
 		private void takeANap(long nap) {
