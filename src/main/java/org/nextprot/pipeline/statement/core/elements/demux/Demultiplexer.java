@@ -63,6 +63,11 @@ public class Demultiplexer implements Demux, PipelineElement<DuplicableElement> 
 
 		int newCapacity = capacity / channelCount;
 
+		if (newCapacity <= 0) {
+			throw new IllegalStateException("indivisible capacity: original source channel of capacity "+capacity
+					+" cannot be divide in "+channelCount+ " channels");
+		}
+
 		for (int i=0 ; i<channelCount ; i++) {
 
 			sources.add(new ArrayBlockingQueue<>(newCapacity));
