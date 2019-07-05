@@ -12,8 +12,6 @@ import org.nextprot.pipeline.statement.core.elements.source.Pump;
 import org.nextprot.pipeline.statement.nxflat.source.pump.WebStatementPump;
 
 import java.net.URL;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -150,32 +148,5 @@ public class PipelineBuilderTest {
 		}
 
 		return durations;
-	}
-
-	private static class Timer implements Pipeline.Monitorable {
-
-		private Instant start;
-		private final Map<String, Long> infos;
-
-		public Timer() {
-			this.infos = new HashMap<>();
-		}
-
-		@Override
-		public void started() {
-
-			start = Instant.now();
-		}
-
-		@Override
-		public void ended() {
-
-			infos.put("elapsed", Duration.between(start, Instant.now()).toMillis());
-		}
-
-		public long getElapsedTimeInMs() {
-
-			return infos.get("elapsed");
-		}
 	}
 }
