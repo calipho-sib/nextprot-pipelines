@@ -2,6 +2,7 @@ package org.nextprot.pipeline.statement.core;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.elements.Sink;
+import org.nextprot.pipeline.statement.core.elements.filter.BaseFilter;
 import org.nextprot.pipeline.statement.core.elements.source.Pump;
 import org.nextprot.pipeline.statement.core.elements.source.PumpingSource;
 import org.nextprot.pipeline.statement.core.elements.demux.Demultiplexer;
@@ -53,15 +54,27 @@ public class PipelineBuilder implements Pipeline.StartStep {
 		}
 
 		@Override
-		public Pipeline.FilterStep split(Function<Integer, DuplicableElement> filterProvider, int splitNumber) {
+		public Pipeline.FilterStep split(Function<Integer, BaseFilter> filterProvider, int splitNumber) {
 
-			DuplicableElement pipedFilter = filterProvider.apply(previousElement.getSourceChannel().remainingCapacity());
+			BaseFilter pipedFilter = filterProvider.apply(previousElement.getSourceChannel().remainingCapacity());
 			previousElement.pipe(pipedFilter);
 
 			dataCollector.setDemuxSourcePipePortCount(splitNumber);
 			dataCollector.setDemuxFromElement(previousElement, pipedFilter);
 
 			return new FilterStep(pipedFilter);
+		}
+
+		@Override
+		public Pipeline.TerminateStep split(Supplier<Sink> sinkProvider, int splitNumber) {
+
+			Sink pipedSink = sinkProvider.get();
+			previousElement.pipe(pipedSink);
+
+			dataCollector.setDemuxSourcePipePortCount(splitNumber);
+			dataCollector.setDemuxFromElement(previousElement, pipedSink);
+
+			return new TerminateStep();
 		}
 
 		@Override

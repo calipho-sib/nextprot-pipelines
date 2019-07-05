@@ -3,6 +3,7 @@ package org.nextprot.pipeline.statement.core;
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.elements.Sink;
 import org.nextprot.pipeline.statement.core.elements.Source;
+import org.nextprot.pipeline.statement.core.elements.filter.BaseFilter;
 import org.nextprot.pipeline.statement.core.elements.source.Pump;
 import org.nextprot.pipeline.statement.core.elements.demux.DuplicableElement;
 
@@ -82,10 +83,10 @@ public class Pipeline {
 	public interface FilterStep {
 
 		FilterStep filter(Function<Integer, DuplicableElement> filterProvider) throws IOException;
-
-		FilterStep split(Function<Integer, DuplicableElement> filterProvider, int sourcePipePortCount) throws IOException;
-
 		TerminateStep sink(Supplier<Sink> sinkProvider) throws IOException;
+
+		FilterStep split(Function<Integer, BaseFilter> filterProvider, int sourcePipePortCount);
+		TerminateStep split(Supplier<Sink> SinkProvider, int sourcePipePortCount);
 	}
 
 	public interface TerminateStep {
