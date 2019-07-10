@@ -312,7 +312,7 @@ public class Demultiplexer implements Demux, PipelineElement<DuplicableElement> 
 		@Override
 		public void beginOfFlow() {
 
-			sendMessage("start distributing flow");
+			sendMessage("start distribution");
 		}
 
 		private void statementHandled(Statement statement, BlockingQueue<Statement> sinkChannel,

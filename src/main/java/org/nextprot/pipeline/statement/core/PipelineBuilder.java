@@ -54,24 +54,24 @@ public class PipelineBuilder implements Pipeline.StartStep {
 		}
 
 		@Override
-		public Pipeline.FilterStep split(Function<Integer, BaseFilter> filterProvider, int splitNumber) {
+		public Pipeline.FilterStep split(Function<Integer, BaseFilter> filterProvider, int partitionCount) {
 
 			BaseFilter pipedFilter = filterProvider.apply(previousElement.getSourceChannel().remainingCapacity());
 			previousElement.pipe(pipedFilter);
 
-			dataCollector.setDemuxSourcePipePortCount(splitNumber);
+			dataCollector.setDemuxSourceCount(partitionCount);
 			dataCollector.setDemuxFromElement(previousElement, pipedFilter);
 
 			return new FilterStep(pipedFilter);
 		}
 
 		@Override
-		public Pipeline.TerminateStep split(Supplier<Sink> sinkProvider, int splitNumber) {
+		public Pipeline.TerminateStep split(Supplier<Sink> sinkProvider, int partitionCount) {
 
 			Sink pipedSink = sinkProvider.get();
 			previousElement.pipe(pipedSink);
 
-			dataCollector.setDemuxSourcePipePortCount(splitNumber);
+			dataCollector.setDemuxSourceCount(partitionCount);
 			dataCollector.setDemuxFromElement(previousElement, pipedSink);
 
 			return new TerminateStep();
@@ -96,7 +96,7 @@ public class PipelineBuilder implements Pipeline.StartStep {
 					DuplicableElement fromElement = dataCollector.getDemuxFromElement();
 
 					Demultiplexer demultiplexer = new Demultiplexer(fromElement.getSinkChannel().remainingCapacity(),
-							dataCollector.getDemuxSourcePipePortCount());
+							dataCollector.getDemuxSourceCount());
 
 					demultiplexer.pipe(fromElement);
 					dataCollector.getElementBeforeDemux().pipe(demultiplexer);
