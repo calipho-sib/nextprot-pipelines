@@ -1,7 +1,6 @@
 package org.nextprot.pipeline.statement.core;
 
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.core.elements.demux.DuplicableElement;
 import org.nextprot.pipeline.statement.core.elements.flowable.Valve;
 
 import java.io.IOException;
@@ -22,6 +21,7 @@ public interface PipelineElement<E extends PipelineElement> {
 
 	/** @return the sink pipe port or null */
 	BlockingQueue<Statement> getSinkChannel();
+
 	void setSinkChannel(BlockingQueue<Statement> sinkChannel);
 
 	/** @return the source pipe port or null */

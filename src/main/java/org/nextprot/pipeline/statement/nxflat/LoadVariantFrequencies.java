@@ -8,7 +8,6 @@ import org.nextprot.pipeline.statement.core.elements.flowable.BaseFlowLog;
 import org.nextprot.pipeline.statement.core.elements.flowable.BaseValve;
 import org.nextprot.pipeline.statement.core.elements.flowable.FlowEventHandler;
 import org.nextprot.pipeline.statement.core.elements.source.Pump;
-import org.nextprot.pipeline.statement.nxflat.sink.NxFlatMappedTableSink;
 import org.nextprot.pipeline.statement.nxflat.source.pump.WebStatementPump;
 
 import java.io.FileNotFoundException;
@@ -17,6 +16,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.Thread.sleep;
 import static org.nextprot.pipeline.statement.core.elements.Source.POISONED_STATEMENT;
 
 
@@ -35,8 +35,7 @@ public class LoadVariantFrequencies {
 			Pipeline pipeline = new PipelineBuilder()
 					.start(timer)
 					.source(pump)
-					//.split(() -> new VariantFrequencySink(1000), 10)
-					.split(NxFlatMappedTableSink::new, 10)
+					.split(() -> new VariantFrequencySink(1000), 10)
 					.build();
 
 			pipeline.openValves();
@@ -103,7 +102,7 @@ public class LoadVariantFrequencies {
 				loadStatements();
 				buffer.clear();
 
-				wait(100);
+				sleep(100);
 			}
 
 			return poisoned;

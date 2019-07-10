@@ -16,5 +16,5 @@ public interface Pump<E> {
 
 	int pump(List<E> collector) throws IOException;
 	boolean isEmpty() throws IOException;
-	void stop() throws IOException;;
+	void stop() throws IOException;
 }
