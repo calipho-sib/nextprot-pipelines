@@ -8,9 +8,8 @@ import org.nextprot.pipeline.statement.core.elements.BasePipelineElement;
 import org.nextprot.pipeline.statement.core.elements.ElementEventHandler;
 import org.nextprot.pipeline.statement.core.elements.Sink;
 import org.nextprot.pipeline.statement.core.elements.flowable.BaseFlowLog;
-import org.nextprot.pipeline.statement.core.elements.flowable.BaseFlowablePipelineElement;
+import org.nextprot.pipeline.statement.core.elements.flowable.BaseValve;
 import org.nextprot.pipeline.statement.core.elements.flowable.FlowEventHandler;
-import org.nextprot.pipeline.statement.core.elements.flowable.FlowablePipelineElement;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -26,10 +25,10 @@ import static org.nextprot.pipeline.statement.core.elements.Source.POISONED_STAT
 /**
  * De-multiplexer receive statements via one source pipe and
  * load balance them to multiple sink pipes.
+ *
+ * TODO: put common code with BasePipelineElement in a new abstract class
  */
 public class Demultiplexer implements Demux, PipelineElement<DuplicableElement> {
-
-	private boolean valvesOpened;
 
 	private final int sinkCapacity;
 	private BlockingQueue<Statement> sinkChannel;
@@ -175,35 +174,23 @@ public class Demultiplexer implements Demux, PipelineElement<DuplicableElement> 
 	}
 
 	@Override
-	public void openValves(List<Thread> collector) {
+	public void openValves(List<Thread> runningValves) {
 
-		if (!valvesOpened) {
-			valvesOpened = true;
+		Thread runningValve = newRunningValve();
+		eventHandler.valvesOpened();
 
-			FlowablePipelineElement runnable = newFlowable();
-
-			Thread thread = new Thread(runnable);
-			thread.setName(runnable.getThreadName());
-			thread.start();
-
-			eventHandler.valvesOpened();
-
-			collector.add(thread);
-		}
+		runningValves.add(runningValve);
 
 		// start the next elements into their own thread
 		for (PipelineElement sink : nextConnectedSinks) {
-			sink.openValves(collector);
+			sink.openValves(runningValves);
 		}
 	}
 
 	@Override
 	public void closeValves() throws IOException {
 
-		valvesOpened = false;
-
 		eventHandler.valvesClosed();
-
 		eventHandler.sinkUnpiped();
 
 		for (PipelineElement sink : nextConnectedSinks) {
@@ -213,9 +200,9 @@ public class Demultiplexer implements Demux, PipelineElement<DuplicableElement> 
 	}
 
 	@Override
-	public FlowablePipelineElement newFlowable() {
+	public Valve newValve() {
 
-		return new Flowable(this);
+		return new Valve(this);
 	}
 
 	private ElementEventHandler createElementEventHandler() throws FileNotFoundException {
@@ -268,11 +255,11 @@ public class Demultiplexer implements Demux, PipelineElement<DuplicableElement> 
 		}
 	}
 
-	private static class Flowable extends BaseFlowablePipelineElement<Demultiplexer> {
+	private static class Valve extends BaseValve<Demultiplexer> {
 
 		private int poisonedStatementReceived = 0;
 
-		public Flowable(Demultiplexer demultiplexer) {
+		public Valve(Demultiplexer demultiplexer) {
 
 			super(demultiplexer);
 		}
@@ -298,7 +285,7 @@ public class Demultiplexer implements Demux, PipelineElement<DuplicableElement> 
 		@Override
 		protected FlowEventHandler createFlowEventHandler() throws FileNotFoundException {
 
-			return new FlowLog(getThreadName());
+			return new FlowLog(getName());
 		}
 	}
 

@@ -1,7 +1,8 @@
 package org.nextprot.pipeline.statement.core;
 
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.core.elements.flowable.FlowablePipelineElement;
+import org.nextprot.pipeline.statement.core.elements.demux.DuplicableElement;
+import org.nextprot.pipeline.statement.core.elements.flowable.Valve;
 
 import java.io.IOException;
 import java.util.List;
@@ -30,8 +31,13 @@ public interface PipelineElement<E extends PipelineElement> {
 	E nextSink();
 
 	/**
-	 * Open the flow processing in a new thread and open also subsequent pipeline elements
-	 * @param collector collect the running threads for management
+	 * @return a new statement valve that regulates, directs or controls the flow of statement
+	 */
+	Valve newValve();
+
+	/**
+	 * Open the valve processing in a new thread and open also subsequent valves
+	 * @param collector collect the running valve threads for management
 	 */
 	void openValves(List<Thread> collector);
 
@@ -41,5 +47,14 @@ public interface PipelineElement<E extends PipelineElement> {
 	 */
 	void closeValves() throws IOException;
 
-	FlowablePipelineElement newFlowable();
+	default Thread newRunningValve() {
+
+		Valve valve = newValve();
+
+		Thread thread = new Thread(valve);
+		thread.setName(valve.getName());
+		thread.start();
+
+		return thread;
+	}
 }

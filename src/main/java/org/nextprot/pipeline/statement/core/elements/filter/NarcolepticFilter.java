@@ -36,16 +36,16 @@ public class NarcolepticFilter extends BaseFilter {
 	}
 
 	@Override
-	public Flowable newFlowable() {
+	public Valve newValve() {
 
-		return new Flowable(this);
+		return new Valve(this);
 	}
 
-	private static class Flowable extends FlowableFilter<NarcolepticFilter> {
+	private static class Valve extends FilterValve<NarcolepticFilter> {
 
 		private final long napTime;
 
-		private Flowable(NarcolepticFilter pipelineElement) {
+		private Valve(NarcolepticFilter pipelineElement) {
 			super(pipelineElement);
 
 			napTime = pipelineElement.takeANapInMillis;
@@ -69,7 +69,7 @@ public class NarcolepticFilter extends BaseFilter {
 		@Override
 		protected FlowEventHandler createFlowEventHandler() throws FileNotFoundException {
 
-			return new FilterFlowLog(getThreadName());
+			return new FilterFlowLog(getName());
 		}
 
 		private void takeANap(long nap) {

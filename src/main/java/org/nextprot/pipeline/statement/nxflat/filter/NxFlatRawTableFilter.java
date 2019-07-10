@@ -2,7 +2,7 @@ package org.nextprot.pipeline.statement.nxflat.filter;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.elements.filter.BaseFilter;
-import org.nextprot.pipeline.statement.core.elements.filter.FlowableFilter;
+import org.nextprot.pipeline.statement.core.elements.filter.FilterValve;
 import org.nextprot.pipeline.statement.nxflat.NxFlatTable;
 import org.nextprot.pipeline.statement.core.elements.flowable.BaseFlowLog;
 import org.nextprot.pipeline.statement.core.elements.flowable.FlowEventHandler;
@@ -22,9 +22,9 @@ public class NxFlatRawTableFilter extends BaseFilter {
 	}
 
 	@Override
-	public Flowable newFlowable() {
+	public Valve newValve() {
 
-		return new Flowable(this);
+		return new Valve(this);
 	}
 
 	@Override
@@ -33,11 +33,11 @@ public class NxFlatRawTableFilter extends BaseFilter {
 		return new NxFlatRawTableFilter(newCapacity);
 	}
 
-	private static class Flowable extends FlowableFilter<NxFlatRawTableFilter> {
+	private static class Valve extends FilterValve<NxFlatRawTableFilter> {
 
 		private final NxFlatTable table;
 
-		private Flowable(NxFlatRawTableFilter filter) {
+		private Valve(NxFlatRawTableFilter filter) {
 			super(filter);
 			this.table = filter.table;
 		}
@@ -45,7 +45,7 @@ public class NxFlatRawTableFilter extends BaseFilter {
 		@Override
 		protected FlowEventHandler createFlowEventHandler() throws Exception {
 
-			return new FlowLog(getThreadName(), table);
+			return new FlowLog(getName(), table);
 		}
 
 		@Override

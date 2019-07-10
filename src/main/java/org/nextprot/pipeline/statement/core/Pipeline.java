@@ -17,7 +17,7 @@ import java.util.function.Supplier;
 public class Pipeline {
 
 	private Source source;
-	private List<Thread> threads;
+	private List<Thread> runningValves;
 	private final Monitorable monitorable;
 	private final Log log;
 
@@ -31,12 +31,12 @@ public class Pipeline {
 
 	public void openValves() {
 
-		threads = new ArrayList<>();
+		runningValves = new ArrayList<>();
 
-		source.openValves(threads);
+		source.openValves(runningValves);
 
-		for (Thread thread : threads) {
-			log.valvesOpened(thread);
+		for (Thread runningValve : runningValves) {
+			log.valvesOpened(runningValve);
 		}
 		monitorable.started();
 	}
@@ -46,9 +46,9 @@ public class Pipeline {
 	 */
 	public void waitForThePipesToComplete() throws InterruptedException, IOException {
 
-		for (Thread thread : threads) {
-			thread.join();
-			log.valvesClosed(thread);
+		for (Thread runningValve : runningValves) {
+			runningValve.join();
+			log.valvesClosed(runningValve);
 		}
 		closePipelineValves();
 

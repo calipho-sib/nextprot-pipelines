@@ -3,7 +3,7 @@ package org.nextprot.pipeline.statement.core.elements;
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.BaseLog;
 import org.nextprot.pipeline.statement.core.PipelineElement;
-import org.nextprot.pipeline.statement.core.elements.flowable.FlowablePipelineElement;
+import org.nextprot.pipeline.statement.core.elements.flowable.Valve;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -31,7 +31,6 @@ import java.util.concurrent.BlockingQueue;
  */
 public abstract class BasePipelineElement<E extends PipelineElement> implements PipelineElement<E> {
 
-	private boolean valvesOpened;
 	private E nextElement = null;
 
 	private final BlockingQueue<Statement> sourceChannel;
@@ -109,31 +108,20 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 	}
 
 	@Override
-	public void openValves(List<Thread> collector) {
+	public void openValves(List<Thread> runningValves) {
 
-		if (!valvesOpened) {
-			valvesOpened = true;
+		Thread runningValve = newRunningValve();
+		eventHandler.valvesOpened();
 
-			FlowablePipelineElement runnable = newFlowable();
-
-			Thread thread = new Thread(runnable);
-			thread.setName(runnable.getThreadName());
-			thread.start();
-
-			eventHandler.valvesOpened();
-
-			collector.add(thread);
-		}
+		runningValves.add(runningValve);
 
 		if (nextElement != null) {
-			nextElement.openValves(collector);
+			nextElement.openValves(runningValves);
 		}
 	}
 
 	@Override
 	public void closeValves() throws IOException {
-
-		valvesOpened = false;
 
 		eventHandler.valvesClosed();
 

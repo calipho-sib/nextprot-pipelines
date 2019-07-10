@@ -48,8 +48,8 @@ public class PumpingSource extends Source {
 	}
 
 	@Override
-	public Flowable newFlowable() {
+	public Valve newValve() {
 
-		return new Flowable(this, pump.capacity(), countPoisonedPillsToProduce());
+		return new Valve(this, pump.capacity(), countPoisonedPillsToProduce());
 	}
 }

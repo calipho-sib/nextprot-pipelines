@@ -3,7 +3,7 @@ package org.nextprot.pipeline.statement.core.elements;
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.PipelineElement;
 import org.nextprot.pipeline.statement.core.elements.flowable.BaseFlowLog;
-import org.nextprot.pipeline.statement.core.elements.flowable.BaseFlowablePipelineElement;
+import org.nextprot.pipeline.statement.core.elements.flowable.BaseValve;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -52,21 +52,21 @@ public abstract class Source extends BasePipelineElement<PipelineElement> {
 	}
 
 	@Override
-	public Flowable newFlowable() {
+	public Valve newValve() {
 
-		return new Flowable(this, extractionCapacity(), countPoisonedPillsToProduce());
+		return new Valve(this, extractionCapacity(), countPoisonedPillsToProduce());
 	}
 
 	protected abstract Statement extract() throws IOException;
 
 	protected abstract int extractionCapacity();
 
-	protected static class Flowable extends BaseFlowablePipelineElement<Source> {
+	protected static class Valve extends BaseValve<Source> {
 
 		private final int capacity;
 		private final int pills;
 
-		public Flowable(Source source, int capacity, int pills) {
+		public Valve(Source source, int capacity, int pills) {
 
 			super(source);
 			this.capacity = capacity;
@@ -104,7 +104,7 @@ public abstract class Source extends BasePipelineElement<PipelineElement> {
 		@Override
 		protected FlowLog createFlowEventHandler() throws FileNotFoundException {
 
-			return new FlowLog(getThreadName(), capacity);
+			return new FlowLog(getName(), capacity);
 		}
 
 		private static class FlowLog extends BaseFlowLog {

@@ -4,7 +4,7 @@ import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.elements.Sink;
 import org.nextprot.pipeline.statement.nxflat.NxFlatTable;
 import org.nextprot.pipeline.statement.core.elements.flowable.BaseFlowLog;
-import org.nextprot.pipeline.statement.core.elements.flowable.BaseFlowablePipelineElement;
+import org.nextprot.pipeline.statement.core.elements.flowable.BaseValve;
 import org.nextprot.pipeline.statement.core.elements.flowable.FlowEventHandler;
 
 import java.io.FileNotFoundException;
@@ -22,9 +22,9 @@ public class NxFlatMappedTableSink extends Sink {
 	}
 
 	@Override
-	public Flowable newFlowable() {
+	public Valve newValve() {
 
-		return new Flowable(this);
+		return new Valve(this);
 	}
 
 	@Override
@@ -33,11 +33,11 @@ public class NxFlatMappedTableSink extends Sink {
 		return new NxFlatMappedTableSink();
 	}
 
-	private static class Flowable extends BaseFlowablePipelineElement<NxFlatMappedTableSink> {
+	private static class Valve extends BaseValve<NxFlatMappedTableSink> {
 
 		private final NxFlatTable table;
 
-		private Flowable(NxFlatMappedTableSink sink) {
+		private Valve(NxFlatMappedTableSink sink) {
 			super(sink);
 
 			this.table = sink.table;
@@ -55,7 +55,7 @@ public class NxFlatMappedTableSink extends Sink {
 		@Override
 		protected FlowEventHandler createFlowEventHandler() throws FileNotFoundException {
 
-			return new FlowLog(getThreadName(), table);
+			return new FlowLog(getName(), table);
 		}
 
 		private static class FlowLog extends BaseFlowLog {

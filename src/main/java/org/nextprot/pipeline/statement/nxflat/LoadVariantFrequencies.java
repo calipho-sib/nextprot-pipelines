@@ -5,12 +5,14 @@ import org.nextprot.pipeline.statement.core.Pipeline;
 import org.nextprot.pipeline.statement.core.PipelineBuilder;
 import org.nextprot.pipeline.statement.core.elements.Sink;
 import org.nextprot.pipeline.statement.core.elements.flowable.BaseFlowLog;
-import org.nextprot.pipeline.statement.core.elements.flowable.BaseFlowablePipelineElement;
+import org.nextprot.pipeline.statement.core.elements.flowable.BaseValve;
 import org.nextprot.pipeline.statement.core.elements.flowable.FlowEventHandler;
 import org.nextprot.pipeline.statement.core.elements.source.Pump;
+import org.nextprot.pipeline.statement.nxflat.sink.NxFlatMappedTableSink;
 import org.nextprot.pipeline.statement.nxflat.source.pump.WebStatementPump;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +22,7 @@ import static org.nextprot.pipeline.statement.core.elements.Source.POISONED_STAT
 
 public class LoadVariantFrequencies {
 
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) throws IOException {
 
 		Timer timer = new Timer();
 
@@ -29,16 +31,27 @@ public class LoadVariantFrequencies {
 
 		Pump<Statement> pump = new WebStatementPump(url);
 
-		Pipeline pipeline = new PipelineBuilder()
-				.start(timer)
-				.source(pump)
-				.split(() -> new VariantFrequencySink(1000), 10)
-				.build();
+		try {
+			Pipeline pipeline = new PipelineBuilder()
+					.start(timer)
+					.source(pump)
+					//.split(() -> new VariantFrequencySink(1000), 10)
+					.split(NxFlatMappedTableSink::new, 10)
+					.build();
 
-		pipeline.openValves();
-		pipeline.waitForThePipesToComplete();
+			pipeline.openValves();
 
-		System.out.println("Done in " + timer.getElapsedTimeInMs() + " ms.");
+			// Wait for the pipe to complete
+			try {
+				pipeline.waitForThePipesToComplete();
+			} catch (InterruptedException e) {
+				System.err.println("pipeline error: " + e.getMessage());
+			}
+
+			System.out.println("Done in "+timer.getElapsedTimeInMs() + " ms.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	private static class VariantFrequencySink extends Sink {
@@ -51,9 +64,9 @@ public class LoadVariantFrequencies {
 		}
 
 		@Override
-		public Flowable newFlowable() {
+		public Valve newValve() {
 
-			return new Flowable(this);
+			return new Valve(this);
 		}
 
 		@Override
@@ -63,12 +76,12 @@ public class LoadVariantFrequencies {
 		}
 	}
 
-	private static class Flowable extends BaseFlowablePipelineElement<VariantFrequencySink> {
+	private static class Valve extends BaseValve<VariantFrequencySink> {
 
 		private final List<Statement> buffer;
 		private final int bufferSize;
 
-		private Flowable(VariantFrequencySink sink) {
+		private Valve(VariantFrequencySink sink) {
 			super(sink);
 
 			buffer = new ArrayList<>(sink.bufferSize);
@@ -109,7 +122,7 @@ public class LoadVariantFrequencies {
 		@Override
 		protected FlowEventHandler createFlowEventHandler() throws FileNotFoundException {
 
-			return new FlowLog(getThreadName());
+			return new FlowLog(getName());
 		}
 	}
 

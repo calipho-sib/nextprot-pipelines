@@ -3,7 +3,7 @@ package org.nextprot.pipeline.statement.core.elements.flowable;
 import org.nextprot.pipeline.statement.core.PipelineElement;
 
 
-public abstract class BaseFlowablePipelineElement<E extends PipelineElement> implements FlowablePipelineElement<E> {
+public abstract class BaseValve<E extends PipelineElement> implements Valve<E> {
 
 	private static int FLOWABLE_NUMBER = 0;
 
@@ -16,7 +16,7 @@ public abstract class BaseFlowablePipelineElement<E extends PipelineElement> imp
 	private final String name;
 	private FlowEventHandler flowEventHandler;
 
-	public BaseFlowablePipelineElement(E pipelineElement) {
+	public BaseValve(E pipelineElement) {
 
 		this.pipelineElement = pipelineElement;
 		this.name = this.pipelineElement.getName()+ "-" + NEXT_FLOWABLE_NUM();
@@ -54,7 +54,7 @@ public abstract class BaseFlowablePipelineElement<E extends PipelineElement> imp
 	}
 
 	@Override
-	public String getThreadName() {
+	public String getName() {
 
 		return name;
 	}
