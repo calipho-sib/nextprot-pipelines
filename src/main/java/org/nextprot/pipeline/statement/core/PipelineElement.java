@@ -47,7 +47,7 @@ public interface PipelineElement<E extends PipelineElement> {
 	 */
 	void closeValves() throws IOException;
 
-	default Thread newRunningValve() {
+	default Thread newActiveValve() {
 
 		Valve valve = newValve();
 

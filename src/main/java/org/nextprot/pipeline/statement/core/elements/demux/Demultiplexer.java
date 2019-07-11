@@ -176,7 +176,7 @@ public class Demultiplexer implements Demux, PipelineElement<DuplicableElement> 
 	@Override
 	public void openValves(List<Thread> runningValves) {
 
-		Thread runningValve = newRunningValve();
+		Thread runningValve = newActiveValve();
 		eventHandler.valvesOpened();
 
 		runningValves.add(runningValve);

@@ -33,7 +33,7 @@ public class PipelineBuilderTest {
 
 		// Wait for the pipe to complete
 		try {
-			pipeline.waitForThePipesToComplete();
+			pipeline.waitUntilCompletion();
 		} catch (InterruptedException e) {
 			System.err.println("pipeline error: " + e.getMessage());
 		}
@@ -140,7 +140,7 @@ public class PipelineBuilderTest {
 
 			// Wait for the pipe to complete
 			try {
-				pipeline.waitForThePipesToComplete();
+				pipeline.waitUntilCompletion();
 			} catch (InterruptedException e) {
 				System.err.println("pipeline error: " + e.getMessage());
 			}

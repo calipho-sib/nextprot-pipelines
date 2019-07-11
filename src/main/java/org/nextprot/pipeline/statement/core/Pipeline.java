@@ -16,8 +16,8 @@ import java.util.function.Supplier;
 
 public class Pipeline {
 
-	private Source source;
-	private List<Thread> runningValves;
+	private final Source source;
+	private final List<Thread> activeValves;
 	private final Monitorable monitorable;
 	private final Log log;
 
@@ -27,35 +27,33 @@ public class Pipeline {
 		monitorable = dataCollector.getMonitorable();
 
 		log = new Log();
+		activeValves = new ArrayList<>();
 	}
 
 	public void openValves() {
 
-		runningValves = new ArrayList<>();
+		source.openValves(activeValves);
 
-		source.openValves(runningValves);
-
-		for (Thread runningValve : runningValves) {
-			log.valvesOpened(runningValve);
+		for (Thread activeValve : activeValves) {
+			log.valvesOpened(activeValve);
 		}
 		monitorable.started();
 	}
 
 	/**
-	 * Wait for all threads in the pipe to terminate
+	 * Wait for all valves in the pipeline to terminate controlling flow
 	 */
-	public void waitForThePipesToComplete() throws InterruptedException, IOException {
+	public void waitUntilCompletion() throws InterruptedException, IOException {
 
-		for (Thread runningValve : runningValves) {
-			runningValve.join();
-			log.valvesClosed(runningValve);
+		for (Thread activeValve : activeValves) {
+			activeValve.join();
+			log.valvesClosed(activeValve);
 		}
-		closePipelineValves();
-
+		closeValves();
 		monitorable.ended();
 	}
 
-	private void closePipelineValves() throws IOException {
+	private void closeValves() throws IOException {
 
 		PipelineElement element = source;
 
@@ -156,19 +154,19 @@ public class Pipeline {
 		}
 	}
 
-	public static class Log extends BaseLog {
+	private static class Log extends BaseLog {
 
-		public Log() throws FileNotFoundException {
+		private Log() throws FileNotFoundException {
 
 			super("Pipeline");
 		}
 
-		public void valvesOpened(Thread thread) {
+		private void valvesOpened(Thread thread) {
 
 			sendMessage(thread.getName() + " valves: opened");
 		}
 
-		public void valvesClosed(Thread thread) {
+		private void valvesClosed(Thread thread) {
 
 			sendMessage(thread.getName() + " valves: closed");
 		}

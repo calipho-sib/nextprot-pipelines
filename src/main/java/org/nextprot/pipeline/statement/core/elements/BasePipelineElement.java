@@ -3,7 +3,6 @@ package org.nextprot.pipeline.statement.core.elements;
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.BaseLog;
 import org.nextprot.pipeline.statement.core.PipelineElement;
-import org.nextprot.pipeline.statement.core.elements.flowable.Valve;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -110,7 +109,7 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 	@Override
 	public void openValves(List<Thread> runningValves) {
 
-		Thread runningValve = newRunningValve();
+		Thread runningValve = newActiveValve();
 		eventHandler.valvesOpened();
 
 		runningValves.add(runningValve);
