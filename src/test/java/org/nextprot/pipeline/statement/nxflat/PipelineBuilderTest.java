@@ -9,9 +9,8 @@ import org.nextprot.pipeline.statement.core.elements.filter.NarcolepticFilter;
 import org.nextprot.pipeline.statement.nxflat.filter.NxFlatRawTableFilter;
 import org.nextprot.pipeline.statement.nxflat.sink.NxFlatMappedTableSink;
 import org.nextprot.pipeline.statement.core.elements.source.Pump;
-import org.nextprot.pipeline.statement.nxflat.source.pump.WebStatementPump;
+import org.nextprot.pipeline.statement.nxflat.source.pump.HttpStatementPump;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -24,10 +23,10 @@ public class PipelineBuilderTest {
 	@Test
 	public void testPipeline() throws Exception {
 
-		URL url = new URL("http://kant.sib.swiss:9001/glyconnect/2019-01-22/all-entries.json");
+		String url = "http://kant.sib.swiss:9001/glyconnect/2019-01-22/all-entries.json";
 
 		Timer timer = new Timer();
-		Pipeline pipeline = newPipeline(url, 5000, 1, 1, timer);
+		Pipeline pipeline = newPipeline(url, 1, 1, timer);
 
 		pipeline.openValves();
 
@@ -44,7 +43,7 @@ public class PipelineBuilderTest {
 	@Test
 	public void benchmarkPipelinesVariateCapacities() throws Exception {
 
-		URL url = new URL("http://kant.sib.swiss:9001/glyconnect/2019-01-22/all-entries.json");
+		String url = "http://kant.sib.swiss:9001/glyconnect/2019-01-22/all-entries.json";
 
 		List<int[]> capacityAndSplitList = new ArrayList<>();
 
@@ -75,7 +74,7 @@ public class PipelineBuilderTest {
 	@Test
 	public void benchmarkPipelines() throws Exception {
 
-		URL url = new URL("http://kant.sib.swiss:9001/glyconnect/2019-01-22/all-entries.json");
+		String url = "http://kant.sib.swiss:9001/glyconnect/2019-01-22/all-entries.json";
 
 		List<int[]> capacityAndSplitList = new ArrayList<>();
 
@@ -99,14 +98,9 @@ public class PipelineBuilderTest {
 		// Interpretation: capacity does not affect the overall pipeline duration
 	}
 
-	private Pipeline newPipeline(URL url, int capacity, int split, long nap, Timer timer) throws Exception {
+	private Pipeline newPipeline(String url, int split, long nap, Timer timer) throws Exception {
 
-		if (split > capacity) {
-
-			throw new IllegalStateException("indivisible splits: capacity=" + capacity + ", splits=" + split);
-		}
-
-		Pump<Statement> pump = new WebStatementPump(url, capacity);
+		Pump<Statement> pump = new HttpStatementPump(url);
 
 		Pipeline.FilterStep filterStep = new PipelineBuilder()
 				.start(timer)
@@ -125,7 +119,7 @@ public class PipelineBuilderTest {
 				.build();
 	}
 
-	private Map<String, Long> benchmarking(URL url, List<int[]> capacityAndSplitList, long nap) throws Exception {
+	private Map<String, Long> benchmarking(String url, List<int[]> capacityAndSplitList, long nap) throws Exception {
 
 		Map<String, Long> durations = new HashMap<>();
 
@@ -134,7 +128,7 @@ public class PipelineBuilderTest {
 			System.err.println("processing: capacity=" + capacityAndSplit[0] + ", splits=" + capacityAndSplit[1]);
 
 			Timer timer = new Timer();
-			Pipeline pipeline = newPipeline(url, capacityAndSplit[0], capacityAndSplit[1], nap, timer);
+			Pipeline pipeline = newPipeline(url, capacityAndSplit[1], nap, timer);
 
 			pipeline.openValves();
 

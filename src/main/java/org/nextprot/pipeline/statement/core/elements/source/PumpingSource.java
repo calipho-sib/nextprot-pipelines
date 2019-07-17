@@ -18,7 +18,7 @@ public class PumpingSource extends Source {
 
 	public PumpingSource(Pump<Statement> pump) {
 
-		super(pump.capacity());
+		super(1);
 		this.pump = pump;
 	}
 
@@ -31,7 +31,7 @@ public class PumpingSource extends Source {
 	@Override
 	protected int extractionCapacity() {
 
-		return pump.capacity();
+		return 1;
 	}
 
 	@Override
@@ -50,6 +50,6 @@ public class PumpingSource extends Source {
 	@Override
 	public Valve newValve() {
 
-		return new Valve(this, pump.capacity(), countPoisonedPillsToProduce());
+		return new Valve(this, 1, countPoisonedPillsToProduce());
 	}
 }
