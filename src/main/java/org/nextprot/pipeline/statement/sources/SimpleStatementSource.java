@@ -1,4 +1,4 @@
-package org.nextprot.pipeline.statement.deprecsource;
+package org.nextprot.pipeline.statement.sources;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.commons.statements.reader.BufferableStatementReader;
