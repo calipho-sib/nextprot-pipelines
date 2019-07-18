@@ -7,9 +7,9 @@ import org.nextprot.pipeline.statement.core.elements.flowable.Valve;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.stream.Stream;
 
 
 /**
@@ -73,7 +73,13 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 	}
 
 	@Override
-	public E nextSink() {
+	public Stream<E> nextStages() {
+
+		return Stream.of(nextElement);
+	}
+
+	@Override
+	public E nextStage() {
 
 		return nextElement;
 	}
@@ -108,22 +114,18 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 	}
 
 	@Override
-	public void openValves(List<Valve> runningValves) {
+	public Valve openValve() {
 
 		Valve valve = newValve();
-		eventHandler.valvesOpened();
+		eventHandler.valveOpened();
 
-		runningValves.add(valve);
-
-		if (nextElement != null) {
-			nextElement.openValves(runningValves);
-		}
+		return valve;
 	}
 
 	@Override
-	public void closeValves() {
+	public void closeValve() {
 
-		eventHandler.valvesClosed();
+		eventHandler.valveClosed();
 
 		if (sinkChannel != null) {
 
@@ -143,7 +145,7 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 		}
 
 		@Override
-		public void valvesOpened() {
+		public void valveOpened() {
 
 			sendMessage("valves opened");
 		}
@@ -167,7 +169,7 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 		}
 
 		@Override
-		public void valvesClosed() {
+		public void valveClosed() {
 
 			sendMessage("valves closed");
 		}

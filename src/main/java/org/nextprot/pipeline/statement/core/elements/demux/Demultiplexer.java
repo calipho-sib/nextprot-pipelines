@@ -2,7 +2,6 @@ package org.nextprot.pipeline.statement.core.elements.demux;
 
 
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.core.elements.Demux;
 import org.nextprot.pipeline.statement.core.PipelineElement;
 import org.nextprot.pipeline.statement.core.elements.BasePipelineElement;
 import org.nextprot.pipeline.statement.core.elements.ElementEventHandler;
@@ -18,6 +17,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.nextprot.pipeline.statement.core.elements.Source.POISONED_STATEMENT;
 
@@ -27,7 +27,7 @@ import static org.nextprot.pipeline.statement.core.elements.Source.POISONED_STAT
  *
  * TODO: put common code with BasePipelineElement in a new abstract class
  */
-public class Demultiplexer implements Demux, PipelineElement<DuplicableElement> {
+public class Demultiplexer implements PipelineElement<DuplicableElement> {
 
 	private final int sinkCapacity;
 	private BlockingQueue<Statement> sinkChannel;
@@ -164,7 +164,7 @@ public class Demultiplexer implements Demux, PipelineElement<DuplicableElement> 
 
 		DuplicableElement element = head;
 
-		while ((element = element.nextSink()) != null) {
+		while ((element = element.nextStage()) != null) {
 
 			pipelineElementList.add(element);
 		}
@@ -173,29 +173,19 @@ public class Demultiplexer implements Demux, PipelineElement<DuplicableElement> 
 	}
 
 	@Override
-	public void openValves(List<org.nextprot.pipeline.statement.core.elements.flowable.Valve> runningValves) {
+	public Valve openValve() {
 
 		Valve valve = newValve();
-		eventHandler.valvesOpened();
+		eventHandler.valveOpened();
 
-		runningValves.add(valve);
-
-		// start the next elements into their own thread
-		for (PipelineElement sink : nextConnectedSinks) {
-			sink.openValves(runningValves);
-		}
+		return valve;
 	}
 
 	@Override
-	public void closeValves() {
+	public void closeValve() {
 
-		eventHandler.valvesClosed();
+		eventHandler.valveClosed();
 		eventHandler.sinkUnpiped();
-
-		for (PipelineElement sink : nextConnectedSinks) {
-
-			sink.closeValves();
-		}
 	}
 
 	@Override
@@ -241,9 +231,15 @@ public class Demultiplexer implements Demux, PipelineElement<DuplicableElement> 
 	}
 
 	@Override
-	public DuplicableElement nextSink() {
+	public Stream<DuplicableElement> nextStages() {
 
-		return null;
+		return nextConnectedSinks.stream();
+	}
+
+	@Override
+	public DuplicableElement nextStage() {
+
+		throw new IllegalStateException("should not call nextFirstSink() in Demultiplexer");
 	}
 
 	private static class CircularList<E> extends ArrayList<E> {

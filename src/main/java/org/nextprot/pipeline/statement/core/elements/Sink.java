@@ -5,10 +5,11 @@ import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.elements.demux.DuplicableElement;
 
 import java.util.concurrent.BlockingQueue;
+import java.util.stream.Stream;
 
 
 /**
- * A sink is a terminal pipeline element - it cannot pipe to another element
+ * A sink is the last stage of a pipeline
  *
  *        -----    ------
  * ... ==<  F  >==< Sink |
@@ -31,5 +32,11 @@ public abstract class Sink extends BasePipelineElement<DuplicableElement> implem
 	public BlockingQueue<Statement> getSourceChannel() {
 
 		throw new Error("It is a SINK element, cannot pipe anything through this channel!");
+	}
+
+	@Override
+	public Stream<DuplicableElement> nextStages() {
+
+		return Stream.empty();
 	}
 }

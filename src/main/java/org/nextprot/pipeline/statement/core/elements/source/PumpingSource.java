@@ -36,13 +36,6 @@ public class PumpingSource extends Source {
 	}
 
 	@Override
-	public synchronized void closeValves() {
-
-		pump.stop();
-		super.closeValves();
-	}
-
-	@Override
 	public BlockingQueue<Statement> getSinkChannel() {
 
 		throw new Error("It is a Source element, can't connect to a PipelineElement through this channel!");

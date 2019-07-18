@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 public class Pipeline {
 
@@ -40,7 +41,7 @@ public class Pipeline {
 
 		List<Valve> valves = new ArrayList<>();
 
-		source.openValves(valves);
+		openValves(source, valves);
 
 		for (Valve valve : valves) {
 
@@ -51,6 +52,24 @@ public class Pipeline {
 			log.valvesOpened(activeValve);
 		}
 		monitorable.started();
+	}
+
+	private void openValves(PipelineElement stage, List<Valve> runningValves) {
+
+		Valve valve = stage.newValve();
+		//eventHandler.valveOpened();
+		runningValves.add(valve);
+
+		Stream<PipelineElement> nextStages = stage.nextStages();
+		nextStages.forEach(s -> openValves(s, runningValves));
+	}
+
+	private void closeValves(PipelineElement stage) {
+
+		stage.closeValve();
+
+		Stream<PipelineElement> nextStages = stage.nextStages();
+		nextStages.forEach(sink -> closeValves(sink));
 	}
 
 	private Thread newThread(Valve valve) {
@@ -70,19 +89,8 @@ public class Pipeline {
 			activeValve.join();
 			log.valvesClosed(activeValve);
 		}
-		closeValves();
+		closeValves(source);
 		monitorable.ended();
-	}
-
-	private void closeValves() {
-
-		PipelineElement element = source;
-
-		do {
-			element.closeValves();
-			element = element.nextSink();
-		}
-		while(element != null);
 	}
 
 	interface StartStep {

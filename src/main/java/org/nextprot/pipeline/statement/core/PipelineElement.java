@@ -3,9 +3,8 @@ package org.nextprot.pipeline.statement.core;
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.elements.flowable.Valve;
 
-import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.stream.Stream;
 
 /**
  * This class represent an element of the pipeline
@@ -27,8 +26,16 @@ public interface PipelineElement<E extends PipelineElement> {
 	/** @return the source pipe port or null */
 	BlockingQueue<Statement> getSourceChannel();
 
-	/** @return the next piped element */
-	E nextSink();
+	/** @return the next piped stage(s) */
+	Stream<E> nextStages();
+
+	/** @return the first piped stage */
+	E nextStage();
+
+	default int countStages() {
+
+		return (int) nextStages().count();
+	}
 
 	/**
 	 * @return a new statement valve that regulates, directs or controls the flow of statement
@@ -37,12 +44,11 @@ public interface PipelineElement<E extends PipelineElement> {
 
 	/**
 	 * Open the valve processing in a new thread and open also subsequent valves
-	 * @param valves collect the running valve threads for management
 	 */
-	void openValves(List<Valve> valves);
+	Valve openValve();
 
 	/**
 	 * Disconnect sink and source pipes
 	 */
-	void closeValves();
+	void closeValve();
 }

@@ -2,7 +2,6 @@ package org.nextprot.pipeline.statement.nxflat.sink;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.elements.Sink;
-import org.nextprot.pipeline.statement.core.elements.Source;
 import org.nextprot.pipeline.statement.nxflat.NxFlatTable;
 import org.nextprot.pipeline.statement.core.elements.flowable.BaseFlowLog;
 import org.nextprot.pipeline.statement.core.elements.flowable.BaseValve;

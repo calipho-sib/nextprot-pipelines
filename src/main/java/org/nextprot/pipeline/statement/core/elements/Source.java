@@ -42,13 +42,18 @@ public abstract class Source extends BasePipelineElement<PipelineElement> {
 
 		PipelineElement element = this;
 
-		while ((element = element.nextSink()) != null) {
+		int max = 0;
 
-			if (element instanceof Demux) {
-				return ((Demux)element).countSourceChannels();
+		// look for the max next stage number
+		while ((element = element.nextStage()) != null) {
+
+			int count = element.countStages();
+
+			if (count > max) {
+				max = count;
 			}
 		}
-		return 1;
+		return max;
 	}
 
 	@Override
