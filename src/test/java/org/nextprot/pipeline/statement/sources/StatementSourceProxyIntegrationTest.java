@@ -5,9 +5,6 @@ import org.junit.Test;
 import org.nextprot.pipeline.statement.nxflat.source.pump.HttpStatementPump;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class StatementSourceProxyIntegrationTest {
@@ -20,6 +17,15 @@ public class StatementSourceProxyIntegrationTest {
 		Assert.assertEquals(1, pumps.count());
 	}
 
+	@Test
+	public void execute() throws IOException {
+
+		StatementSourceProxy proxy = StatementSourceProxy.GlyConnect("2019-01-22");
+
+		proxy.executePipelines(2);
+	}
+
+/*
 	@Test
 	public void bioeditorProxyShouldProvideNPumps() throws IOException {
 
@@ -37,7 +43,7 @@ public class StatementSourceProxyIntegrationTest {
 		System.out.println(pumps.size());
 	}
 
-	/*
+
 	// 4s
 	@Test
 	public void testReadingOneSimpleStatementSource() throws IOException {
