@@ -12,7 +12,6 @@ import org.nextprot.pipeline.statement.core.elements.flowable.BaseValve;
 import org.nextprot.pipeline.statement.core.elements.flowable.FlowEventHandler;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -188,7 +187,7 @@ public class Demultiplexer implements Demux, PipelineElement<DuplicableElement> 
 	}
 
 	@Override
-	public void closeValves() throws IOException {
+	public void closeValves() {
 
 		eventHandler.valvesClosed();
 		eventHandler.sinkUnpiped();

@@ -120,7 +120,7 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 	}
 
 	@Override
-	public void closeValves() throws IOException {
+	public void closeValves() {
 
 		eventHandler.valvesClosed();
 

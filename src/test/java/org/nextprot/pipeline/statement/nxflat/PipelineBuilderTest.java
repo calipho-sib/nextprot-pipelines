@@ -26,7 +26,7 @@ public class PipelineBuilderTest {
 		String url = "http://kant.sib.swiss:9001/glyconnect/2019-01-22/all-entries.json";
 
 		Timer timer = new Timer();
-		Pipeline pipeline = newPipeline(url, 1, 1, timer);
+		Pipeline pipeline = newPipeline(url, 5000, 1, 1, timer);
 
 		pipeline.openValves();
 
@@ -98,13 +98,18 @@ public class PipelineBuilderTest {
 		// Interpretation: capacity does not affect the overall pipeline duration
 	}
 
-	private Pipeline newPipeline(String url, int split, long nap, Timer timer) throws Exception {
+	private Pipeline newPipeline(String url, int capacity, int split, long nap, Timer timer) throws Exception {
+
+		if (split > capacity) {
+
+			throw new IllegalStateException("indivisible splits: capacity=" + capacity + ", splits=" + split);
+		}
 
 		Pump<Statement> pump = new HttpStatementPump(url);
 
 		Pipeline.FilterStep filterStep = new PipelineBuilder()
 				.start(timer)
-				.source(pump);
+				.source(pump, capacity);
 
 		if (split == 1) {
 			filterStep = filterStep.filter(NxFlatRawTableFilter::new);
@@ -128,7 +133,7 @@ public class PipelineBuilderTest {
 			System.err.println("processing: capacity=" + capacityAndSplit[0] + ", splits=" + capacityAndSplit[1]);
 
 			Timer timer = new Timer();
-			Pipeline pipeline = newPipeline(url, capacityAndSplit[1], nap, timer);
+			Pipeline pipeline = newPipeline(url, capacityAndSplit[0], capacityAndSplit[1], nap, timer);
 
 			pipeline.openValves();
 

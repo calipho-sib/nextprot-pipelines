@@ -8,7 +8,6 @@ import org.nextprot.pipeline.statement.core.elements.source.Pump;
 import org.nextprot.pipeline.statement.core.elements.demux.DuplicableElement;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -43,7 +42,7 @@ public class Pipeline {
 	/**
 	 * Wait for all valves in the pipeline to terminate controlling flow
 	 */
-	public void waitUntilCompletion() throws InterruptedException, IOException {
+	public void waitUntilCompletion() throws InterruptedException {
 
 		for (Thread activeValve : activeValves) {
 			activeValve.join();
@@ -53,7 +52,7 @@ public class Pipeline {
 		monitorable.ended();
 	}
 
-	private void closeValves() throws IOException {
+	private void closeValves() {
 
 		PipelineElement element = source;
 
@@ -75,13 +74,13 @@ public class Pipeline {
 
 	public interface SourceStep {
 
-		FilterStep source(Pump<Statement> pump);
+		FilterStep source(Pump<Statement> pump, int capacity);
 	}
 
 	public interface FilterStep {
 
-		FilterStep filter(Function<Integer, DuplicableElement> filterProvider) throws IOException;
-		TerminateStep sink(Supplier<Sink> sinkProvider) throws IOException;
+		FilterStep filter(Function<Integer, DuplicableElement> filterProvider);
+		TerminateStep sink(Supplier<Sink> sinkProvider);
 
 		FilterStep split(Function<Integer, BaseFilter> filterProvider, int partitionCount);
 		TerminateStep split(Supplier<Sink> SinkProvider, int partitionCount);
@@ -89,7 +88,7 @@ public class Pipeline {
 
 	public interface TerminateStep {
 
-		Pipeline build() throws Exception;
+		Pipeline build();
 	}
 
 	public interface Monitorable {
@@ -170,4 +169,5 @@ public class Pipeline {
 
 			sendMessage(thread.getName() + " valves: closed");
 		}
-	}}
+	}
+}

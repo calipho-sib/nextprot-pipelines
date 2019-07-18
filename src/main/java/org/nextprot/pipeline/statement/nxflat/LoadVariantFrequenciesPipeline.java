@@ -15,7 +15,7 @@ import org.nextprot.pipeline.statement.core.elements.flowable.BaseFlowLog;
 import org.nextprot.pipeline.statement.core.elements.flowable.BaseValve;
 import org.nextprot.pipeline.statement.core.elements.flowable.FlowEventHandler;
 import org.nextprot.pipeline.statement.core.elements.source.Pump;
-import org.nextprot.pipeline.statement.nxflat.source.pump.WebStatementPump;
+import org.nextprot.pipeline.statement.nxflat.source.pump.HttpStatementPump;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,20 +33,20 @@ import static org.nextprot.pipeline.statement.core.elements.Source.POISONED_STAT
 
 public class LoadVariantFrequenciesPipeline {
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) {
 
 		Timer timer = new Timer();
 
 		// Note: npteam@kant:/share/sib/calipho/nxflat-proxy/statements-downloader/gnomad/2019-03-14/
-		URL K22URL = new URL("http://kant.sib.swiss:9001/gnomad/2019-03-14/chr22.json");
-		URL variantFreqsLoadingServiceURL = new URL("http://alpha-api.nextprot.org/statements/variants/frequencies/");
+		String K22URL = "http://kant.sib.swiss:9001/gnomad/2019-03-14/chr22.json";
+		String variantFreqsLoadingServiceURL = "http://alpha-api.nextprot.org/statements/variants/frequencies/";
 
-		Pump<Statement> pump = new WebStatementPump(K22URL);
+		Pump<Statement> pump = new HttpStatementPump(K22URL);
 
 		try {
 			Pipeline pipeline = new PipelineBuilder()
 					.start(timer)
-					.source(pump)
+					.source(pump, 100)
 					.split(() -> new VariantFrequencySink(variantFreqsLoadingServiceURL, 1000), 10)
 					.build();
 
@@ -68,10 +67,10 @@ public class LoadVariantFrequenciesPipeline {
 
 	private static class VariantFrequencySink extends Sink {
 
-		private final URL loadingServiceURL;
+		private final String loadingServiceURL;
 		private final int bufferSize;
 
-		private VariantFrequencySink(URL loadingServiceURL, int bufferSize) {
+		private VariantFrequencySink(String loadingServiceURL, int bufferSize) {
 
 			this.bufferSize = bufferSize;
 			this.loadingServiceURL = loadingServiceURL;
@@ -102,7 +101,7 @@ public class LoadVariantFrequenciesPipeline {
 			buffer = new ArrayList<>(sink.bufferSize);
 			this.bufferSize = sink.bufferSize;
 			try {
-				loadingServiceURI = sink.loadingServiceURL.toURI();
+				loadingServiceURI = new URI(sink.loadingServiceURL);
 			} catch (URISyntaxException e) {
 				throw new IllegalStateException(sink.loadingServiceURL+": not a valid url");
 			}

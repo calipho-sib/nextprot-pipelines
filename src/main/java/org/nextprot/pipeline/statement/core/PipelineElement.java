@@ -43,9 +43,8 @@ public interface PipelineElement<E extends PipelineElement> {
 
 	/**
 	 * Disconnect sink and source pipes
-	 * @throws IOException
 	 */
-	void closeValves() throws IOException;
+	void closeValves();
 
 	default Thread newActiveValve() {
 

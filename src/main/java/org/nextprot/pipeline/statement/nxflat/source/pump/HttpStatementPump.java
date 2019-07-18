@@ -60,6 +60,10 @@ public class HttpStatementPump implements Pump<Statement> {
 		}
 	}
 
+	public String getUrl() {
+		return url;
+	}
+
 	@Override
 	public Statement pump() throws PumpException {
 

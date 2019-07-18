@@ -8,6 +8,7 @@ import org.nextprot.pipeline.statement.core.elements.source.PumpingSource;
 import org.nextprot.pipeline.statement.core.elements.demux.Demultiplexer;
 import org.nextprot.pipeline.statement.core.elements.demux.DuplicableElement;
 
+import java.io.FileNotFoundException;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -25,9 +26,9 @@ public class PipelineBuilder implements Pipeline.StartStep {
 	public class SourceStep implements Pipeline.SourceStep {
 
 		@Override
-		public Pipeline.FilterStep source(Pump<Statement> pump) {
+		public Pipeline.FilterStep source(Pump<Statement> pump, int capacity) {
 
-			final PumpingSource source = new PumpingSource(pump);
+			final PumpingSource source = new PumpingSource(pump, capacity);
 			dataCollector.setSource(source);
 
 			return new FilterStep(source);
@@ -89,7 +90,7 @@ public class PipelineBuilder implements Pipeline.StartStep {
 		public class TerminateStep implements Pipeline.TerminateStep {
 
 			@Override
-			public Pipeline build() throws Exception {
+			public Pipeline build() {
 
 				if (dataCollector.getDemuxFromElement() != null) {
 
@@ -102,7 +103,12 @@ public class PipelineBuilder implements Pipeline.StartStep {
 					dataCollector.getElementBeforeDemux().pipe(demultiplexer);
 				}
 
-				return new Pipeline(dataCollector);
+				try {
+					return new Pipeline(dataCollector);
+				} catch (FileNotFoundException e) {
+
+					throw new IllegalStateException("cannot create log files: "+e.getMessage());
+				}
 			}
 		}
 	}
