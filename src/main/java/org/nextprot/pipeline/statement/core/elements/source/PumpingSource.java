@@ -3,7 +3,6 @@ package org.nextprot.pipeline.statement.core.elements.source;
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.elements.Source;
 
-import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 
 /**
@@ -15,15 +14,17 @@ import java.util.concurrent.BlockingQueue;
 public class PumpingSource extends Source {
 
 	private final Pump<Statement> pump;
+	private final int capacity;
 
-	public PumpingSource(Pump<Statement> pump) {
+	public PumpingSource(Pump<Statement> pump, int capacity) {
 
-		super(1);
+		super(capacity);
 		this.pump = pump;
+		this.capacity = capacity;
 	}
 
 	@Override
-	protected synchronized Statement extract() throws IOException {
+	protected synchronized Statement extract() {
 
 		return pump.pump();
 	}
@@ -31,11 +32,11 @@ public class PumpingSource extends Source {
 	@Override
 	protected int extractionCapacity() {
 
-		return 1;
+		return capacity;
 	}
 
 	@Override
-	public synchronized void closeValves() throws IOException {
+	public synchronized void closeValves() {
 
 		pump.stop();
 		super.closeValves();
