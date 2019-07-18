@@ -37,23 +37,12 @@ public interface PipelineElement<E extends PipelineElement> {
 
 	/**
 	 * Open the valve processing in a new thread and open also subsequent valves
-	 * @param collector collect the running valve threads for management
+	 * @param valves collect the running valve threads for management
 	 */
-	void openValves(List<Thread> collector);
+	void openValves(List<Valve> valves);
 
 	/**
 	 * Disconnect sink and source pipes
 	 */
 	void closeValves();
-
-	default Thread newActiveValve() {
-
-		Valve valve = newValve();
-
-		Thread thread = new Thread(valve);
-		thread.setName(valve.getName());
-		thread.start();
-
-		return thread;
-	}
 }

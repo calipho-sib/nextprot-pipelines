@@ -74,10 +74,11 @@ public abstract class Source extends BasePipelineElement<PipelineElement> {
 		}
 
 		@Override
-		public boolean handleFlow(Source source) throws Exception {
+		public boolean handleFlow() throws Exception {
 
 			FlowLog log = (FlowLog) getFlowEventHandler();
 
+			Source source = getStage();
 			Statement statement = source.extract();
 
 			if (statement == null) {
@@ -104,7 +105,7 @@ public abstract class Source extends BasePipelineElement<PipelineElement> {
 		@Override
 		protected FlowLog createFlowEventHandler() throws FileNotFoundException {
 
-			return new FlowLog(getName(), capacity);
+			return new FlowLog(Thread.currentThread().getName(), capacity);
 		}
 
 		private static class FlowLog extends BaseFlowLog {

@@ -10,11 +10,10 @@ import org.nextprot.pipeline.statement.core.PipelineElement;
  */
 public interface Valve<E extends PipelineElement> extends Runnable {
 
-	/** handle the current flow and @return true if the flow has been poisoned */
-	boolean handleFlow(E pipelineElement) throws Exception;
+	E getStage();
 
-	/** @return the name of the valve handling this flow */
-	String getName();
+	/** handle the current flow and @return true if the flow has been poisoned */
+	boolean handleFlow() throws Exception;
 
 	FlowEventHandler getFlowEventHandler();
 }

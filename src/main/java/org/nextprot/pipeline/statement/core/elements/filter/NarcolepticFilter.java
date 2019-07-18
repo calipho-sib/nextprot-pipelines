@@ -69,7 +69,7 @@ public class NarcolepticFilter extends BaseFilter {
 		@Override
 		protected FlowEventHandler createFlowEventHandler() throws FileNotFoundException {
 
-			return new FilterFlowLog(getName());
+			return new FilterFlowLog(Thread.currentThread().getName());
 		}
 
 		private void takeANap(long nap) {

@@ -2,6 +2,7 @@ package org.nextprot.pipeline.statement.nxflat.sink;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.elements.Sink;
+import org.nextprot.pipeline.statement.core.elements.Source;
 import org.nextprot.pipeline.statement.nxflat.NxFlatTable;
 import org.nextprot.pipeline.statement.core.elements.flowable.BaseFlowLog;
 import org.nextprot.pipeline.statement.core.elements.flowable.BaseValve;
@@ -44,7 +45,9 @@ public class NxFlatMappedTableSink extends Sink {
 		}
 
 		@Override
-		public boolean handleFlow(NxFlatMappedTableSink sink) throws Exception {
+		public boolean handleFlow() throws Exception {
+
+			NxFlatMappedTableSink sink = getStage();
 
 			Statement statement = sink.getSinkChannel().take();
 			getFlowEventHandler().statementHandled(statement);
@@ -55,7 +58,7 @@ public class NxFlatMappedTableSink extends Sink {
 		@Override
 		protected FlowEventHandler createFlowEventHandler() throws FileNotFoundException {
 
-			return new FlowLog(getName(), table);
+			return new FlowLog(Thread.currentThread().getName(), table);
 		}
 
 		private static class FlowLog extends BaseFlowLog {

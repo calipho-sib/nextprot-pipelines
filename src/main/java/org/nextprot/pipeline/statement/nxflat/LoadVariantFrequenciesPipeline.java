@@ -108,8 +108,9 @@ public class LoadVariantFrequenciesPipeline {
 		}
 
 		@Override
-		public boolean handleFlow(VariantFrequencySink sink) throws Exception {
+		public boolean handleFlow() throws Exception {
 
+			VariantFrequencySink sink = getStage();
 			Statement statement = sink.getSinkChannel().take();
 
 			buffer.add(statement);
@@ -182,7 +183,7 @@ public class LoadVariantFrequenciesPipeline {
 		@Override
 		protected FlowEventHandler createFlowEventHandler() throws FileNotFoundException {
 
-			return new FlowLog(getName());
+			return new FlowLog(Thread.currentThread().getName());
 		}
 	}
 

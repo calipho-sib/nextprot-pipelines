@@ -173,12 +173,12 @@ public class Demultiplexer implements Demux, PipelineElement<DuplicableElement> 
 	}
 
 	@Override
-	public void openValves(List<Thread> runningValves) {
+	public void openValves(List<org.nextprot.pipeline.statement.core.elements.flowable.Valve> runningValves) {
 
-		Thread runningValve = newActiveValve();
+		Valve valve = newValve();
 		eventHandler.valvesOpened();
 
-		runningValves.add(runningValve);
+		runningValves.add(valve);
 
 		// start the next elements into their own thread
 		for (PipelineElement sink : nextConnectedSinks) {
@@ -264,7 +264,9 @@ public class Demultiplexer implements Demux, PipelineElement<DuplicableElement> 
 		}
 
 		@Override
-		public boolean handleFlow(Demultiplexer demultiplexer) throws Exception {
+		public boolean handleFlow() throws Exception {
+
+			Demultiplexer demultiplexer = getStage();
 
 			Statement current = demultiplexer.getSinkChannel().take();
 
@@ -284,7 +286,7 @@ public class Demultiplexer implements Demux, PipelineElement<DuplicableElement> 
 		@Override
 		protected FlowEventHandler createFlowEventHandler() throws FileNotFoundException {
 
-			return new FlowLog(getName());
+			return new FlowLog(Thread.currentThread().getName());
 		}
 	}
 

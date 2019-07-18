@@ -45,7 +45,7 @@ public class NxFlatRawTableFilter extends BaseFilter {
 		@Override
 		protected FlowEventHandler createFlowEventHandler() throws Exception {
 
-			return new FlowLog(getName(), table);
+			return new FlowLog(Thread.currentThread().getName(), table);
 		}
 
 		@Override

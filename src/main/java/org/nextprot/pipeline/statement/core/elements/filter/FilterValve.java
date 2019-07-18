@@ -10,8 +10,8 @@ public abstract class FilterValve<F extends BaseFilter> extends BaseValve<F> imp
 	}
 
 	@Override
-	public boolean handleFlow(F filter) throws Exception {
+	public boolean handleFlow() throws Exception {
 
-		return filter(filter.getSinkChannel(), filter.getSourceChannel());
+		return filter(getStage().getSinkChannel(), getStage().getSourceChannel());
 	}
 }

@@ -5,21 +5,13 @@ import org.nextprot.pipeline.statement.core.PipelineElement;
 
 public abstract class BaseValve<E extends PipelineElement> implements Valve<E> {
 
-	private static int FLOWABLE_NUMBER = 0;
-
-	private static synchronized int NEXT_FLOWABLE_NUM() {
-		return FLOWABLE_NUMBER++;
-	}
-
 	// Warning: this is a mutable object that should perform synchronizations for this Flowable to remain thread-safe
 	private final E pipelineElement;
-	private final String name;
 	private FlowEventHandler flowEventHandler;
 
 	public BaseValve(E pipelineElement) {
 
 		this.pipelineElement = pipelineElement;
-		this.name = this.pipelineElement.getName()+ "-" + NEXT_FLOWABLE_NUM();
 	}
 
 	protected FlowEventHandler createFlowEventHandler() throws Exception {
@@ -35,6 +27,12 @@ public abstract class BaseValve<E extends PipelineElement> implements Valve<E> {
 	}
 
 	@Override
+	public E getStage() {
+
+		return pipelineElement;
+	}
+
+	@Override
 	public void run() {
 
 		try {
@@ -45,17 +43,11 @@ public abstract class BaseValve<E extends PipelineElement> implements Valve<E> {
 
 			while (!endOfFlow) {
 
-				endOfFlow = handleFlow(pipelineElement);
+				endOfFlow = handleFlow();
 			}
 			flowEventHandler.endOfFlow();
 		} catch (Exception e) {
 			System.err.println("EXCEPTION thrown by "+Thread.currentThread().getName() +": "+e.getMessage());
 		}
-	}
-
-	@Override
-	public String getName() {
-
-		return name;
 	}
 }

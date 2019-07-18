@@ -4,6 +4,7 @@ import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.elements.Sink;
 import org.nextprot.pipeline.statement.core.elements.Source;
 import org.nextprot.pipeline.statement.core.elements.filter.BaseFilter;
+import org.nextprot.pipeline.statement.core.elements.flowable.Valve;
 import org.nextprot.pipeline.statement.core.elements.source.Pump;
 import org.nextprot.pipeline.statement.core.elements.demux.DuplicableElement;
 
@@ -14,6 +15,12 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class Pipeline {
+
+	private static int FLOWABLE_NUMBER = 0;
+
+	private static synchronized int NEXT_FLOWABLE_NUM() {
+		return FLOWABLE_NUMBER++;
+	}
 
 	private final Source source;
 	private final List<Thread> activeValves;
@@ -31,12 +38,27 @@ public class Pipeline {
 
 	public void openValves() {
 
-		source.openValves(activeValves);
+		List<Valve> valves = new ArrayList<>();
 
-		for (Thread activeValve : activeValves) {
+		source.openValves(valves);
+
+		for (Valve valve : valves) {
+
+			Thread activeValve = newThread(valve);
+			activeValve.start();
+			activeValves.add(activeValve);
+
 			log.valvesOpened(activeValve);
 		}
 		monitorable.started();
+	}
+
+	private Thread newThread(Valve valve) {
+
+		Thread thread = new Thread(valve);
+		thread.setName(valve.getStage().getName()+ "-" + NEXT_FLOWABLE_NUM());
+
+		return thread;
 	}
 
 	/**
