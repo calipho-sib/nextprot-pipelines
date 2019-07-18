@@ -3,10 +3,8 @@ package org.nextprot.pipeline.statement.core.elements;
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.BaseLog;
 import org.nextprot.pipeline.statement.core.Stage;
-import org.nextprot.pipeline.statement.core.elements.flowable.RunnableStage;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.stream.Stream;
@@ -53,12 +51,6 @@ public abstract class BaseStage<E extends Stage> implements Stage<E> {
 		}
 	}
 
-	/**
-	 * Pipe this element with the next element
-	 *
-	 * @param nextElement
-	 * @throws IOException
-	 */
 	@Override
 	public void pipe(E nextElement) {
 

@@ -25,12 +25,12 @@ public interface Stage<E extends Stage> {
 	/** Pipe to the next stage */
 	void pipe(E stage);
 
-	/** @return the sink pipe port or null */
+	/** @return the sink pipe port or null if absent */
 	BlockingQueue<Statement> getSinkChannel();
 
 	void setSinkChannel(BlockingQueue<Statement> sinkChannel);
 
-	/** @return the source pipe port or null */
+	/** @return the source pipe port or null if absent */
 	BlockingQueue<Statement> getSourceChannel();
 
 	/** @return the next piped stage(s) */
