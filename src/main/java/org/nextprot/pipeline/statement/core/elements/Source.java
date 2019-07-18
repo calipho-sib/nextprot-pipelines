@@ -1,9 +1,9 @@
 package org.nextprot.pipeline.statement.core.elements;
 
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.core.PipelineElement;
+import org.nextprot.pipeline.statement.core.Stage;
 import org.nextprot.pipeline.statement.core.elements.flowable.BaseFlowLog;
-import org.nextprot.pipeline.statement.core.elements.flowable.BaseValve;
+import org.nextprot.pipeline.statement.core.elements.flowable.BaseRunnableStage;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -16,7 +16,7 @@ import java.util.concurrent.BlockingQueue;
  *   |  S  >==<  F  >== ...
  *    -----    -----
  */
-public abstract class Source extends BasePipelineElement<PipelineElement> {
+public abstract class Source extends BaseStage<Stage> {
 
 	/** poisoned statement pill */
 	public static final Statement POISONED_STATEMENT = new Statement();
@@ -40,38 +40,36 @@ public abstract class Source extends BasePipelineElement<PipelineElement> {
 
 	protected int countPoisonedPillsToProduce() {
 
-		PipelineElement element = this;
-
-		int max = 0;
+		Stage element = this;
 
 		// look for the max next stage number
 		while ((element = element.nextStage()) != null) {
 
 			int count = element.countStages();
 
-			if (count > max) {
-				max = count;
+			if (count > 1) {
+				return count;
 			}
 		}
-		return max;
+		return 1;
 	}
 
 	@Override
-	public Valve newValve() {
+	public RunnableStage newRunnableStage() {
 
-		return new Valve(this, extractionCapacity(), countPoisonedPillsToProduce());
+		return new RunnableStage(this, extractionCapacity(), countPoisonedPillsToProduce());
 	}
 
 	protected abstract Statement extract() throws IOException;
 
 	protected abstract int extractionCapacity();
 
-	protected static class Valve extends BaseValve<Source> {
+	protected static class RunnableStage extends BaseRunnableStage<Source> {
 
 		private final int capacity;
 		private final int pills;
 
-		public Valve(Source source, int capacity, int pills) {
+		public RunnableStage(Source source, int capacity, int pills) {
 
 			super(source);
 			this.capacity = capacity;

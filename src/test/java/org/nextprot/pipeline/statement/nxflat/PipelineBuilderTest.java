@@ -26,7 +26,7 @@ public class PipelineBuilderTest {
 		String url = "http://kant.sib.swiss:9001/glyconnect/2019-01-22/all-entries.json";
 
 		Timer timer = new Timer();
-		Pipeline pipeline = newPipeline(url, 5000, 1, 1, timer);
+		Pipeline pipeline = newPipeline(url, 5000, 2, 1, timer);
 
 		pipeline.openValves();
 

@@ -42,8 +42,8 @@ public class PumpingSource extends Source {
 	}
 
 	@Override
-	public Valve newValve() {
+	public RunnableStage newRunnableStage() {
 
-		return new Valve(this, 1, countPoisonedPillsToProduce());
+		return new RunnableStage(this, 1, countPoisonedPillsToProduce());
 	}
 }

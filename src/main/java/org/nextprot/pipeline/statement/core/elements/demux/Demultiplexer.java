@@ -2,12 +2,12 @@ package org.nextprot.pipeline.statement.core.elements.demux;
 
 
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.core.PipelineElement;
-import org.nextprot.pipeline.statement.core.elements.BasePipelineElement;
+import org.nextprot.pipeline.statement.core.Stage;
+import org.nextprot.pipeline.statement.core.elements.BaseStage;
 import org.nextprot.pipeline.statement.core.elements.ElementEventHandler;
 import org.nextprot.pipeline.statement.core.elements.Sink;
 import org.nextprot.pipeline.statement.core.elements.flowable.BaseFlowLog;
-import org.nextprot.pipeline.statement.core.elements.flowable.BaseValve;
+import org.nextprot.pipeline.statement.core.elements.flowable.BaseRunnableStage;
 import org.nextprot.pipeline.statement.core.elements.flowable.FlowEventHandler;
 
 import java.io.FileNotFoundException;
@@ -22,17 +22,17 @@ import java.util.stream.Stream;
 import static org.nextprot.pipeline.statement.core.elements.Source.POISONED_STATEMENT;
 
 /**
- * De-multiplexer receive statements via one source pipe and
- * load balance them to multiple sink pipes.
+ * De-multiplexer receive statements via one source stage and
+ * load balance them to multiple sink stages.
  *
  * TODO: put common code with BasePipelineElement in a new abstract class
  */
-public class Demultiplexer implements PipelineElement<DuplicableElement> {
+public class Demultiplexer implements Stage<DuplicableStage> {
 
 	private final int sinkCapacity;
 	private BlockingQueue<Statement> sinkChannel;
 	private final CircularList<BlockingQueue<Statement>> sourceChannels;
-	private final List<DuplicableElement> nextConnectedSinks;
+	private final List<DuplicableStage> nextConnectedSinks;
 	private final ElementEventHandler eventHandler;
 
 	private final AtomicInteger incrementer = new AtomicInteger (-1);
@@ -93,15 +93,15 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 	 * 		                     -XXXX- [ HEAD_0      FILTER_1      FILTER_2      ....    SINK_N   ]
 	 */
 	@Override
-	public void pipe(DuplicableElement head) {
+	public void pipe(DuplicableStage head) {
 
-		List<DuplicableElement> originalElements = getElementsFromHead(head);
+		List<DuplicableStage> originalElements = getElementsFromHead(head);
 
 		for (int i = 0; i < sourceChannels.size(); i++) {
 
 			BlockingQueue<Statement> sourceChannel = sourceChannels.get(i);
 
-			DuplicableElement duplicatedHead =
+			DuplicableStage duplicatedHead =
 					duplicateAndPipe(originalElements, sourceChannel.remainingCapacity());
 
 			duplicatedHead.setSinkChannel(sourceChannel);
@@ -120,10 +120,10 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 	 * @param capacity the channels capacity
 	 * @return the head element
 	 */
-	private DuplicableElement duplicateAndPipe(List<DuplicableElement> originalElements, int capacity) {
+	private DuplicableStage duplicateAndPipe(List<DuplicableStage> originalElements, int capacity) {
 
 		// 1. Duplicate elements from HEAD to SINK
-		List<DuplicableElement> duplicatedElements = originalElements.stream()
+		List<DuplicableStage> duplicatedElements = originalElements.stream()
 				.map(elt -> elt.duplicate(capacity))
 				.collect(Collectors.toList());
 
@@ -141,7 +141,7 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 	 * @param elements the elements to pipe
 	 * @return the head of the new pipeline
 	 */
-	private static DuplicableElement pipeTogether(List<DuplicableElement> elements) {
+	private static DuplicableStage pipeTogether(List<DuplicableStage> elements) {
 
 		if (elements.isEmpty()) {
 
@@ -156,13 +156,13 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 		return elements.get(0);
 	}
 
-	private List<DuplicableElement> getElementsFromHead(DuplicableElement head) {
+	private List<DuplicableStage> getElementsFromHead(DuplicableStage head) {
 
-		List<DuplicableElement> pipelineElementList = new ArrayList<>();
+		List<DuplicableStage> pipelineElementList = new ArrayList<>();
 
 		pipelineElementList.add(head);
 
-		DuplicableElement element = head;
+		DuplicableStage element = head;
 
 		while ((element = element.nextStage()) != null) {
 
@@ -173,31 +173,21 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 	}
 
 	@Override
-	public Valve openValve() {
+	public void close() {
 
-		Valve valve = newValve();
-		eventHandler.valveOpened();
-
-		return valve;
-	}
-
-	@Override
-	public void closeValve() {
-
-		eventHandler.valveClosed();
 		eventHandler.sinkUnpiped();
 	}
 
 	@Override
-	public Valve newValve() {
+	public RunnableStage newRunnableStage() {
 
-		return new Valve(this);
+		return new RunnableStage(this);
 	}
 
 	private ElementEventHandler createElementEventHandler() throws FileNotFoundException {
 
 		//return new ElementEventHandler.Mute();
-		return new BasePipelineElement.ElementLog(getName());
+		return new BaseStage.ElementLog(getName());
 	}
 
 	public String getName() {
@@ -231,13 +221,13 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 	}
 
 	@Override
-	public Stream<DuplicableElement> nextStages() {
+	public Stream<DuplicableStage> nextStages() {
 
 		return nextConnectedSinks.stream();
 	}
 
 	@Override
-	public DuplicableElement nextStage() {
+	public DuplicableStage nextStage() {
 
 		throw new IllegalStateException("should not call nextFirstSink() in Demultiplexer");
 	}
@@ -250,11 +240,11 @@ public class Demultiplexer implements PipelineElement<DuplicableElement> {
 		}
 	}
 
-	private static class Valve extends BaseValve<Demultiplexer> {
+	private static class RunnableStage extends BaseRunnableStage<Demultiplexer> {
 
 		private int poisonedStatementReceived = 0;
 
-		public Valve(Demultiplexer demultiplexer) {
+		public RunnableStage(Demultiplexer demultiplexer) {
 
 			super(demultiplexer);
 		}

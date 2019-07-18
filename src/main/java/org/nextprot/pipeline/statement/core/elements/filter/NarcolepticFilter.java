@@ -3,7 +3,7 @@ package org.nextprot.pipeline.statement.core.elements.filter;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.elements.flowable.FlowEventHandler;
-import org.nextprot.pipeline.statement.core.elements.demux.DuplicableElement;
+import org.nextprot.pipeline.statement.core.elements.demux.DuplicableStage;
 
 import java.io.FileNotFoundException;
 import java.util.concurrent.BlockingQueue;
@@ -30,22 +30,22 @@ public class NarcolepticFilter extends BaseFilter {
 	}
 
 	@Override
-	public DuplicableElement duplicate(int newCapacity) {
+	public DuplicableStage duplicate(int newCapacity) {
 
 		return new NarcolepticFilter(newCapacity, this.takeANapInMillis);
 	}
 
 	@Override
-	public Valve newValve() {
+	public RunnableStage newRunnableStage() {
 
-		return new Valve(this);
+		return new RunnableStage(this);
 	}
 
-	private static class Valve extends FilterValve<NarcolepticFilter> {
+	private static class RunnableStage extends FilterRunnableStage<NarcolepticFilter> {
 
 		private final long napTime;
 
-		private Valve(NarcolepticFilter pipelineElement) {
+		private RunnableStage(NarcolepticFilter pipelineElement) {
 			super(pipelineElement);
 
 			napTime = pipelineElement.takeANapInMillis;

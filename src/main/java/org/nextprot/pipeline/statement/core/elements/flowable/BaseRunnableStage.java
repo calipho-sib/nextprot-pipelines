@@ -1,15 +1,15 @@
 package org.nextprot.pipeline.statement.core.elements.flowable;
 
-import org.nextprot.pipeline.statement.core.PipelineElement;
+import org.nextprot.pipeline.statement.core.Stage;
 
 
-public abstract class BaseValve<E extends PipelineElement> implements Valve<E> {
+public abstract class BaseRunnableStage<E extends Stage> implements RunnableStage<E> {
 
 	// Warning: this is a mutable object that should perform synchronizations for this Flowable to remain thread-safe
 	private final E pipelineElement;
 	private FlowEventHandler flowEventHandler;
 
-	public BaseValve(E pipelineElement) {
+	public BaseRunnableStage(E pipelineElement) {
 
 		this.pipelineElement = pipelineElement;
 	}

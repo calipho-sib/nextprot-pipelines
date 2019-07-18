@@ -4,7 +4,7 @@ import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.elements.Sink;
 import org.nextprot.pipeline.statement.nxflat.NxFlatTable;
 import org.nextprot.pipeline.statement.core.elements.flowable.BaseFlowLog;
-import org.nextprot.pipeline.statement.core.elements.flowable.BaseValve;
+import org.nextprot.pipeline.statement.core.elements.flowable.BaseRunnableStage;
 import org.nextprot.pipeline.statement.core.elements.flowable.FlowEventHandler;
 
 import java.io.FileNotFoundException;
@@ -22,9 +22,9 @@ public class NxFlatMappedTableSink extends Sink {
 	}
 
 	@Override
-	public Valve newValve() {
+	public RunnableStage newRunnableStage() {
 
-		return new Valve(this);
+		return new RunnableStage(this);
 	}
 
 	@Override
@@ -33,11 +33,11 @@ public class NxFlatMappedTableSink extends Sink {
 		return new NxFlatMappedTableSink();
 	}
 
-	private static class Valve extends BaseValve<NxFlatMappedTableSink> {
+	private static class RunnableStage extends BaseRunnableStage<NxFlatMappedTableSink> {
 
 		private final NxFlatTable table;
 
-		private Valve(NxFlatMappedTableSink sink) {
+		private RunnableStage(NxFlatMappedTableSink sink) {
 			super(sink);
 
 			this.table = sink.table;

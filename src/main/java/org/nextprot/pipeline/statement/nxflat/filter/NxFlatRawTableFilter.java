@@ -2,7 +2,7 @@ package org.nextprot.pipeline.statement.nxflat.filter;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.elements.filter.BaseFilter;
-import org.nextprot.pipeline.statement.core.elements.filter.FilterValve;
+import org.nextprot.pipeline.statement.core.elements.filter.FilterRunnableStage;
 import org.nextprot.pipeline.statement.nxflat.NxFlatTable;
 import org.nextprot.pipeline.statement.core.elements.flowable.BaseFlowLog;
 import org.nextprot.pipeline.statement.core.elements.flowable.FlowEventHandler;
@@ -22,9 +22,9 @@ public class NxFlatRawTableFilter extends BaseFilter {
 	}
 
 	@Override
-	public Valve newValve() {
+	public RunnableStage newRunnableStage() {
 
-		return new Valve(this);
+		return new RunnableStage(this);
 	}
 
 	@Override
@@ -33,11 +33,11 @@ public class NxFlatRawTableFilter extends BaseFilter {
 		return new NxFlatRawTableFilter(newCapacity);
 	}
 
-	private static class Valve extends FilterValve<NxFlatRawTableFilter> {
+	private static class RunnableStage extends FilterRunnableStage<NxFlatRawTableFilter> {
 
 		private final NxFlatTable table;
 
-		private Valve(NxFlatRawTableFilter filter) {
+		private RunnableStage(NxFlatRawTableFilter filter) {
 			super(filter);
 			this.table = filter.table;
 		}

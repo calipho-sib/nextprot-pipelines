@@ -4,9 +4,9 @@ import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.elements.Sink;
 import org.nextprot.pipeline.statement.core.elements.Source;
 import org.nextprot.pipeline.statement.core.elements.filter.BaseFilter;
-import org.nextprot.pipeline.statement.core.elements.flowable.Valve;
+import org.nextprot.pipeline.statement.core.elements.flowable.RunnableStage;
 import org.nextprot.pipeline.statement.core.elements.source.Pump;
-import org.nextprot.pipeline.statement.core.elements.demux.DuplicableElement;
+import org.nextprot.pipeline.statement.core.elements.demux.DuplicableStage;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -17,14 +17,14 @@ import java.util.stream.Stream;
 
 public class Pipeline {
 
-	private static int FLOWABLE_NUMBER = 0;
+	private static int ACTIVE_STAGE_NUMBER = 0;
 
-	private static synchronized int NEXT_FLOWABLE_NUM() {
-		return FLOWABLE_NUMBER++;
+	private static synchronized int NEXT_ACTIVE_STAGE_NUMBER() {
+		return ACTIVE_STAGE_NUMBER++;
 	}
 
 	private final Source source;
-	private final List<Thread> activeValves;
+	private final List<Thread> activeStages;
 	private final Monitorable monitorable;
 	private final Log log;
 
@@ -34,48 +34,48 @@ public class Pipeline {
 		monitorable = dataCollector.getMonitorable();
 
 		log = new Log();
-		activeValves = new ArrayList<>();
+		activeStages = new ArrayList<>();
 	}
 
 	public void openValves() {
 
-		List<Valve> valves = new ArrayList<>();
+		List<RunnableStage> runnableStages = new ArrayList<>();
 
-		openValves(source, valves);
+		openValves(source, runnableStages);
 
-		for (Valve valve : valves) {
+		for (RunnableStage runnableStage : runnableStages) {
 
-			Thread activeValve = newThread(valve);
-			activeValve.start();
-			activeValves.add(activeValve);
+			Thread activeStage = newThread(runnableStage);
+			activeStage.start();
+			activeStages.add(activeStage);
 
-			log.valvesOpened(activeValve);
+			log.valvesOpened(activeStage);
 		}
 		monitorable.started();
 	}
 
-	private void openValves(PipelineElement stage, List<Valve> runningValves) {
+	private void openValves(Stage stage, List<RunnableStage> runningValves) {
 
-		Valve valve = stage.newValve();
-		//eventHandler.valveOpened();
-		runningValves.add(valve);
+		RunnableStage runnableStage = stage.newRunnableStage();
+		log.valveOpened(runnableStage);
+		runningValves.add(runnableStage);
 
-		Stream<PipelineElement> nextStages = stage.nextStages();
+		Stream<Stage> nextStages = stage.nextStages();
 		nextStages.forEach(s -> openValves(s, runningValves));
 	}
 
-	private void closeValves(PipelineElement stage) {
+	private void closeValves(Stage stage) {
 
-		stage.closeValve();
+		stage.close();
 
-		Stream<PipelineElement> nextStages = stage.nextStages();
+		Stream<Stage> nextStages = stage.nextStages();
 		nextStages.forEach(sink -> closeValves(sink));
 	}
 
-	private Thread newThread(Valve valve) {
+	private Thread newThread(RunnableStage runnableStage) {
 
-		Thread thread = new Thread(valve);
-		thread.setName(valve.getStage().getName()+ "-" + NEXT_FLOWABLE_NUM());
+		Thread thread = new Thread(runnableStage);
+		thread.setName(runnableStage.getStage().getName()+ "-" + NEXT_ACTIVE_STAGE_NUMBER());
 
 		return thread;
 	}
@@ -85,9 +85,9 @@ public class Pipeline {
 	 */
 	public void waitUntilCompletion() throws InterruptedException {
 
-		for (Thread activeValve : activeValves) {
-			activeValve.join();
-			log.valvesClosed(activeValve);
+		for (Thread activeStage : activeStages) {
+			activeStage.join();
+			log.valvesClosed(activeStage);
 		}
 		closeValves(source);
 		monitorable.ended();
@@ -109,7 +109,7 @@ public class Pipeline {
 
 	public interface FilterStep {
 
-		FilterStep filter(Function<Integer, DuplicableElement> filterProvider);
+		FilterStep filter(Function<Integer, DuplicableStage> filterProvider);
 		TerminateStep sink(Supplier<Sink> sinkProvider);
 
 		FilterStep split(Function<Integer, BaseFilter> filterProvider, int partitionCount);
@@ -142,18 +142,18 @@ public class Pipeline {
 		private Source source;
 		private Monitorable monitorable;
 		private int demuxSourceCount;
-		private PipelineElement elementBeforeDemux;
-		private DuplicableElement fromElement;
+		private Stage elementBeforeDemux;
+		private DuplicableStage fromElement;
 
 		public int getDemuxSourceCount() {
 			return demuxSourceCount;
 		}
 
-		public DuplicableElement getDemuxFromElement() {
+		public DuplicableStage getDemuxFromElement() {
 			return fromElement;
 		}
 
-		public PipelineElement getElementBeforeDemux() {
+		public Stage getElementBeforeDemux() {
 			return elementBeforeDemux;
 		}
 
@@ -161,7 +161,7 @@ public class Pipeline {
 			this.demuxSourceCount = demuxSourceCount;
 		}
 
-		public void setDemuxFromElement(PipelineElement elementBeforeDemux, DuplicableElement fromElement) {
+		public void setDemuxFromElement(Stage elementBeforeDemux, DuplicableStage fromElement) {
 			this.elementBeforeDemux = elementBeforeDemux;
 			this.fromElement = fromElement;
 		}
@@ -188,6 +188,16 @@ public class Pipeline {
 		private Log() throws FileNotFoundException {
 
 			super("Pipeline");
+		}
+
+		private void valveOpened(RunnableStage stage) {
+
+			sendMessage(stage.getStage().getName() + " valve: opened");
+		}
+
+		private void valveClosed(RunnableStage stage) {
+
+			sendMessage(stage.getStage().getName() + " valve: closed");
 		}
 
 		private void valvesOpened(Thread thread) {

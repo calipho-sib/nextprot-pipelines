@@ -6,7 +6,7 @@ import org.nextprot.pipeline.statement.core.elements.filter.BaseFilter;
 import org.nextprot.pipeline.statement.core.elements.source.Pump;
 import org.nextprot.pipeline.statement.core.elements.source.PumpingSource;
 import org.nextprot.pipeline.statement.core.elements.demux.Demultiplexer;
-import org.nextprot.pipeline.statement.core.elements.demux.DuplicableElement;
+import org.nextprot.pipeline.statement.core.elements.demux.DuplicableStage;
 
 import java.io.FileNotFoundException;
 import java.util.function.Function;
@@ -37,18 +37,18 @@ public class PipelineBuilder implements Pipeline.StartStep {
 
 	public class FilterStep implements Pipeline.FilterStep {
 
-		private final PipelineElement previousElement;
+		private final Stage previousElement;
 
 
-		FilterStep(PipelineElement previousElement) {
+		FilterStep(Stage previousElement) {
 
 			this.previousElement = previousElement;
 		}
 
 		@Override
-		public Pipeline.FilterStep filter(Function<Integer, DuplicableElement> filterProvider) {
+		public Pipeline.FilterStep filter(Function<Integer, DuplicableStage> filterProvider) {
 
-			DuplicableElement pipedFilter = filterProvider.apply(previousElement.getSourceChannel().remainingCapacity());
+			DuplicableStage pipedFilter = filterProvider.apply(previousElement.getSourceChannel().remainingCapacity());
 			previousElement.pipe(pipedFilter);
 
 			return new FilterStep(pipedFilter);
@@ -94,7 +94,7 @@ public class PipelineBuilder implements Pipeline.StartStep {
 
 				if (dataCollector.getDemuxFromElement() != null) {
 
-					DuplicableElement fromElement = dataCollector.getDemuxFromElement();
+					DuplicableStage fromElement = dataCollector.getDemuxFromElement();
 
 					Demultiplexer demultiplexer = new Demultiplexer(fromElement.getSinkChannel().remainingCapacity(),
 							dataCollector.getDemuxSourceCount());

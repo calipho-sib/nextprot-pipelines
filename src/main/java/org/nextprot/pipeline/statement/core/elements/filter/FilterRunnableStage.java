@@ -1,11 +1,11 @@
 package org.nextprot.pipeline.statement.core.elements.filter;
 
 import org.nextprot.pipeline.statement.core.elements.Filter;
-import org.nextprot.pipeline.statement.core.elements.flowable.BaseValve;
+import org.nextprot.pipeline.statement.core.elements.flowable.BaseRunnableStage;
 
-public abstract class FilterValve<F extends BaseFilter> extends BaseValve<F> implements Filter {
+public abstract class FilterRunnableStage<F extends BaseFilter> extends BaseRunnableStage<F> implements Filter {
 
-	protected FilterValve(F pipelineElement) {
+	protected FilterRunnableStage(F pipelineElement) {
 		super(pipelineElement);
 	}
 

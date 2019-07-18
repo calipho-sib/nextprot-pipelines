@@ -12,7 +12,7 @@ import org.nextprot.pipeline.statement.core.Pipeline;
 import org.nextprot.pipeline.statement.core.PipelineBuilder;
 import org.nextprot.pipeline.statement.core.elements.Sink;
 import org.nextprot.pipeline.statement.core.elements.flowable.BaseFlowLog;
-import org.nextprot.pipeline.statement.core.elements.flowable.BaseValve;
+import org.nextprot.pipeline.statement.core.elements.flowable.BaseRunnableStage;
 import org.nextprot.pipeline.statement.core.elements.flowable.FlowEventHandler;
 import org.nextprot.pipeline.statement.core.elements.source.Pump;
 import org.nextprot.pipeline.statement.nxflat.source.pump.HttpStatementPump;
@@ -77,9 +77,9 @@ public class LoadVariantFrequenciesPipeline {
 		}
 
 		@Override
-		public Valve newValve() {
+		public RunnableStage newRunnableStage() {
 
-			return new Valve(this);
+			return new RunnableStage(this);
 		}
 
 		@Override
@@ -89,13 +89,13 @@ public class LoadVariantFrequenciesPipeline {
 		}
 	}
 
-	private static class Valve extends BaseValve<VariantFrequencySink> {
+	private static class RunnableStage extends BaseRunnableStage<VariantFrequencySink> {
 
 		private final List<Statement> buffer;
 		private final int bufferSize;
 		private final URI loadingServiceURI;
 
-		private Valve(VariantFrequencySink sink) {
+		private RunnableStage(VariantFrequencySink sink) {
 			super(sink);
 
 			buffer = new ArrayList<>(sink.bufferSize);

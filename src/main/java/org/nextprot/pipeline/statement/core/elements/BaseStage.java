@@ -2,8 +2,8 @@ package org.nextprot.pipeline.statement.core.elements;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.BaseLog;
-import org.nextprot.pipeline.statement.core.PipelineElement;
-import org.nextprot.pipeline.statement.core.elements.flowable.Valve;
+import org.nextprot.pipeline.statement.core.Stage;
+import org.nextprot.pipeline.statement.core.elements.flowable.RunnableStage;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -29,7 +29,7 @@ import java.util.stream.Stream;
  *
  * WARNING: Not thread safe, should run on a single thread !
  */
-public abstract class BasePipelineElement<E extends PipelineElement> implements PipelineElement<E> {
+public abstract class BaseStage<E extends Stage> implements Stage<E> {
 
 	private E nextElement = null;
 
@@ -37,12 +37,12 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 	private BlockingQueue<Statement> sinkChannel;
 	private final ElementEventHandler eventHandler;
 
-	public BasePipelineElement(int sourceCapacity) {
+	public BaseStage(int sourceCapacity) {
 
 		this(new ArrayBlockingQueue<>(sourceCapacity));
 	}
 
-	public BasePipelineElement(BlockingQueue<Statement> sourceChannel) {
+	public BaseStage(BlockingQueue<Statement> sourceChannel) {
 
 		this.sourceChannel = sourceChannel;
 
@@ -114,18 +114,7 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 	}
 
 	@Override
-	public Valve openValve() {
-
-		Valve valve = newValve();
-		eventHandler.valveOpened();
-
-		return valve;
-	}
-
-	@Override
-	public void closeValve() {
-
-		eventHandler.valveClosed();
+	public void close() {
 
 		if (sinkChannel != null) {
 
@@ -145,12 +134,6 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 		}
 
 		@Override
-		public void valveOpened() {
-
-			sendMessage("valves opened");
-		}
-
-		@Override
 		public void sinkPiped() {
 
 			sendMessage("sink channel port connected");
@@ -166,12 +149,6 @@ public abstract class BasePipelineElement<E extends PipelineElement> implements 
 		public void sourceUnpiped() {
 
 			sendMessage("source channel port disconnected");
-		}
-
-		@Override
-		public void valveClosed() {
-
-			sendMessage("valves closed");
 		}
 	}
 }
