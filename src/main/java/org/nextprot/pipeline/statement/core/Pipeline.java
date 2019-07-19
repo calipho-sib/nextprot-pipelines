@@ -4,9 +4,9 @@ import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.stage.Sink;
 import org.nextprot.pipeline.statement.core.stage.Source;
 import org.nextprot.pipeline.statement.core.stage.filter.BaseFilter;
-import org.nextprot.pipeline.statement.core.stage.flowable.RunnableStage;
+import org.nextprot.pipeline.statement.core.stage.runnable.RunnableStage;
 import org.nextprot.pipeline.statement.core.stage.source.Pump;
-import org.nextprot.pipeline.statement.core.stage.demux.DuplicableStage;
+import org.nextprot.pipeline.statement.core.stage.DuplicableStage;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;

@@ -1,7 +1,7 @@
 package org.nextprot.pipeline.statement.core;
 
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.core.stage.flowable.RunnableStage;
+import org.nextprot.pipeline.statement.core.stage.runnable.RunnableStage;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.stream.Stream;

@@ -1,4 +1,4 @@
-package org.nextprot.pipeline.statement.core.stage.flowable;
+package org.nextprot.pipeline.statement.core.stage.runnable;
 
 import org.nextprot.commons.statements.Statement;
 

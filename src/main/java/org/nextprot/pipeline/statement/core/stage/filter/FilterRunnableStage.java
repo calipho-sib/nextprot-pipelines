@@ -1,7 +1,7 @@
 package org.nextprot.pipeline.statement.core.stage.filter;
 
 import org.nextprot.pipeline.statement.core.stage.Filter;
-import org.nextprot.pipeline.statement.core.stage.flowable.BaseRunnableStage;
+import org.nextprot.pipeline.statement.core.stage.runnable.BaseRunnableStage;
 
 public abstract class FilterRunnableStage<F extends BaseFilter> extends BaseRunnableStage<F> implements Filter {
 

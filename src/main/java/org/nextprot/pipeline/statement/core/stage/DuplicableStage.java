@@ -1,4 +1,4 @@
-package org.nextprot.pipeline.statement.core.stage.demux;
+package org.nextprot.pipeline.statement.core.stage;
 
 
 import org.nextprot.pipeline.statement.core.Stage;

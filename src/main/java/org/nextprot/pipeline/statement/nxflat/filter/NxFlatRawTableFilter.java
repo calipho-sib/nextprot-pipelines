@@ -4,8 +4,8 @@ import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.stage.filter.BaseFilter;
 import org.nextprot.pipeline.statement.core.stage.filter.FilterRunnableStage;
 import org.nextprot.pipeline.statement.nxflat.NxFlatTable;
-import org.nextprot.pipeline.statement.core.stage.flowable.BaseFlowLog;
-import org.nextprot.pipeline.statement.core.stage.flowable.FlowEventHandler;
+import org.nextprot.pipeline.statement.core.stage.runnable.BaseFlowLog;
+import org.nextprot.pipeline.statement.core.stage.runnable.FlowEventHandler;
 
 import java.io.FileNotFoundException;
 import java.util.concurrent.BlockingQueue;

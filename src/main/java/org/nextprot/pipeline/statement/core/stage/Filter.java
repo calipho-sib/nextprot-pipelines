@@ -9,10 +9,10 @@ import java.util.concurrent.BlockingQueue;
 public interface Filter {
 
 	/**
-	 * Filter statements coming from input port to output port
+	 * Filter statements coming from input channel to output channel
 	 *
-	 * @param in  input port
-	 * @param out output port
+	 * @param in  input channel
+	 * @param out output channel
 	 * @return true if the flow has ended
 	 * @throws IOException
 	 */

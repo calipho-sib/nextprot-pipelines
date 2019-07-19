@@ -3,9 +3,9 @@ package org.nextprot.pipeline.statement.nxflat.sink;
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.stage.Sink;
 import org.nextprot.pipeline.statement.nxflat.NxFlatTable;
-import org.nextprot.pipeline.statement.core.stage.flowable.BaseFlowLog;
-import org.nextprot.pipeline.statement.core.stage.flowable.BaseRunnableStage;
-import org.nextprot.pipeline.statement.core.stage.flowable.FlowEventHandler;
+import org.nextprot.pipeline.statement.core.stage.runnable.BaseFlowLog;
+import org.nextprot.pipeline.statement.core.stage.runnable.BaseRunnableStage;
+import org.nextprot.pipeline.statement.core.stage.runnable.FlowEventHandler;
 
 import java.io.FileNotFoundException;
 

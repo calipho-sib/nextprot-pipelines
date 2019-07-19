@@ -2,8 +2,8 @@ package org.nextprot.pipeline.statement.core.stage.filter;
 
 
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.core.stage.flowable.FlowEventHandler;
-import org.nextprot.pipeline.statement.core.stage.demux.DuplicableStage;
+import org.nextprot.pipeline.statement.core.stage.runnable.FlowEventHandler;
+import org.nextprot.pipeline.statement.core.stage.DuplicableStage;
 
 import java.io.FileNotFoundException;
 import java.util.concurrent.BlockingQueue;

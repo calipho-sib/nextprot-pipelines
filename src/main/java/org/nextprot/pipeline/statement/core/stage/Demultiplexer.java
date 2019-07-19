@@ -1,14 +1,11 @@
-package org.nextprot.pipeline.statement.core.stage.demux;
+package org.nextprot.pipeline.statement.core.stage;
 
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.Stage;
-import org.nextprot.pipeline.statement.core.stage.BaseStage;
-import org.nextprot.pipeline.statement.core.stage.ElementEventHandler;
-import org.nextprot.pipeline.statement.core.stage.Sink;
-import org.nextprot.pipeline.statement.core.stage.flowable.BaseFlowLog;
-import org.nextprot.pipeline.statement.core.stage.flowable.BaseRunnableStage;
-import org.nextprot.pipeline.statement.core.stage.flowable.FlowEventHandler;
+import org.nextprot.pipeline.statement.core.stage.runnable.BaseFlowLog;
+import org.nextprot.pipeline.statement.core.stage.runnable.BaseRunnableStage;
+import org.nextprot.pipeline.statement.core.stage.runnable.FlowEventHandler;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
