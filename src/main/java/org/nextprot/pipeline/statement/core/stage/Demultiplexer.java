@@ -20,18 +20,17 @@ import java.util.stream.Stream;
 import static org.nextprot.pipeline.statement.core.stage.Source.POISONED_STATEMENT;
 
 /**
- * De-multiplexer receive statements via one source stage and
- * load balance them to multiple sink stages.
+ * De-multiplexer receives statements via one source stage and distribute them to multiple sink stages
+ * via synchronized channels
  *
- * TODO: put common code with BasePipelineElement in a new abstract class
+ * TODO: put common code with BaseStage in a new abstract class
  */
 public class Demultiplexer implements Stage<DuplicableStage> {
 
 	private final int sinkChannelCapacity;
-	private final int sourceChannelCapacity;
 	private BlockingQueue<Statement> sinkChannel;
 	private final CircularList<BlockingQueue<Statement>> sourceChannels;
-	private final List<DuplicableStage> nextConnectedSinks;
+	private final List<DuplicableStage> nextConnectedStages;
 	private final ElementEventHandler eventHandler;
 
 	private final AtomicInteger incrementer = new AtomicInteger (-1);
@@ -48,22 +47,22 @@ public class Demultiplexer implements Stage<DuplicableStage> {
 	 */
 	public Demultiplexer(int sinkChannelCapacity, int sourceChannelCount, Function<Integer, Integer> newSourceChannelCapacityLambda) {
 
-		this.sinkChannelCapacity = sinkChannelCapacity;
-		this.nextConnectedSinks = new ArrayList<>();
+		if (sinkChannelCapacity <= 0) {
+			throw new IllegalArgumentException("sink channel capacity should be greater than 0: capacity="+sinkChannelCapacity);
+		}
+		if (sourceChannelCount <= 0) {
+			throw new IllegalArgumentException("source channel count should be greater than 0: count="+sourceChannelCount);
+		}
 
-		this.sourceChannelCapacity = newSourceChannelCapacityLambda.apply(sinkChannelCapacity);
+		int sourceChannelCapacity = newSourceChannelCapacityLambda.apply(sinkChannelCapacity);
 
 		if (sourceChannelCapacity <= 0) {
-			throw new IllegalStateException("indivisible capacity: original source channel of capacity "+sinkChannelCapacity
-					+" cannot be divide in "+sourceChannelCount+ " channels");
+			throw new IllegalArgumentException("source channel capacity should be greater than 0: capacity="+sourceChannelCapacity);
 		}
 
+		this.sinkChannelCapacity = sinkChannelCapacity;
 		this.sourceChannels = createSourceChannels(sourceChannelCapacity, sourceChannelCount);
-
-		if (sourceChannels.isEmpty()) {
-
-			throw new IllegalArgumentException(getName()+": cannot create source channels");
-		}
+		this.nextConnectedStages = new ArrayList<>();
 
 		try {
 			eventHandler = createElementEventHandler();
@@ -79,6 +78,12 @@ public class Demultiplexer implements Stage<DuplicableStage> {
 		for (int i=0 ; i<channelCount ; i++) {
 
 			sources.add(new ArrayBlockingQueue<>(capacity));
+		}
+
+		if (sources.isEmpty()) {
+
+			throw new IllegalArgumentException(getName()+": cannot create source channels, capacity="+capacity
+					+", channel count="+channelCount);
 		}
 
 		return sources;
@@ -116,7 +121,7 @@ public class Demultiplexer implements Stage<DuplicableStage> {
 
 			duplicatedHead.setSinkChannel(sourceChannel);
 
-			nextConnectedSinks.add(duplicatedHead);
+			nextConnectedStages.add(duplicatedHead);
 		}
 
 		// unpipe original (TODO: make elements eligible for GC)
@@ -174,7 +179,7 @@ public class Demultiplexer implements Stage<DuplicableStage> {
 
 		DuplicableStage element = head;
 
-		while ((element = element.nextStage()) != null) {
+		while ((element = element.getFirstPipedStage()) != null) {
 
 			pipelineElementList.add(element);
 		}
@@ -220,6 +225,7 @@ public class Demultiplexer implements Stage<DuplicableStage> {
 		this.sinkChannel = channel;
 	}
 
+	/** In this context, only one current source channel is active */
 	@Override
 	public BlockingQueue<Statement> getSourceChannel() {
 
@@ -231,13 +237,13 @@ public class Demultiplexer implements Stage<DuplicableStage> {
 	}
 
 	@Override
-	public Stream<DuplicableStage> nextStages() {
+	public Stream<DuplicableStage> getPipedStages() {
 
-		return nextConnectedSinks.stream();
+		return nextConnectedStages.stream();
 	}
 
 	@Override
-	public DuplicableStage nextStage() {
+	public DuplicableStage getFirstPipedStage() {
 
 		throw new IllegalStateException("should not call nextFirstSink() in Demultiplexer");
 	}
