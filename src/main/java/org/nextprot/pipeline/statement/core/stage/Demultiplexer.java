@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -26,7 +27,8 @@ import static org.nextprot.pipeline.statement.core.stage.Source.POISONED_STATEME
  */
 public class Demultiplexer implements Stage<DuplicableStage> {
 
-	private final int sinkCapacity;
+	private final int sinkChannelCapacity;
+	private final int sourceChannelCapacity;
 	private BlockingQueue<Statement> sinkChannel;
 	private final CircularList<BlockingQueue<Statement>> sourceChannels;
 	private final List<DuplicableStage> nextConnectedSinks;
@@ -34,11 +36,29 @@ public class Demultiplexer implements Stage<DuplicableStage> {
 
 	private final AtomicInteger incrementer = new AtomicInteger (-1);
 
-	public Demultiplexer(int sinkCapacity, int sourceChannelCount) {
+	public Demultiplexer(int sinkChannelCapacity, int sourceChannelCount) {
 
-		this.sinkCapacity = sinkCapacity;
+		this(sinkChannelCapacity, sourceChannelCount, c -> c);
+	}
+
+	/**
+	 * @param sinkChannelCapacity the capacity of the sink channel
+	 * @param sourceChannelCount the number of source channels
+	 * @param newSourceChannelCapacityLambda the lambda that compute the new source channels capacity
+	 */
+	public Demultiplexer(int sinkChannelCapacity, int sourceChannelCount, Function<Integer, Integer> newSourceChannelCapacityLambda) {
+
+		this.sinkChannelCapacity = sinkChannelCapacity;
 		this.nextConnectedSinks = new ArrayList<>();
-		this.sourceChannels = createSourceChannels(sinkCapacity, sourceChannelCount);
+
+		this.sourceChannelCapacity = newSourceChannelCapacityLambda.apply(sinkChannelCapacity);
+
+		if (sourceChannelCapacity <= 0) {
+			throw new IllegalStateException("indivisible capacity: original source channel of capacity "+sinkChannelCapacity
+					+" cannot be divide in "+sourceChannelCount+ " channels");
+		}
+
+		this.sourceChannels = createSourceChannels(sourceChannelCapacity, sourceChannelCount);
 
 		if (sourceChannels.isEmpty()) {
 
@@ -56,16 +76,9 @@ public class Demultiplexer implements Stage<DuplicableStage> {
 
 		CircularList<BlockingQueue<Statement>> sources = new CircularList<>();
 
-		int newCapacity = capacity / channelCount;
-
-		if (newCapacity <= 0) {
-			throw new IllegalStateException("indivisible capacity: original source channel of capacity "+capacity
-					+" cannot be divide in "+channelCount+ " channels");
-		}
-
 		for (int i=0 ; i<channelCount ; i++) {
 
-			sources.add(new ArrayBlockingQueue<>(newCapacity));
+			sources.add(new ArrayBlockingQueue<>(capacity));
 		}
 
 		return sources;
@@ -199,7 +212,7 @@ public class Demultiplexer implements Stage<DuplicableStage> {
 	@Override
 	public void setSinkChannel(BlockingQueue<Statement> channel) {
 
-		if (sinkCapacity != channel.remainingCapacity()) {
+		if (sinkChannelCapacity != channel.remainingCapacity()) {
 
 			throw new Error("Cannot set sink channel with capacity "+channel.remainingCapacity() + " in channel port of capacity "+ sinkChannel.remainingCapacity());
 		}
