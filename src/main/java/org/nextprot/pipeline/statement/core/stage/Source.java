@@ -40,13 +40,13 @@ public abstract class Source extends BaseStage<Stage> {
 
 	protected int countPoisonedPillsToProduce() {
 
-		Stage element = this;
+		Stage stage = this;
 
-		// look for the max next stage number
-		while ((element = element.getFirstPipedStage()) != null) {
+		while ((stage = stage.getFirstPipedStage()) != null) {
 
-			int count = element.countPipedStages();
+			int count = stage.countPipedStages();
 
+			// one demux was found
 			if (count > 1) {
 				return count;
 			}

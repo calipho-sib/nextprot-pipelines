@@ -5,7 +5,7 @@ import org.nextprot.pipeline.statement.core.stage.Sink;
 import org.nextprot.pipeline.statement.core.stage.filter.BaseFilter;
 import org.nextprot.pipeline.statement.core.stage.source.Pump;
 import org.nextprot.pipeline.statement.core.stage.source.PumpingSource;
-import org.nextprot.pipeline.statement.core.stage.Demultiplexer;
+import org.nextprot.pipeline.statement.core.stage.demux.Demultiplexer;
 import org.nextprot.pipeline.statement.core.stage.DuplicableStage;
 
 import java.io.FileNotFoundException;
