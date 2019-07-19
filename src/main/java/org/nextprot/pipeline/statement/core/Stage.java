@@ -7,13 +7,14 @@ import java.util.concurrent.BlockingQueue;
 import java.util.stream.Stream;
 
 /**
- * This class represent an element of the pipeline.
+ * A Stage represents an active element of the pipeline.
  *
  * A stage can:
- * 1. consume Statements from the previous stage via a sink channel
- * 2. produce Statements to the next stage(s) via source channel(s)
  *
- * A Stage should run Channels do the synchronization between Threads
+ * 1. consume Statements coming from the previous stage via a Sink Channel
+ * 2. produce Statements to the next stage(s) via Source Channel(s)
+ *
+ * A stage should execute into a separate Thread through RunnableStage
  *
  * @param <E> the next stage type to pipe to
  */
@@ -44,13 +45,9 @@ public interface Stage<E extends Stage> {
 		return (int) nextStages().count();
 	}
 
-	/**
-	 * Disconnect sink and source pipes
-	 */
+	/** Disconnect sink and source channels */
 	void close();
 
-	/**
-	 * @return a new runnable stage that will handle the flow of statement in a separate Thread
-	 */
+	/** @return a new runnable stage that will handle the flow of statement in a separate Thread */
 	RunnableStage newRunnableStage();
 }
