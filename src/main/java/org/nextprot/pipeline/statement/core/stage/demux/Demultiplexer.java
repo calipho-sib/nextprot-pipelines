@@ -1,14 +1,14 @@
-package org.nextprot.pipeline.statement.core.elements.demux;
+package org.nextprot.pipeline.statement.core.stage.demux;
 
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.Stage;
-import org.nextprot.pipeline.statement.core.elements.BaseStage;
-import org.nextprot.pipeline.statement.core.elements.ElementEventHandler;
-import org.nextprot.pipeline.statement.core.elements.Sink;
-import org.nextprot.pipeline.statement.core.elements.flowable.BaseFlowLog;
-import org.nextprot.pipeline.statement.core.elements.flowable.BaseRunnableStage;
-import org.nextprot.pipeline.statement.core.elements.flowable.FlowEventHandler;
+import org.nextprot.pipeline.statement.core.stage.BaseStage;
+import org.nextprot.pipeline.statement.core.stage.ElementEventHandler;
+import org.nextprot.pipeline.statement.core.stage.Sink;
+import org.nextprot.pipeline.statement.core.stage.flowable.BaseFlowLog;
+import org.nextprot.pipeline.statement.core.stage.flowable.BaseRunnableStage;
+import org.nextprot.pipeline.statement.core.stage.flowable.FlowEventHandler;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.nextprot.pipeline.statement.core.elements.Source.POISONED_STATEMENT;
+import static org.nextprot.pipeline.statement.core.stage.Source.POISONED_STATEMENT;
 
 /**
  * De-multiplexer receive statements via one source stage and

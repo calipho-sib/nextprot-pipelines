@@ -1,4 +1,4 @@
-package org.nextprot.pipeline.statement.core.elements.source;
+package org.nextprot.pipeline.statement.core.stage.source;
 
 
 import java.io.IOException;

@@ -1,14 +1,14 @@
-package org.nextprot.pipeline.statement.core.elements.filter;
+package org.nextprot.pipeline.statement.core.stage.filter;
 
 
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.core.elements.flowable.FlowEventHandler;
-import org.nextprot.pipeline.statement.core.elements.demux.DuplicableStage;
+import org.nextprot.pipeline.statement.core.stage.flowable.FlowEventHandler;
+import org.nextprot.pipeline.statement.core.stage.demux.DuplicableStage;
 
 import java.io.FileNotFoundException;
 import java.util.concurrent.BlockingQueue;
 
-import static org.nextprot.pipeline.statement.core.elements.Source.POISONED_STATEMENT;
+import static org.nextprot.pipeline.statement.core.stage.Source.POISONED_STATEMENT;
 
 /**
  * This filter just transmit statements from PipedInputPort to PipedOutputPort

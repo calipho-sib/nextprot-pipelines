@@ -5,10 +5,10 @@ import org.junit.Test;
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.Pipeline;
 import org.nextprot.pipeline.statement.core.PipelineBuilder;
-import org.nextprot.pipeline.statement.core.elements.filter.NarcolepticFilter;
+import org.nextprot.pipeline.statement.core.stage.filter.NarcolepticFilter;
 import org.nextprot.pipeline.statement.nxflat.filter.NxFlatRawTableFilter;
 import org.nextprot.pipeline.statement.nxflat.sink.NxFlatMappedTableSink;
-import org.nextprot.pipeline.statement.core.elements.source.Pump;
+import org.nextprot.pipeline.statement.core.stage.source.Pump;
 import org.nextprot.pipeline.statement.nxflat.source.pump.HttpStatementPump;
 
 import java.util.ArrayList;

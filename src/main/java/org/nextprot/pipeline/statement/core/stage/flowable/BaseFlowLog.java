@@ -1,4 +1,4 @@
-package org.nextprot.pipeline.statement.core.elements.flowable;
+package org.nextprot.pipeline.statement.core.stage.flowable;
 
 
 import org.nextprot.commons.statements.Statement;
@@ -7,7 +7,7 @@ import org.nextprot.pipeline.statement.core.BaseLog;
 import java.io.FileNotFoundException;
 import java.util.concurrent.BlockingQueue;
 
-import static org.nextprot.pipeline.statement.core.elements.Source.POISONED_STATEMENT;
+import static org.nextprot.pipeline.statement.core.stage.Source.POISONED_STATEMENT;
 
 
 public abstract class BaseFlowLog extends BaseLog implements FlowEventHandler {

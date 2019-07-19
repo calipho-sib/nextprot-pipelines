@@ -1,4 +1,4 @@
-package org.nextprot.pipeline.statement.core.elements;
+package org.nextprot.pipeline.statement.core.stage;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.BaseLog;

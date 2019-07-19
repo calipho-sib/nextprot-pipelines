@@ -1,16 +1,16 @@
 package org.nextprot.pipeline.statement.nxflat.filter;
 
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.core.elements.filter.BaseFilter;
-import org.nextprot.pipeline.statement.core.elements.filter.FilterRunnableStage;
+import org.nextprot.pipeline.statement.core.stage.filter.BaseFilter;
+import org.nextprot.pipeline.statement.core.stage.filter.FilterRunnableStage;
 import org.nextprot.pipeline.statement.nxflat.NxFlatTable;
-import org.nextprot.pipeline.statement.core.elements.flowable.BaseFlowLog;
-import org.nextprot.pipeline.statement.core.elements.flowable.FlowEventHandler;
+import org.nextprot.pipeline.statement.core.stage.flowable.BaseFlowLog;
+import org.nextprot.pipeline.statement.core.stage.flowable.FlowEventHandler;
 
 import java.io.FileNotFoundException;
 import java.util.concurrent.BlockingQueue;
 
-import static org.nextprot.pipeline.statement.core.elements.Source.POISONED_STATEMENT;
+import static org.nextprot.pipeline.statement.core.stage.Source.POISONED_STATEMENT;
 
 public class NxFlatRawTableFilter extends BaseFilter {
 

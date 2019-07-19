@@ -1,7 +1,7 @@
-package org.nextprot.pipeline.statement.core.elements.source;
+package org.nextprot.pipeline.statement.core.stage.source;
 
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.core.elements.Source;
+import org.nextprot.pipeline.statement.core.stage.Source;
 
 import java.util.concurrent.BlockingQueue;
 

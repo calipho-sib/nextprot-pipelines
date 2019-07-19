@@ -1,9 +1,9 @@
-package org.nextprot.pipeline.statement.core.elements;
+package org.nextprot.pipeline.statement.core.stage;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.Stage;
-import org.nextprot.pipeline.statement.core.elements.flowable.BaseFlowLog;
-import org.nextprot.pipeline.statement.core.elements.flowable.BaseRunnableStage;
+import org.nextprot.pipeline.statement.core.stage.flowable.BaseFlowLog;
+import org.nextprot.pipeline.statement.core.stage.flowable.BaseRunnableStage;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

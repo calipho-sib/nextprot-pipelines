@@ -7,7 +7,7 @@ import org.nextprot.commons.statements.specs.Specifications;
 import org.nextprot.commons.statements.specs.StatementSpecifications;
 import org.nextprot.pipeline.statement.core.Pipeline;
 import org.nextprot.pipeline.statement.core.PipelineBuilder;
-import org.nextprot.pipeline.statement.core.elements.source.Pump;
+import org.nextprot.pipeline.statement.core.stage.source.Pump;
 import org.nextprot.pipeline.statement.nxflat.Timer;
 import org.nextprot.pipeline.statement.nxflat.filter.NxFlatRawTableFilter;
 import org.nextprot.pipeline.statement.nxflat.sink.NxFlatMappedTableSink;

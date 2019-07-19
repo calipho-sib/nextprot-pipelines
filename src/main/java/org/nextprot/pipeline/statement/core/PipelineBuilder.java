@@ -1,12 +1,12 @@
 package org.nextprot.pipeline.statement.core;
 
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.core.elements.Sink;
-import org.nextprot.pipeline.statement.core.elements.filter.BaseFilter;
-import org.nextprot.pipeline.statement.core.elements.source.Pump;
-import org.nextprot.pipeline.statement.core.elements.source.PumpingSource;
-import org.nextprot.pipeline.statement.core.elements.demux.Demultiplexer;
-import org.nextprot.pipeline.statement.core.elements.demux.DuplicableStage;
+import org.nextprot.pipeline.statement.core.stage.Sink;
+import org.nextprot.pipeline.statement.core.stage.filter.BaseFilter;
+import org.nextprot.pipeline.statement.core.stage.source.Pump;
+import org.nextprot.pipeline.statement.core.stage.source.PumpingSource;
+import org.nextprot.pipeline.statement.core.stage.demux.Demultiplexer;
+import org.nextprot.pipeline.statement.core.stage.demux.DuplicableStage;
 
 import java.io.FileNotFoundException;
 import java.util.function.Function;

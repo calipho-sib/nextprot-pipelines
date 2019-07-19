@@ -1,4 +1,4 @@
-package org.nextprot.pipeline.statement.core.elements;
+package org.nextprot.pipeline.statement.core.stage;
 
 
 public interface ElementEventHandler {

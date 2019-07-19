@@ -5,7 +5,7 @@ import org.nextprot.commons.statements.reader.BufferableStatementReader;
 import org.nextprot.commons.statements.reader.BufferedJsonStatementReader;
 import org.nextprot.commons.statements.specs.Specifications;
 import org.nextprot.commons.statements.specs.StatementSpecifications;
-import org.nextprot.pipeline.statement.core.elements.source.Pump;
+import org.nextprot.pipeline.statement.core.stage.source.Pump;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
