@@ -29,7 +29,7 @@ import java.util.stream.Stream;
  */
 public abstract class BaseStage<E extends Stage> implements Stage<E> {
 
-	private E nextElement = null;
+	private E nextStage = null;
 
 	private final BlockingQueue<Statement> sourceChannel;
 	private BlockingQueue<Statement> sinkChannel;
@@ -52,10 +52,10 @@ public abstract class BaseStage<E extends Stage> implements Stage<E> {
 	}
 
 	@Override
-	public void pipe(E nextElement) {
+	public void pipe(E nextStage) {
 
-		this.nextElement = nextElement;
-		nextElement.setSinkChannel(sourceChannel);
+		this.nextStage = nextStage;
+		nextStage.setSinkChannel(sourceChannel);
 	}
 
 	@Override
@@ -67,13 +67,13 @@ public abstract class BaseStage<E extends Stage> implements Stage<E> {
 	@Override
 	public Stream<E> nextStages() {
 
-		return Stream.of(nextElement);
+		return Stream.of(nextStage);
 	}
 
 	@Override
 	public E nextStage() {
 
-		return nextElement;
+		return nextStage;
 	}
 
 	/**
