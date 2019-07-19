@@ -26,23 +26,23 @@ public interface Stage<E extends Stage> {
 	/** Pipe to the next stage */
 	void pipe(E stage);
 
-	/** @return the sink pipe port or null if absent */
+	/** @return the sink channel where Statements are consumed or null if absent */
 	BlockingQueue<Statement> getSinkChannel();
 
 	void setSinkChannel(BlockingQueue<Statement> sinkChannel);
 
-	/** @return the source pipe port or null if absent */
+	/** @return the source channel where Statements are produced or null if absent */
 	BlockingQueue<Statement> getSourceChannel();
 
 	/** @return the next piped stage(s) */
-	Stream<E> nextStages();
+	Stream<E> getPipedStages();
 
 	/** @return the first piped stage */
-	E nextStage();
+	E getFirstPipedStage();
 
-	default int countStages() {
+	default int countPipedStages() {
 
-		return (int) nextStages().count();
+		return (int) getPipedStages().count();
 	}
 
 	/** Disconnect sink and source channels */

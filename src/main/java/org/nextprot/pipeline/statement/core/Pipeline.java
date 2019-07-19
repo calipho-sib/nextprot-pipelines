@@ -60,7 +60,7 @@ public class Pipeline {
 		log.valveOpened(runnableStage);
 		runningValves.add(runnableStage);
 
-		Stream<Stage> nextStages = stage.nextStages();
+		Stream<Stage> nextStages = stage.getPipedStages();
 		nextStages.forEach(s -> openValves(s, runningValves));
 	}
 
@@ -68,7 +68,7 @@ public class Pipeline {
 
 		stage.close();
 
-		Stream<Stage> nextStages = stage.nextStages();
+		Stream<Stage> nextStages = stage.getPipedStages();
 		nextStages.forEach(sink -> closeValves(sink));
 	}
 

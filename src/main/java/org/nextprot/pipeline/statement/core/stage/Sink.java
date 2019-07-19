@@ -34,7 +34,7 @@ public abstract class Sink extends BaseStage<DuplicableStage> implements Duplica
 	}
 
 	@Override
-	public Stream<DuplicableStage> nextStages() {
+	public Stream<DuplicableStage> getPipedStages() {
 
 		return Stream.empty();
 	}

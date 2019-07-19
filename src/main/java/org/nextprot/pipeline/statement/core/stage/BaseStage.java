@@ -65,13 +65,13 @@ public abstract class BaseStage<E extends Stage> implements Stage<E> {
 	}
 
 	@Override
-	public Stream<E> nextStages() {
+	public Stream<E> getPipedStages() {
 
 		return Stream.of(nextStage);
 	}
 
 	@Override
-	public E nextStage() {
+	public E getFirstPipedStage() {
 
 		return nextStage;
 	}

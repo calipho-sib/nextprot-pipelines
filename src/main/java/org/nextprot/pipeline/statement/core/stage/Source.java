@@ -43,9 +43,9 @@ public abstract class Source extends BaseStage<Stage> {
 		Stage element = this;
 
 		// look for the max next stage number
-		while ((element = element.nextStage()) != null) {
+		while ((element = element.getFirstPipedStage()) != null) {
 
-			int count = element.countStages();
+			int count = element.countPipedStages();
 
 			if (count > 1) {
 				return count;
