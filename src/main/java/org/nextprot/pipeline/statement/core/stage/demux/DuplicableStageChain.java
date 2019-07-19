@@ -6,6 +6,7 @@ import org.nextprot.pipeline.statement.core.stage.Sink;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -67,7 +68,15 @@ public class DuplicableStageChain {
 
 		pipeStages(duplicatedStages);
 
-		return new DuplicableStageChain(duplicatedStages.get(0));
+		return new DuplicableStageChain(duplicatedStages);
+	}
+
+	public List<DuplicableStageChain> duplicateNTimes(int capacity, int nTimes) {
+
+		return IntStream.range(0, nTimes)
+				.boxed()
+				.map(i -> duplicate(capacity))
+				.collect(Collectors.toList());
 	}
 
 	/**

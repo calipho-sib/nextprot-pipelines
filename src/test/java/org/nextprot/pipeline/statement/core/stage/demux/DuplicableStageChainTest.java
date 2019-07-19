@@ -67,6 +67,20 @@ public class DuplicableStageChainTest {
 		Mockito.verify(sink.duplicate(Mockito.anyInt()), times(2));
 	}
 
+	@Test
+	public void duplicateNTimesShouldCallSinkDuplicate() {
+
+		Sink sink = mockSink();
+		BaseFilter filter = mockFilter(sink);
+
+		DuplicableStageChain duplicator = new DuplicableStageChain(filter);
+		List<DuplicableStageChain> chains = duplicator.duplicateNTimes(2, 2);
+
+		Mockito.verify(filter.duplicate(Mockito.anyInt()), times(4));
+		Mockito.verify(sink.duplicate(Mockito.anyInt()), times(4));
+		Assert.assertEquals(2, chains.size());
+	}
+
 	@Test(expected = IllegalStateException.class)
 	public void cannotDuplicateIfLastNotSink() {
 
