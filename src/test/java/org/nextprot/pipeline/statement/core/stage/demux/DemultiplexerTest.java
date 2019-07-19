@@ -1,7 +1,12 @@
-package org.nextprot.pipeline.statement.core.stage;
+package org.nextprot.pipeline.statement.core.stage.demux;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
+import org.nextprot.pipeline.statement.core.stage.Sink;
+import org.nextprot.pipeline.statement.core.stage.demux.Demultiplexer;
+
+import java.util.concurrent.BlockingQueue;
 
 
 public class DemultiplexerTest {
@@ -50,18 +55,34 @@ public class DemultiplexerTest {
 		Assert.assertEquals(5, demux.getSourceChannel().remainingCapacity());
 	}
 
-	//@Test
-	public void unpipedDemuxShouldCreatesSourceChannels() {
+	@Test
+	public void unpipedDemuxShouldNotBeConnectedToNextStages() {
 
 		Demultiplexer demux = new Demultiplexer(10, 2);
 
-		Assert.assertNull(demux.getSinkChannel());
-		Assert.assertNull(demux.getSourceChannel());
-		Assert.assertEquals(2, demux.countSourceChannels());
-		Assert.assertEquals(2, demux.countSourceChannels());
-		Assert.assertEquals(2, demux.countSourceChannels());
 		Assert.assertEquals(0, demux.countPipedStages());
+	}
 
+	@Test
+	public void pipedDemuxShouldBeConnectedToNextStages() {
+
+		Demultiplexer demux = new Demultiplexer(10, 2);
+
+		Sink sink = mockSink();
+
+		demux.pipe(sink);
+
+		Assert.assertEquals(0, demux.countPipedStages());
+	}
+
+	private Sink mockSink() {
+
+		Sink sink = Mockito.mock(Sink.class);
+
+		BlockingQueue channel = Mockito.mock(BlockingQueue.class);
+
+		//Mockito.verify(sink.setSinkChannel(channel));
+		return sink;
 	}
 
 	/*@Test

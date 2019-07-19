@@ -1,8 +1,11 @@
-package org.nextprot.pipeline.statement.core.stage;
+package org.nextprot.pipeline.statement.core.stage.demux;
 
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.Stage;
+import org.nextprot.pipeline.statement.core.stage.BaseStage;
+import org.nextprot.pipeline.statement.core.stage.DuplicableStage;
+import org.nextprot.pipeline.statement.core.stage.ElementEventHandler;
 import org.nextprot.pipeline.statement.core.stage.runnable.BaseFlowLog;
 import org.nextprot.pipeline.statement.core.stage.runnable.BaseRunnableStage;
 import org.nextprot.pipeline.statement.core.stage.runnable.FlowEventHandler;
@@ -14,7 +17,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.nextprot.pipeline.statement.core.stage.Source.POISONED_STATEMENT;
@@ -30,7 +32,7 @@ public class Demultiplexer implements Stage<DuplicableStage> {
 	private final int sinkChannelCapacity;
 	private BlockingQueue<Statement> sinkChannel;
 	private final CircularList<BlockingQueue<Statement>> sourceChannels;
-	private final List<DuplicableStage> nextConnectedStages;
+	private final List<DuplicableStage> nextPipedStages;
 	private final ElementEventHandler eventHandler;
 
 	private final AtomicInteger incrementer = new AtomicInteger (-1);
@@ -62,7 +64,7 @@ public class Demultiplexer implements Stage<DuplicableStage> {
 
 		this.sinkChannelCapacity = sinkChannelCapacity;
 		this.sourceChannels = createSourceChannels(sourceChannelCapacity, sourceChannelCount);
-		this.nextConnectedStages = new ArrayList<>();
+		this.nextPipedStages = new ArrayList<>();
 
 		try {
 			eventHandler = createElementEventHandler();
@@ -90,101 +92,37 @@ public class Demultiplexer implements Stage<DuplicableStage> {
 	}
 
 	/**
-	 * Duplicates the whole pipeline from the given head element and
+	 * Pipe this Demux to n duplicated stages chain from the given head stage to the last sink stage
 	 *
-	 * @param head a duplicable element
+	 * @param headStage a duplicable head stage
 	 *
 	 * State before this method is called:
 	 *
-	 * 		 --- SOURCE_-1 -- DEMUX --- [ HEAD_0   -> FILTER_1   -> FILTER_2   -> .... -> SINK_N   ]
+	 * 		 --- STAGE_-1 -- DEMUX --- [ HEAD_0   -> FILTER_1   -> FILTER_2   -> .... -> SINK_N   ]
 	 *
 	 * State after this method is called:
 	 *
 	 * 		                     ------ [ HEAD_0.1 -> FILTER_1.1 -> FILTER_2.1 -> .... -> SINK_N.1 ]
 	 * 		                    | ----- [ HEAD_0.2 -> FILTER_1.2 -> FILTER_2.2 -> .... -> SINK_N.2 ]
-	 * 		 --- SOURCE_-1 -- DEMUX --- [ HEAD_0.3 -> FILTER_1.3 -> FILTER_2.3 -> .... -> SINK_N.3 ]
+	 * 		 --- STAGE_-1 -- DEMUX  --- [ HEAD_0.3 -> FILTER_1.3 -> FILTER_2.3 -> .... -> SINK_N.3 ]
 	 * 		                    | ----- [ HEAD_0.4 -> FILTER_1.4 -> FILTER_2.4 -> .... -> SINK_N.4 ]
 	 * 		                     ------ [ HEAD_0.5 -> FILTER_1.5 -> FILTER_2.5 -> .... -> SINK_N.5 ]
-	 * 		                     -XXXX- [ HEAD_0      FILTER_1      FILTER_2      ....    SINK_N   ]
 	 */
 	@Override
-	public void pipe(DuplicableStage head) {
+	public void pipe(DuplicableStage headStage) {
 
-		List<DuplicableStage> originalElements = getElementsFromHead(head);
+		DuplicableStageChain duplicableStageChain = new DuplicableStageChain(headStage);
 
-		for (int i = 0; i < sourceChannels.size(); i++) {
+		for (int i = 0; i < sourceChannels.size()-1; i++) {
 
 			BlockingQueue<Statement> sourceChannel = sourceChannels.get(i);
 
-			DuplicableStage duplicatedHead =
-					duplicateAndPipe(originalElements, sourceChannel.remainingCapacity());
+			DuplicableStageChain duplicatedChain = duplicableStageChain.duplicate(sourceChannel.remainingCapacity());
 
-			duplicatedHead.setSinkChannel(sourceChannel);
+			duplicatedChain.getHead().setSinkChannel(sourceChannel);
 
-			nextConnectedStages.add(duplicatedHead);
+			nextPipedStages.add(duplicatedChain.getHead());
 		}
-
-		// unpipe original (TODO: make elements eligible for GC)
-		originalElements.forEach(element -> element.setSinkChannel(null));
-	}
-
-	/**
-	 * Duplicate elements from HEAD to SINK and pipe them
-	 *
-	 * @param originalElements original elements
-	 * @param capacity the channels capacity
-	 * @return the head element
-	 */
-	private DuplicableStage duplicateAndPipe(List<DuplicableStage> originalElements, int capacity) {
-
-		// 1. Duplicate elements from HEAD to SINK
-		List<DuplicableStage> duplicatedElements = originalElements.stream()
-				.map(elt -> elt.duplicate(capacity))
-				.collect(Collectors.toList());
-
-		if (! (duplicatedElements.get(duplicatedElements.size()-1) instanceof Sink) ) {
-
-			throw new IllegalArgumentException(getName()+": cannot demux from HEAD element "+
-					originalElements.get(0).getName() + ", the last element should be a SINK");
-		}
-
-		return pipeTogether(duplicatedElements);
-	}
-
-	/**
-	 * Pipe elements together
-	 * @param elements the elements to pipe
-	 * @return the head of the new pipeline
-	 */
-	private static DuplicableStage pipeTogether(List<DuplicableStage> elements) {
-
-		if (elements.isEmpty()) {
-
-			throw new IllegalArgumentException("cannot pipe empty elements");
-		}
-
-		for (int i = 1; i < elements.size(); i++) {
-
-			elements.get(i - 1).pipe(elements.get(i));
-		}
-
-		return elements.get(0);
-	}
-
-	private List<DuplicableStage> getElementsFromHead(DuplicableStage head) {
-
-		List<DuplicableStage> pipelineElementList = new ArrayList<>();
-
-		pipelineElementList.add(head);
-
-		DuplicableStage element = head;
-
-		while ((element = element.getFirstPipedStage()) != null) {
-
-			pipelineElementList.add(element);
-		}
-
-		return pipelineElementList;
 	}
 
 	@Override
@@ -239,7 +177,7 @@ public class Demultiplexer implements Stage<DuplicableStage> {
 	@Override
 	public Stream<DuplicableStage> getPipedStages() {
 
-		return nextConnectedStages.stream();
+		return nextPipedStages.stream();
 	}
 
 	@Override
@@ -317,4 +255,5 @@ public class Demultiplexer implements Stage<DuplicableStage> {
 			sendMessage(getStatementCount()+" healthy statements distributed");
 		}
 	}
+
 }
