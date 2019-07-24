@@ -141,12 +141,12 @@ public class Pipeline {
 
 		private Source source;
 		private Monitorable monitorable;
-		private int demuxSourceCount;
+		private int demuxStageDuplication;
 		private Stage stageBeforeDemux;
 		private DuplicableStage fromStage;
 
-		public int getDemuxSourceCount() {
-			return demuxSourceCount;
+		public int getDemuxStageDuplication() {
+			return demuxStageDuplication;
 		}
 
 		public DuplicableStage getDemuxFromStage() {
@@ -157,8 +157,8 @@ public class Pipeline {
 			return stageBeforeDemux;
 		}
 
-		public void setDemuxSourceCount(int demuxSourceCount) {
-			this.demuxSourceCount = demuxSourceCount;
+		public void setDemuxStageDuplication(int demuxStageDuplication) {
+			this.demuxStageDuplication = demuxStageDuplication;
 		}
 
 		public void setDemuxFromStage(Stage stageBeforeDemux, DuplicableStage fromStage) {

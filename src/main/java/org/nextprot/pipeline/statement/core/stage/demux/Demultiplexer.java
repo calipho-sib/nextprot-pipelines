@@ -2,7 +2,6 @@ package org.nextprot.pipeline.statement.core.stage.demux;
 
 
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.core.Stage;
 import org.nextprot.pipeline.statement.core.stage.BaseStage;
 import org.nextprot.pipeline.statement.core.stage.DuplicableStage;
 import org.nextprot.pipeline.statement.core.stage.ElementEventHandler;
@@ -15,53 +14,51 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static org.nextprot.pipeline.statement.core.stage.Source.POISONED_STATEMENT;
 
 /**
- * De-multiplexer receives statements via one source stage and distribute them to multiple sink stages
+ * De-multiplexer receives statements via one source stage and distributes them to multiple sink stages
  * via one synchronized channel
- *
- * TODO: put common code with BaseStage in a new abstract class
  */
-public class Demultiplexer implements Stage<DuplicableStage> {
+public class Demultiplexer extends BaseStage<DuplicableStage> {
 
-	private final Function<Integer, Integer> newSourceChannelCapacityLambda;
-	private BlockingQueue<Statement> sinkChannel;
-	private BlockingQueue<Statement> sourceChannel;
 	private final List<DuplicableStage> nextPipedStages;
-	private final ElementEventHandler eventHandler;
 	private final int sourceStageDuplication;
-
-	public Demultiplexer(int sourceStageDuplication) {
-
-		this(sourceStageDuplication, c -> c * sourceStageDuplication);
-	}
 
 	/**
 	 * Creates an {@code Demultiplexer} with a given fixed number of piped stages.
 	 * @param sourceStageDuplication the number of stage duplication
-	 * @param newSourceChannelCapacityLambda the lambda that compute the new source channels capacity
 	 */
-	public Demultiplexer(int sourceStageDuplication, Function<Integer, Integer> newSourceChannelCapacityLambda) {
+	private Demultiplexer(BlockingQueue<Statement> sourceChannel, int sourceStageDuplication) {
+
+		super(sourceChannel);
 
 		if (sourceStageDuplication <= 0) {
 			throw new IllegalArgumentException("next stages duplication should be greater than 0: count="+sourceStageDuplication);
 		}
-
-		this.newSourceChannelCapacityLambda = newSourceChannelCapacityLambda;
-
-		this.nextPipedStages = new ArrayList<>();
-		//this.sourceChannel = new ArrayBlockingQueue<>(sourceChannelCapacity);
 		this.sourceStageDuplication = sourceStageDuplication;
+		this.nextPipedStages = new ArrayList<>();
+	}
 
-		try {
-			eventHandler = createElementEventHandler();
-		} catch (FileNotFoundException e) {
-			throw new IllegalStateException(e);
+	public static Demultiplexer fromStage(DuplicableStage stage, int sourceStageDuplication) {
+
+		if (stage.getSourceChannel() == null) {
+			throw new IllegalArgumentException("stage " +stage.getName()+" is not piped to a source channel");
 		}
+
+		BlockingQueue<Statement> sourceChannel = stage.getSourceChannel();
+
+		if (sourceChannel.remainingCapacity() <= 0) {
+			throw new IllegalArgumentException("stage source channel capacity should be greater than 0: capacity="+sourceChannel.remainingCapacity());
+		}
+
+		if (sourceStageDuplication <= 0) {
+			throw new IllegalArgumentException("duplication should be greater than 0: duplication="+sourceStageDuplication);
+		}
+
+		return new Demultiplexer(new ArrayBlockingQueue<>(sourceChannel.remainingCapacity() * sourceStageDuplication), sourceStageDuplication);
 	}
 
 	/**
@@ -98,17 +95,9 @@ public class Demultiplexer implements Stage<DuplicableStage> {
 			unpipe();
 		}
 
-		int sourceChannelCapacity = newSourceChannelCapacityLambda.apply(getSinkChannel().remainingCapacity());
-
-		if (sourceChannelCapacity <= 0) {
-			throw new IllegalArgumentException("source channel capacity should be greater than 0: capacity="+sourceChannelCapacity);
-		}
-
-		sourceChannel = new ArrayBlockingQueue<>(sourceChannelCapacity);
-
 		for (DuplicableStageChain chain : chains) {
 
-			chain.getHead().setSinkChannel(sourceChannel);
+			chain.getHead().setSinkChannel(getSourceChannel());
 			nextPipedStages.add(chain.getHead());
 		}
 	}
@@ -116,18 +105,12 @@ public class Demultiplexer implements Stage<DuplicableStage> {
 	@Override
 	public void unpipe() {
 
-		for (int i = 0; i < nextPipedStages.size(); i++) {
+		for (DuplicableStage nextPipedStage : nextPipedStages) {
 
-			nextPipedStages.get(i).setSinkChannel(null);
+			nextPipedStage.setSinkChannel(null);
 		}
 
 		nextPipedStages.clear();
-	}
-
-	@Override
-	public void close() {
-
-		eventHandler.sinkUnpiped();
 	}
 
 	@Override
@@ -136,32 +119,10 @@ public class Demultiplexer implements Stage<DuplicableStage> {
 		return new RunnableStage(this);
 	}
 
-	private ElementEventHandler createElementEventHandler() throws FileNotFoundException {
+	@Override
+	protected ElementEventHandler createElementEventHandler() throws FileNotFoundException {
 
-		//return new ElementEventHandler.Mute();
 		return new BaseStage.ElementLog(getName());
-	}
-
-	public String getName() {
-		return "Demux";
-	}
-
-	@Override
-	public BlockingQueue<Statement> getSinkChannel() {
-		return sinkChannel;
-	}
-
-	@Override
-	public void setSinkChannel(BlockingQueue<Statement> channel) {
-
-		this.sinkChannel = channel;
-	}
-
-	/** In this context, only one current source channel is active */
-	@Override
-	public BlockingQueue<Statement> getSourceChannel() {
-
-		return sourceChannel;
 	}
 
 	@Override
@@ -196,7 +157,7 @@ public class Demultiplexer implements Stage<DuplicableStage> {
 
 			sourceChannel.put(current);
 
-			((FlowLog)getFlowEventHandler()).statementHandled(current, demultiplexer.sinkChannel, sourceChannel);
+			((FlowLog)getFlowEventHandler()).statementHandled(current, demultiplexer.getSinkChannel(), sourceChannel);
 
 			if (current == POISONED_STATEMENT) {
 				poisonedStatementReceived++;

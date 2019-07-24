@@ -60,7 +60,7 @@ public class PipelineBuilder implements Pipeline.StartStep {
 			BaseFilter pipedFilter = filterProvider.apply(previousElement.getSourceChannel().remainingCapacity());
 			previousElement.pipe(pipedFilter);
 
-			dataCollector.setDemuxSourceCount(partitionCount);
+			dataCollector.setDemuxStageDuplication(partitionCount);
 			dataCollector.setDemuxFromStage(previousElement, pipedFilter);
 
 			return new FilterStep(pipedFilter);
@@ -72,7 +72,7 @@ public class PipelineBuilder implements Pipeline.StartStep {
 			Sink pipedSink = sinkProvider.get();
 			previousElement.pipe(pipedSink);
 
-			dataCollector.setDemuxSourceCount(partitionCount);
+			dataCollector.setDemuxStageDuplication(partitionCount);
 			dataCollector.setDemuxFromStage(previousElement, pipedSink);
 
 			return new TerminateStep();
@@ -96,7 +96,7 @@ public class PipelineBuilder implements Pipeline.StartStep {
 
 					DuplicableStage fromElement = dataCollector.getDemuxFromStage();
 
-					Demultiplexer demultiplexer = new Demultiplexer(dataCollector.getDemuxSourceCount());
+					Demultiplexer demultiplexer = Demultiplexer.fromStage(fromElement, dataCollector.getDemuxStageDuplication());
 
 					dataCollector.getStageBeforeDemux().pipe(demultiplexer);
 					demultiplexer.pipe(fromElement);

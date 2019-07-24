@@ -14,47 +14,58 @@ import java.util.concurrent.BlockingQueue;
 public class DemultiplexerTest {
 
 	@Test(expected = IllegalArgumentException.class)
-	public void sourceDuplicationShouldBeGreaterThanZero() {
+	public void stageShouldBePiped() {
 
-		new Demultiplexer( 0);
+		Demultiplexer.fromStage(mockDuplicableStage(null),  10);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void duplicationShouldBeGreaterThanZero() {
+
+		Demultiplexer.fromStage(mockDuplicableStage(mockBlockingQueue(10)),  0);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void stageSourceCapacityShouldBeGreaterThanZero() {
+
+		Demultiplexer.fromStage(mockDuplicableStage(mockBlockingQueue(0)),  0);
+	}
+
+	@Test
+	public void newDemuxSourceChannelShouldHaveLargerCapacity() {
+
+		Demultiplexer demux = Demultiplexer.fromStage(mockDuplicableStage(mockBlockingQueue(10)),  2);
+		Assert.assertEquals(20, demux.getSourceChannel().remainingCapacity());
 	}
 
 	@Test
 	public void newDemuxShouldNotHaveSinkChannel() {
 
-		Demultiplexer demux = new Demultiplexer( 2);
+		Demultiplexer demux = Demultiplexer.fromStage(mockDuplicableStage(mockBlockingQueue(10)),  2);
 		Assert.assertNull(demux.getSinkChannel());
 	}
 
 	@Test
-	public void newDemuxShouldHaveNoPipedStages() {
+	public void newDemuxShouldNotBeConnectedToNextStages() {
 
-		Demultiplexer demux = new Demultiplexer(2);
-		Assert.assertEquals(0, demux.countPipedStages());
-	}
-
-	@Test
-	public void unpipedDemuxShouldNotBeConnectedToNextStages() {
-
-		Demultiplexer demux = new Demultiplexer(2);
-
+		Demultiplexer demux = Demultiplexer.fromStage(mockDuplicableStage(mockBlockingQueue(10)),  2);
 		Assert.assertEquals(0, demux.countPipedStages());
 	}
 
 	@Test(expected = IllegalStateException.class)
 	public void unpipedDemuxCannotPipeToNextStages() {
 
-		Demultiplexer demux = new Demultiplexer(2);
-		demux.pipe(mockDuplicableStageChain(10, 1));
+		Demultiplexer demux = Demultiplexer.fromStage(mockDuplicableStage(mockBlockingQueue(10)),  2);
+		demux.pipe(mockDuplicableStageChain( 1));
 	}
 
 	@Test
 	public void pipedDemuxCanPipeToNextStages() {
 
-		Demultiplexer demux = new Demultiplexer(2);
+		Demultiplexer demux = Demultiplexer.fromStage(mockDuplicableStage(mockBlockingQueue(10)),  2);
 		demux.setSinkChannel(mockBlockingQueue(10));
 
-		demux.pipe(mockDuplicableStageChain(10, 1));
+		demux.pipe(mockDuplicableStageChain( 1));
 
 		Assert.assertEquals(2, demux.countPipedStages());
 	}
@@ -62,11 +73,11 @@ public class DemultiplexerTest {
 	@Test
 	public void alreadyPipedDemuxCanPipeToBrandNewNextStages() {
 
-		Demultiplexer demux = new Demultiplexer(2);
+		Demultiplexer demux = Demultiplexer.fromStage(mockDuplicableStage(mockBlockingQueue(10)),  2);
 		demux.setSinkChannel(mockBlockingQueue(10));
 
-		demux.pipe(mockDuplicableStageChain(10, 1));
-		demux.pipe(mockDuplicableStageChain(10, 1));
+		demux.pipe(mockDuplicableStageChain( 1));
+		demux.pipe(mockDuplicableStageChain( 1));
 
 		Assert.assertEquals(2, demux.countPipedStages());
 	}
@@ -74,16 +85,26 @@ public class DemultiplexerTest {
 	@Test
 	public void unpipeDemux() {
 
-		Demultiplexer demux = new Demultiplexer(2);
+		Demultiplexer demux = Demultiplexer.fromStage(mockDuplicableStage(mockBlockingQueue(10)),  2);
 		demux.setSinkChannel(mockBlockingQueue(10));
 
-		demux.pipe(mockDuplicableStageChain(10, 1));
+		demux.pipe(mockDuplicableStageChain( 1));
 		demux.unpipe();
 
 		Assert.assertEquals(0, demux.countPipedStages());
 	}
 
-	private DuplicableStageChain mockDuplicableStageChain(int capacity, int duplication) {
+	private DuplicableStage mockDuplicableStage(BlockingQueue<Statement> sourceChannel) {
+
+		DuplicableStage stage = Mockito.mock(DuplicableStage.class);
+
+		if (sourceChannel != null) {
+			Mockito.when(stage.getSourceChannel()).thenReturn(sourceChannel);
+		}
+		return stage;
+	}
+
+	private DuplicableStageChain mockDuplicableStageChain(int duplication) {
 
 		DuplicableStage stage = Mockito.mock(DuplicableStage.class);
 
@@ -96,7 +117,7 @@ public class DemultiplexerTest {
 			chains.add(chain);
 		}
 
-		Mockito.when(chain.duplicateNTimes(capacity, duplication)).thenReturn(chains);
+		Mockito.when(chain.duplicateNTimes(10, duplication)).thenReturn(chains);
 
 		return chain;
 	}
