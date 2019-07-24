@@ -29,13 +29,13 @@ public abstract class Source extends BaseStage<Stage> {
 	@Override
 	public void setSinkChannel(BlockingQueue<Statement> sinkChannel) {
 
-		throw new Error("Cannot set a pipeline element into a SOURCE");
+		throw new IllegalAccessError("Cannot set a pipeline element into a SOURCE stage");
 	}
 
 	@Override
 	public BlockingQueue<Statement> getSinkChannel() {
 
-		throw new Error("It is a SOURCE element, cannot pipe to a pipeline element through this channel!");
+		throw new IllegalAccessError("It is a Source element, can't connect to a Stage through this channel!");
 	}
 
 	protected int countPoisonedPillsToProduce() {

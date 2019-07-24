@@ -36,12 +36,6 @@ public class PumpingSource extends Source {
 	}
 
 	@Override
-	public BlockingQueue<Statement> getSinkChannel() {
-
-		throw new Error("It is a Source element, can't connect to a PipelineElement through this channel!");
-	}
-
-	@Override
 	public RunnableStage newRunnableStage() {
 
 		return new RunnableStage(this, 1, countPoisonedPillsToProduce());
