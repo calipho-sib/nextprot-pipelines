@@ -96,11 +96,10 @@ public class PipelineBuilder implements Pipeline.StartStep {
 
 					DuplicableStage fromElement = dataCollector.getDemuxFromStage();
 
-					Demultiplexer demultiplexer = new Demultiplexer(fromElement.getSinkChannel().remainingCapacity(),
-							dataCollector.getDemuxSourceCount());
+					Demultiplexer demultiplexer = new Demultiplexer(dataCollector.getDemuxSourceCount());
 
-					demultiplexer.pipe(fromElement);
 					dataCollector.getStageBeforeDemux().pipe(demultiplexer);
+					demultiplexer.pipe(fromElement);
 				}
 
 				try {

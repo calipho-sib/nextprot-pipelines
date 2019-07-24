@@ -28,42 +28,33 @@ import static org.nextprot.pipeline.statement.core.stage.Source.POISONED_STATEME
  */
 public class Demultiplexer implements Stage<DuplicableStage> {
 
-	private final int sinkChannelCapacity;
+	private final Function<Integer, Integer> newSourceChannelCapacityLambda;
 	private BlockingQueue<Statement> sinkChannel;
-	private final BlockingQueue<Statement> sourceChannel;
+	private BlockingQueue<Statement> sourceChannel;
 	private final List<DuplicableStage> nextPipedStages;
 	private final ElementEventHandler eventHandler;
 	private final int sourceStageDuplication;
 
-	public Demultiplexer(int sinkChannelCapacity, int sourceStageDuplication) {
+	public Demultiplexer(int sourceStageDuplication) {
 
-		this(sinkChannelCapacity, sourceStageDuplication, c -> c * sourceStageDuplication);
+		this(sourceStageDuplication, c -> c * sourceStageDuplication);
 	}
 
 	/**
 	 * Creates an {@code Demultiplexer} with a given fixed number of piped stages.
-	 * @param sinkChannelCapacity the capacity of the sink channel
 	 * @param sourceStageDuplication the number of stage duplication
 	 * @param newSourceChannelCapacityLambda the lambda that compute the new source channels capacity
 	 */
-	public Demultiplexer(int sinkChannelCapacity, int sourceStageDuplication, Function<Integer, Integer> newSourceChannelCapacityLambda) {
+	public Demultiplexer(int sourceStageDuplication, Function<Integer, Integer> newSourceChannelCapacityLambda) {
 
-		if (sinkChannelCapacity <= 0) {
-			throw new IllegalArgumentException("sink channel capacity should be greater than 0: capacity="+sinkChannelCapacity);
-		}
 		if (sourceStageDuplication <= 0) {
 			throw new IllegalArgumentException("next stages duplication should be greater than 0: count="+sourceStageDuplication);
 		}
 
-		int sourceChannelCapacity = newSourceChannelCapacityLambda.apply(sinkChannelCapacity);
+		this.newSourceChannelCapacityLambda = newSourceChannelCapacityLambda;
 
-		if (sourceChannelCapacity <= 0) {
-			throw new IllegalArgumentException("source channel capacity should be greater than 0: capacity="+sourceChannelCapacity);
-		}
-
-		this.sinkChannelCapacity = sinkChannelCapacity;
 		this.nextPipedStages = new ArrayList<>();
-		this.sourceChannel = new ArrayBlockingQueue<>(sourceChannelCapacity);
+		//this.sourceChannel = new ArrayBlockingQueue<>(sourceChannelCapacity);
 		this.sourceStageDuplication = sourceStageDuplication;
 
 		try {
@@ -89,8 +80,13 @@ public class Demultiplexer implements Stage<DuplicableStage> {
 		List<DuplicableStageChain> chains = new ArrayList<>();
 		chains.add(originalChain);
 
+		if (getSinkChannel() == null) {
+
+			throw new IllegalStateException("Demux stage not piped: cannot pipe to next stage "+originalChain.getHead().getName());
+		}
+
 		if (sourceStageDuplication > 1) {
-			chains.addAll(originalChain.duplicateNTimes(sinkChannelCapacity, sourceStageDuplication - 1));
+			chains.addAll(originalChain.duplicateNTimes(getSinkChannel().remainingCapacity(), sourceStageDuplication - 1));
 		}
 
 		pipe(chains);
@@ -101,6 +97,14 @@ public class Demultiplexer implements Stage<DuplicableStage> {
 		if (!nextPipedStages.isEmpty()) {
 			unpipe();
 		}
+
+		int sourceChannelCapacity = newSourceChannelCapacityLambda.apply(getSinkChannel().remainingCapacity());
+
+		if (sourceChannelCapacity <= 0) {
+			throw new IllegalArgumentException("source channel capacity should be greater than 0: capacity="+sourceChannelCapacity);
+		}
+
+		sourceChannel = new ArrayBlockingQueue<>(sourceChannelCapacity);
 
 		for (DuplicableStageChain chain : chains) {
 
@@ -149,11 +153,6 @@ public class Demultiplexer implements Stage<DuplicableStage> {
 
 	@Override
 	public void setSinkChannel(BlockingQueue<Statement> channel) {
-
-		if (sinkChannelCapacity != channel.remainingCapacity()) {
-
-			throw new Error("Cannot set sink channel with capacity "+channel.remainingCapacity() + " in channel port of capacity "+ sinkChannel.remainingCapacity());
-		}
 
 		this.sinkChannel = channel;
 	}

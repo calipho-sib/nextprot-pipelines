@@ -3,68 +3,56 @@ package org.nextprot.pipeline.statement.core.stage.demux;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.stage.DuplicableStage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 
 
 public class DemultiplexerTest {
 
 	@Test(expected = IllegalArgumentException.class)
-	public void sinkChannelCapacityShouldBeGreaterThanZero() {
+	public void sourceDuplicationShouldBeGreaterThanZero() {
 
-		new Demultiplexer(0, 1);
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void sourceChannelCountShouldBeGreaterThanZero() {
-
-		new Demultiplexer(10, 0);
+		new Demultiplexer( 0);
 	}
 
 	@Test
 	public void newDemuxShouldNotHaveSinkChannel() {
 
-		Demultiplexer demux = new Demultiplexer(10, 2);
-
+		Demultiplexer demux = new Demultiplexer( 2);
 		Assert.assertNull(demux.getSinkChannel());
 	}
 
 	@Test
 	public void newDemuxShouldHaveNoPipedStages() {
 
-		Demultiplexer demux = new Demultiplexer(10, 2);
+		Demultiplexer demux = new Demultiplexer(2);
 		Assert.assertEquals(0, demux.countPipedStages());
-	}
-
-	@Test
-	public void newDemuxShouldHaveASourceChannelWithDoubleCapacity() {
-
-		Demultiplexer demux = new Demultiplexer(10, 2);
-		Assert.assertEquals(20, demux.getSourceChannel().remainingCapacity());
-	}
-
-	@Test
-	public void newCustomDemuxShouldHaveASourceChannelWithHalfCapacity() {
-
-		Demultiplexer demux = new Demultiplexer(10, 2, c -> c/2);
-
-		Assert.assertEquals(5, demux.getSourceChannel().remainingCapacity());
 	}
 
 	@Test
 	public void unpipedDemuxShouldNotBeConnectedToNextStages() {
 
-		Demultiplexer demux = new Demultiplexer(10, 2);
+		Demultiplexer demux = new Demultiplexer(2);
 
 		Assert.assertEquals(0, demux.countPipedStages());
 	}
 
-	@Test
-	public void pipedDemuxShouldConnectToNextStages() {
+	@Test(expected = IllegalStateException.class)
+	public void unpipedDemuxCannotPipeToNextStages() {
 
-		Demultiplexer demux = new Demultiplexer(10, 2);
+		Demultiplexer demux = new Demultiplexer(2);
+		demux.pipe(mockDuplicableStageChain(10, 1));
+	}
+
+	@Test
+	public void pipedDemuxCanPipeToNextStages() {
+
+		Demultiplexer demux = new Demultiplexer(2);
+		demux.setSinkChannel(mockBlockingQueue(10));
 
 		demux.pipe(mockDuplicableStageChain(10, 1));
 
@@ -72,9 +60,10 @@ public class DemultiplexerTest {
 	}
 
 	@Test
-	public void pipedTwiceDemuxShouldConnectToNextStages() {
+	public void alreadyPipedDemuxCanPipeToBrandNewNextStages() {
 
-		Demultiplexer demux = new Demultiplexer(10, 2);
+		Demultiplexer demux = new Demultiplexer(2);
+		demux.setSinkChannel(mockBlockingQueue(10));
 
 		demux.pipe(mockDuplicableStageChain(10, 1));
 		demux.pipe(mockDuplicableStageChain(10, 1));
@@ -85,7 +74,8 @@ public class DemultiplexerTest {
 	@Test
 	public void unpipeDemux() {
 
-		Demultiplexer demux = new Demultiplexer(10, 2);
+		Demultiplexer demux = new Demultiplexer(2);
+		demux.setSinkChannel(mockBlockingQueue(10));
 
 		demux.pipe(mockDuplicableStageChain(10, 1));
 		demux.unpipe();
@@ -109,6 +99,14 @@ public class DemultiplexerTest {
 		Mockito.when(chain.duplicateNTimes(capacity, duplication)).thenReturn(chains);
 
 		return chain;
+	}
+
+	private BlockingQueue<Statement> mockBlockingQueue(int capacity) {
+
+		BlockingQueue<Statement> bq = Mockito.mock(BlockingQueue.class);
+
+		Mockito.when(bq.remainingCapacity()).thenReturn(capacity);
+		return bq;
 	}
 
 	/*@Test
