@@ -54,8 +54,21 @@ public abstract class BaseStage<E extends Stage> implements Stage<E> {
 	@Override
 	public void pipe(E nextStage) {
 
+		if (nextPipedStage != null) {
+			unpipe();
+		}
+
 		this.nextPipedStage = nextStage;
 		nextStage.setSinkChannel(sourceChannel);
+	}
+
+	@Override
+	public void unpipe() {
+
+		if (this.nextPipedStage != null) {
+			this.nextPipedStage.setSinkChannel(null);
+			this.nextPipedStage = null;
+		}
 	}
 
 	@Override
@@ -90,7 +103,13 @@ public abstract class BaseStage<E extends Stage> implements Stage<E> {
 	public void setSinkChannel(BlockingQueue<Statement> sinkChannel) {
 
 		this.sinkChannel = sinkChannel;
-		eventHandler.sinkPiped();
+
+		if (sinkChannel == null) {
+			eventHandler.sinkUnpiped();
+		}
+		else {
+			eventHandler.sinkPiped();
+		}
 	}
 
 	@Override

@@ -26,6 +26,9 @@ public interface Stage<E extends Stage> {
 	/** Pipe to the next stage */
 	void pipe(E stage);
 
+	/** Unpipe the next stage */
+	void unpipe();
+
 	/** @return the sink channel where Statements are consumed or null if absent */
 	BlockingQueue<Statement> getSinkChannel();
 

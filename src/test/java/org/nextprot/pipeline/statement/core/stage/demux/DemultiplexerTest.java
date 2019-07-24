@@ -4,11 +4,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.nextprot.pipeline.statement.core.stage.DuplicableStage;
-import org.nextprot.pipeline.statement.core.stage.Sink;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
 
 
 public class DemultiplexerTest {
@@ -64,7 +62,7 @@ public class DemultiplexerTest {
 	}
 
 	@Test
-	public void pipedDemuxShouldBeConnectedToNextStages() {
+	public void pipedDemuxShouldConnectToNextStages() {
 
 		Demultiplexer demux = new Demultiplexer(10, 2);
 
@@ -73,14 +71,26 @@ public class DemultiplexerTest {
 		Assert.assertEquals(2, demux.countPipedStages());
 	}
 
-	private Sink mockSink() {
+	@Test
+	public void pipedTwiceDemuxShouldConnectToNextStages() {
 
-		Sink sink = Mockito.mock(Sink.class);
+		Demultiplexer demux = new Demultiplexer(10, 2);
 
-		BlockingQueue channel = Mockito.mock(BlockingQueue.class);
+		demux.pipe(mockDuplicableStageChain(10, 1));
+		demux.pipe(mockDuplicableStageChain(10, 1));
 
-		//Mockito.verify(sink.setSinkChannel(channel));
-		return sink;
+		Assert.assertEquals(2, demux.countPipedStages());
+	}
+
+	@Test
+	public void unpipeDemux() {
+
+		Demultiplexer demux = new Demultiplexer(10, 2);
+
+		demux.pipe(mockDuplicableStageChain(10, 1));
+		demux.unpipe();
+
+		Assert.assertEquals(0, demux.countPipedStages());
 	}
 
 	private DuplicableStageChain mockDuplicableStageChain(int capacity, int duplication) {

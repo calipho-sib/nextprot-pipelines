@@ -98,13 +98,26 @@ public class Demultiplexer implements Stage<DuplicableStage> {
 
 	private void pipe(List<DuplicableStageChain> chains) {
 
-		for (int i = 0; i < chains.size(); i++) {
+		if (!nextPipedStages.isEmpty()) {
+			unpipe();
+		}
 
-			DuplicableStageChain chain = chains.get(i);
+		for (DuplicableStageChain chain : chains) {
 
 			chain.getHead().setSinkChannel(sourceChannel);
 			nextPipedStages.add(chain.getHead());
 		}
+	}
+
+	@Override
+	public void unpipe() {
+
+		for (int i = 0; i < nextPipedStages.size(); i++) {
+
+			nextPipedStages.get(i).setSinkChannel(null);
+		}
+
+		nextPipedStages.clear();
 	}
 
 	@Override
