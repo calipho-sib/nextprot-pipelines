@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -23,7 +22,7 @@ import static org.nextprot.pipeline.statement.core.stage.Source.POISONED_STATEME
 
 /**
  * De-multiplexer receives statements via one source stage and distribute them to multiple sink stages
- * via synchronized channels
+ * via one synchronized channel
  *
  * TODO: put common code with BaseStage in a new abstract class
  */
@@ -31,29 +30,29 @@ public class Demultiplexer implements Stage<DuplicableStage> {
 
 	private final int sinkChannelCapacity;
 	private BlockingQueue<Statement> sinkChannel;
-	private final CircularList<BlockingQueue<Statement>> sourceChannels;
+	private final BlockingQueue<Statement> sourceChannel;
 	private final List<DuplicableStage> nextPipedStages;
 	private final ElementEventHandler eventHandler;
+	private final int sourceStageDuplication;
 
-	private final AtomicInteger incrementer = new AtomicInteger (-1);
+	public Demultiplexer(int sinkChannelCapacity, int sourceStageDuplication) {
 
-	public Demultiplexer(int sinkChannelCapacity, int sourceChannelCount) {
-
-		this(sinkChannelCapacity, sourceChannelCount, c -> c);
+		this(sinkChannelCapacity, sourceStageDuplication, c -> c * sourceStageDuplication);
 	}
 
 	/**
+	 * Creates an {@code Demultiplexer} with a given fixed number of piped stages.
 	 * @param sinkChannelCapacity the capacity of the sink channel
-	 * @param sourceChannelCount the number of source channels
+	 * @param sourceStageDuplication the number of stage duplication
 	 * @param newSourceChannelCapacityLambda the lambda that compute the new source channels capacity
 	 */
-	public Demultiplexer(int sinkChannelCapacity, int sourceChannelCount, Function<Integer, Integer> newSourceChannelCapacityLambda) {
+	public Demultiplexer(int sinkChannelCapacity, int sourceStageDuplication, Function<Integer, Integer> newSourceChannelCapacityLambda) {
 
 		if (sinkChannelCapacity <= 0) {
 			throw new IllegalArgumentException("sink channel capacity should be greater than 0: capacity="+sinkChannelCapacity);
 		}
-		if (sourceChannelCount <= 0) {
-			throw new IllegalArgumentException("source channel count should be greater than 0: count="+sourceChannelCount);
+		if (sourceStageDuplication <= 0) {
+			throw new IllegalArgumentException("next stages duplication should be greater than 0: count="+sourceStageDuplication);
 		}
 
 		int sourceChannelCapacity = newSourceChannelCapacityLambda.apply(sinkChannelCapacity);
@@ -63,8 +62,9 @@ public class Demultiplexer implements Stage<DuplicableStage> {
 		}
 
 		this.sinkChannelCapacity = sinkChannelCapacity;
-		this.sourceChannels = createSourceChannels(sourceChannelCapacity, sourceChannelCount);
 		this.nextPipedStages = new ArrayList<>();
+		this.sourceChannel = new ArrayBlockingQueue<>(sourceChannelCapacity);
+		this.sourceStageDuplication = sourceStageDuplication;
 
 		try {
 			eventHandler = createElementEventHandler();
@@ -73,54 +73,33 @@ public class Demultiplexer implements Stage<DuplicableStage> {
 		}
 	}
 
-	private CircularList<BlockingQueue<Statement>> createSourceChannels(int capacity, int channelCount) {
-
-		CircularList<BlockingQueue<Statement>> sources = new CircularList<>();
-
-		for (int i=0 ; i<channelCount ; i++) {
-
-			sources.add(new ArrayBlockingQueue<>(capacity));
-		}
-
-		if (sources.isEmpty()) {
-
-			throw new IllegalArgumentException(getName()+": cannot create source channels, capacity="+capacity
-					+", channel count="+channelCount);
-		}
-
-		return sources;
-	}
-
 	/**
 	 * Pipe this Demux to n duplicated stages chain
 	 *
 	 * @param headStage a duplicable head of the chain's stage
-	 *
-	 * State before this method is called:
-	 * 		 --- STAGE_-1 -- DEMUX --- [ HEAD_0   -> FILTER_1   -> FILTER_2   -> .... -> SINK_N   ]
-	 *
-	 * State after this method is called:
-	 * 		                     ------ [ HEAD_0.1 -> FILTER_1.1 -> FILTER_2.1 -> .... -> SINK_N.1 ]
-	 * 		                    | ----- [ HEAD_0.2 -> FILTER_1.2 -> FILTER_2.2 -> .... -> SINK_N.2 ]
-	 * 		 --- STAGE_-1 -- DEMUX  --- [ HEAD_0.3 -> FILTER_1.3 -> FILTER_2.3 -> .... -> SINK_N.3 ]
-	 * 		                    | ----- [ HEAD_0.4 -> FILTER_1.4 -> FILTER_2.4 -> .... -> SINK_N.4 ]
-	 * 		                     ------ [ HEAD_0.5 -> FILTER_1.5 -> FILTER_2.5 -> .... -> SINK_N.5 ]
 	 */
 	@Override
 	public void pipe(DuplicableStage headStage) {
 
-		List<DuplicableStageChain> chains = new ArrayList<>();
+		pipe(new DuplicableStageChain(headStage));
+	}
 
-		DuplicableStageChain originalChain = new DuplicableStageChain(headStage);
+	void pipe(DuplicableStageChain originalChain) {
+
+		List<DuplicableStageChain> chains = new ArrayList<>();
 		chains.add(originalChain);
 
-		if (sourceChannels.size() > 1) {
-			chains.addAll(originalChain.duplicateNTimes(sinkChannelCapacity, sourceChannels.size() - 1));
+		if (sourceStageDuplication > 1) {
+			chains.addAll(originalChain.duplicateNTimes(sinkChannelCapacity, sourceStageDuplication - 1));
 		}
 
-		for (int i = 0; i < sourceChannels.size(); i++) {
+		pipe(chains);
+	}
 
-			BlockingQueue<Statement> sourceChannel = sourceChannels.get(i);
+	private void pipe(List<DuplicableStageChain> chains) {
+
+		for (int i = 0; i < chains.size(); i++) {
+
 			DuplicableStageChain chain = chains.get(i);
 
 			chain.getHead().setSinkChannel(sourceChannel);
@@ -170,11 +149,7 @@ public class Demultiplexer implements Stage<DuplicableStage> {
 	@Override
 	public BlockingQueue<Statement> getSourceChannel() {
 
-		return sourceChannels.get(incrementer.incrementAndGet());
-	}
-
-	public int countSourceChannels() {
-		return sourceChannels.size();
+		return sourceChannel;
 	}
 
 	@Override
@@ -187,14 +162,6 @@ public class Demultiplexer implements Stage<DuplicableStage> {
 	public DuplicableStage getFirstPipedStage() {
 
 		throw new IllegalStateException("should not call nextFirstSink() in Demultiplexer");
-	}
-
-	private static class CircularList<E> extends ArrayList<E> {
-
-		@Override
-		public E get(int index) {
-			return super.get(index % size());
-		}
 	}
 
 	private static class RunnableStage extends BaseRunnableStage<Demultiplexer> {
@@ -214,9 +181,6 @@ public class Demultiplexer implements Stage<DuplicableStage> {
 			Statement current = demultiplexer.getSinkChannel().take();
 
 			BlockingQueue<Statement> sourceChannel = demultiplexer.getSourceChannel();
-			if (sourceChannel.remainingCapacity() > 0) {
-
-			}
 
 			sourceChannel.put(current);
 
@@ -226,7 +190,7 @@ public class Demultiplexer implements Stage<DuplicableStage> {
 				poisonedStatementReceived++;
 			}
 
-			return poisonedStatementReceived == demultiplexer.countSourceChannels();
+			return poisonedStatementReceived == demultiplexer.countPipedStages();
 		}
 
 		@Override

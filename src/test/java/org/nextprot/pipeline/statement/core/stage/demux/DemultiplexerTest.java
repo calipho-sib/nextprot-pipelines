@@ -3,9 +3,11 @@ package org.nextprot.pipeline.statement.core.stage.demux;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.nextprot.pipeline.statement.core.stage.DuplicableStage;
 import org.nextprot.pipeline.statement.core.stage.Sink;
-import org.nextprot.pipeline.statement.core.stage.demux.Demultiplexer;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 
@@ -32,19 +34,17 @@ public class DemultiplexerTest {
 	}
 
 	@Test
-	public void newDemuxShouldHaveNSourceChannels() {
+	public void newDemuxShouldHaveNoPipedStages() {
 
 		Demultiplexer demux = new Demultiplexer(10, 2);
-
-		Assert.assertEquals(2, demux.countSourceChannels());
+		Assert.assertEquals(0, demux.countPipedStages());
 	}
 
 	@Test
-	public void newDemuxShouldHaveASourceChannelWithCapacity() {
+	public void newDemuxShouldHaveASourceChannelWithDoubleCapacity() {
 
 		Demultiplexer demux = new Demultiplexer(10, 2);
-
-		Assert.assertEquals(10, demux.getSourceChannel().remainingCapacity());
+		Assert.assertEquals(20, demux.getSourceChannel().remainingCapacity());
 	}
 
 	@Test
@@ -68,11 +68,9 @@ public class DemultiplexerTest {
 
 		Demultiplexer demux = new Demultiplexer(10, 2);
 
-		Sink sink = mockSink();
+		demux.pipe(mockDuplicableStageChain(10, 1));
 
-		demux.pipe(sink);
-
-		Assert.assertEquals(0, demux.countPipedStages());
+		Assert.assertEquals(2, demux.countPipedStages());
 	}
 
 	private Sink mockSink() {
@@ -83,6 +81,24 @@ public class DemultiplexerTest {
 
 		//Mockito.verify(sink.setSinkChannel(channel));
 		return sink;
+	}
+
+	private DuplicableStageChain mockDuplicableStageChain(int capacity, int duplication) {
+
+		DuplicableStage stage = Mockito.mock(DuplicableStage.class);
+
+		DuplicableStageChain chain = Mockito.mock(DuplicableStageChain.class);
+		Mockito.when(chain.getHead()).thenReturn(stage);
+
+		List<DuplicableStageChain> chains = new ArrayList<>();
+
+		for (int i=0 ; i<duplication ; i++) {
+			chains.add(chain);
+		}
+
+		Mockito.when(chain.duplicateNTimes(capacity, duplication)).thenReturn(chains);
+
+		return chain;
 	}
 
 	/*@Test
