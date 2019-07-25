@@ -3,6 +3,7 @@ package org.nextprot.pipeline.statement.core.stage;
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.BaseLog;
 import org.nextprot.pipeline.statement.core.Stage;
+import org.nextprot.pipeline.statement.core.stage.handler.FlowEventHandler;
 
 import java.io.FileNotFoundException;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -24,8 +25,6 @@ import java.util.stream.Stream;
  *    -----    -----
  *
  * @param <E>
- *
- * WARNING: Not thread safe, should run on a single thread !
  */
 public abstract class BaseStage<E extends Stage> implements Stage<E> {
 
@@ -34,6 +33,7 @@ public abstract class BaseStage<E extends Stage> implements Stage<E> {
 	private final BlockingQueue<Statement> sourceChannel;
 	private BlockingQueue<Statement> sinkChannel;
 	private final ElementEventHandler eventHandler;
+	private FlowEventHandler flowEventHandler;
 
 	public BaseStage(int sourceCapacity) {
 
@@ -87,6 +87,37 @@ public abstract class BaseStage<E extends Stage> implements Stage<E> {
 	public E getFirstPipedStage() {
 
 		return nextPipedStage;
+	}
+
+	@Override
+	public void run() {
+
+		try {
+			flowEventHandler = createFlowEventHandler();
+			flowEventHandler.beginOfFlow();
+
+			boolean endOfFlow = false;
+
+			while (!endOfFlow) {
+
+				endOfFlow = handleFlow();
+			}
+			flowEventHandler.endOfFlow();
+		} catch (Exception e) {
+			System.err.println("EXCEPTION thrown by "+Thread.currentThread().getName() +": "+e.getMessage());
+		}
+	}
+
+	protected FlowEventHandler createFlowEventHandler() throws Exception {
+
+		return new FlowEventHandler.Mute();
+	}
+
+	/* Thread-confined: owned exclusively by and confined to one Flowable thread */
+	@Override
+	public FlowEventHandler getFlowEventHandler() {
+
+		return flowEventHandler;
 	}
 
 	/**

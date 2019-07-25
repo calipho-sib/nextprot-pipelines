@@ -4,7 +4,6 @@ import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.stage.Sink;
 import org.nextprot.pipeline.statement.core.stage.Source;
 import org.nextprot.pipeline.statement.core.stage.filter.BaseFilter;
-import org.nextprot.pipeline.statement.core.stage.runnable.RunnableStage;
 import org.nextprot.pipeline.statement.core.stage.source.Pump;
 import org.nextprot.pipeline.statement.core.stage.DuplicableStage;
 
@@ -39,11 +38,11 @@ public class Pipeline {
 
 	public void openValves() {
 
-		List<RunnableStage> runnableStages = new ArrayList<>();
+		List<Stage> runnableStages = new ArrayList<>();
 
 		openValves(source, runnableStages);
 
-		for (RunnableStage runnableStage : runnableStages) {
+		for (Stage runnableStage : runnableStages) {
 
 			Thread activeStage = newThread(runnableStage);
 			activeStage.start();
@@ -54,11 +53,10 @@ public class Pipeline {
 		monitorable.started();
 	}
 
-	private void openValves(Stage stage, List<RunnableStage> runningValves) {
+	private void openValves(Stage stage, List<Stage> runningValves) {
 
-		RunnableStage runnableStage = stage.newRunnableStage();
-		log.valveOpened(runnableStage);
-		runningValves.add(runnableStage);
+		log.valveOpened(stage);
+		runningValves.add(stage);
 
 		Stream<Stage> nextStages = stage.getPipedStages();
 		nextStages.forEach(s -> openValves(s, runningValves));
@@ -72,10 +70,10 @@ public class Pipeline {
 		nextStages.forEach(sink -> closeValves(sink));
 	}
 
-	private Thread newThread(RunnableStage runnableStage) {
+	private Thread newThread(Stage runnableStage) {
 
 		Thread thread = new Thread(runnableStage);
-		thread.setName(runnableStage.getStage().getName()+ "-" + NEXT_ACTIVE_STAGE_NUMBER());
+		thread.setName(runnableStage.getName()+ "-" + NEXT_ACTIVE_STAGE_NUMBER());
 
 		return thread;
 	}
@@ -190,14 +188,14 @@ public class Pipeline {
 			super("Pipeline");
 		}
 
-		private void valveOpened(RunnableStage stage) {
+		private void valveOpened(Stage stage) {
 
-			sendMessage(stage.getStage().getName() + " valve: opened");
+			sendMessage(stage.getName() + " valve: opened");
 		}
 
-		private void valveClosed(RunnableStage stage) {
+		private void valveClosed(Stage stage) {
 
-			sendMessage(stage.getStage().getName() + " valve: closed");
+			sendMessage(stage.getName() + " valve: closed");
 		}
 
 		private void valvesOpened(Thread thread) {

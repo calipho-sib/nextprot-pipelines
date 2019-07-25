@@ -2,7 +2,7 @@ package org.nextprot.pipeline.statement.core.stage.filter;
 
 
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.core.stage.runnable.FlowEventHandler;
+import org.nextprot.pipeline.statement.core.stage.handler.FlowEventHandler;
 import org.nextprot.pipeline.statement.core.stage.DuplicableStage;
 
 import java.io.FileNotFoundException;
@@ -36,50 +36,33 @@ public class NarcolepticFilter extends BaseFilter {
 	}
 
 	@Override
-	public RunnableStage newRunnableStage() {
+	public boolean filter(BlockingQueue<Statement> in, BlockingQueue<Statement> out) throws Exception {
 
-		return new RunnableStage(this);
+		FilterFlowLog eh = (FilterFlowLog) getFlowEventHandler();
+
+		Statement current = in.take();
+		eh.statementHandled(current, in, out);
+
+		takeANap(takeANapInMillis);
+
+		out.put(current);
+
+		return current == POISONED_STATEMENT;
 	}
 
-	private static class RunnableStage extends FilterRunnableStage<NarcolepticFilter> {
+	@Override
+	protected FlowEventHandler createFlowEventHandler() throws FileNotFoundException {
 
-		private final long napTime;
+		return new FilterFlowLog(Thread.currentThread().getName());
+	}
 
-		private RunnableStage(NarcolepticFilter pipelineElement) {
-			super(pipelineElement);
+	private void takeANap(long nap) {
 
-			napTime = pipelineElement.takeANapInMillis;
-		}
-
-		@Override
-		public boolean filter(BlockingQueue<Statement> in, BlockingQueue<Statement> out) throws Exception {
-
-			FilterFlowLog eh = (FilterFlowLog) getFlowEventHandler();
-
-			Statement current = in.take();
-			eh.statementHandled(current, in, out);
-
-			takeANap(napTime);
-
-			out.put(current);
-
-			return current == POISONED_STATEMENT;
-		}
-
-		@Override
-		protected FlowEventHandler createFlowEventHandler() throws FileNotFoundException {
-
-			return new FilterFlowLog(Thread.currentThread().getName());
-		}
-
-		private void takeANap(long nap) {
-
-			if (nap > 0) {
-				try {
-					Thread.sleep(nap);
-				} catch (InterruptedException e) {
-					System.err.println(e.getMessage());
-				}
+		if (nap > 0) {
+			try {
+				Thread.sleep(nap);
+			} catch (InterruptedException e) {
+				System.err.println(e.getMessage());
 			}
 		}
 	}

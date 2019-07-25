@@ -2,8 +2,7 @@ package org.nextprot.pipeline.statement.core.stage;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.Stage;
-import org.nextprot.pipeline.statement.core.stage.runnable.BaseFlowLog;
-import org.nextprot.pipeline.statement.core.stage.runnable.BaseRunnableStage;
+import org.nextprot.pipeline.statement.core.stage.handler.BaseFlowLog;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -54,94 +53,76 @@ public abstract class Source extends BaseStage<Stage> {
 		return 1;
 	}
 
-	@Override
-	public RunnableStage newRunnableStage() {
-
-		return new RunnableStage(this, extractionCapacity(), countPoisonedPillsToProduce());
-	}
-
 	protected abstract Statement extract() throws IOException;
 
 	protected abstract int extractionCapacity();
 
-	protected static class RunnableStage extends BaseRunnableStage<Source> {
+	@Override
+	protected FlowLog createFlowEventHandler() throws FileNotFoundException {
+
+		return new FlowLog(Thread.currentThread().getName(), extractionCapacity());
+	}
+
+	@Override
+	public boolean handleFlow() throws Exception {
+
+		FlowLog log = (FlowLog) getFlowEventHandler();
+
+		Statement statement = extract();
+
+		int pills = countPoisonedPillsToProduce();
+
+		if (statement == null) {
+			poisonChannel(pills);
+			log.poisonedStatementReleased(pills, getSourceChannel());
+			return true;
+		}
+		else {
+			getSourceChannel().put(statement);
+			log.statementHandled(statement, getSourceChannel());
+		}
+
+		return false;
+	}
+
+	private void poisonChannel(int pillsToProduce) throws InterruptedException {
+
+		for (int i=0 ; i<pillsToProduce ; i++) {
+
+			getSourceChannel().put(POISONED_STATEMENT);
+		}
+	}
+
+	private static class FlowLog extends BaseFlowLog {
 
 		private final int capacity;
-		private final int pills;
 
-		public RunnableStage(Source source, int capacity, int pills) {
+		private FlowLog(String threadName, int capacity) throws FileNotFoundException {
 
-			super(source);
+			super(threadName);
 			this.capacity = capacity;
-			this.pills = pills;
 		}
 
 		@Override
-		public boolean handleFlow() throws Exception {
+		public void beginOfFlow() {
 
-			FlowLog log = (FlowLog) getFlowEventHandler();
-
-			Source source = getStage();
-			Statement statement = source.extract();
-
-			if (statement == null) {
-				poisonChannel(source.getSourceChannel());
-				log.poisonedStatementReleased(pills, source.getSourceChannel());
-				return true;
-			}
-			else {
-				source.getSourceChannel().put(statement);
-				log.statementHandled(statement, source.getSourceChannel());
-			}
-
-			return false;
+			sendMessage("statement extraction started (capacity="+ capacity + ")");
 		}
 
-		private void poisonChannel(BlockingQueue<Statement> sourceChannel) throws InterruptedException {
+		private void statementHandled(Statement statement, BlockingQueue<Statement> sourceChannel) {
 
-			for (int i=0 ; i<pills ; i++) {
+			statementHandled("extract", statement, null, sourceChannel);
+		}
 
-				sourceChannel.put(POISONED_STATEMENT);
-			}
+		private void poisonedStatementReleased(int pills, BlockingQueue<Statement> sourceChannel) {
+
+			sendMessage(pills+" poisoned statement"+(pills>1 ? "s":"")+" released into the source channel #" + sourceChannel.hashCode());
 		}
 
 		@Override
-		protected FlowLog createFlowEventHandler() throws FileNotFoundException {
+		public void endOfFlow() {
 
-			return new FlowLog(Thread.currentThread().getName(), capacity);
-		}
-
-		private static class FlowLog extends BaseFlowLog {
-
-			private final int capacity;
-
-			private FlowLog(String threadName, int capacity) throws FileNotFoundException {
-
-				super(threadName);
-				this.capacity = capacity;
-			}
-
-			@Override
-			public void beginOfFlow() {
-
-				sendMessage("statement extraction started (capacity="+ capacity + ")");
-			}
-
-			private void statementHandled(Statement statement, BlockingQueue<Statement> sourceChannel) {
-
-				statementHandled("extract", statement, null, sourceChannel);
-			}
-
-			private void poisonedStatementReleased(int pills, BlockingQueue<Statement> sourceChannel) {
-
-				sendMessage(pills+" poisoned statement"+(pills>1 ? "s":"")+" released into the source channel #" + sourceChannel.hashCode());
-			}
-
-			@Override
-			public void endOfFlow() {
-
-				sendMessage(getStatementCount()+" statements extracted");
-			}
+			sendMessage(getStatementCount()+" statements extracted");
 		}
 	}
 }

@@ -1,7 +1,7 @@
 package org.nextprot.pipeline.statement.core;
 
 import org.nextprot.commons.statements.Statement;
-import org.nextprot.pipeline.statement.core.stage.runnable.RunnableStage;
+import org.nextprot.pipeline.statement.core.stage.handler.FlowEventHandler;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.stream.Stream;
@@ -14,11 +14,11 @@ import java.util.stream.Stream;
  * 1. consume Statements coming from the previous stage via a Sink Channel
  * 2. produce Statements to the next stage(s) via Source Channel(s)
  *
- * A stage should execute into a separate Thread through RunnableStage
+ * IMPORTANT: Active stage should be executed into a separate Thread
  *
  * @param <E> the next stage type to pipe to
  */
-public interface Stage<E extends Stage> {
+public interface Stage<E extends Stage> extends Runnable {
 
 	/** @return the name of stage */
 	String getName();
@@ -51,6 +51,8 @@ public interface Stage<E extends Stage> {
 	/** Disconnect sink and source channels */
 	void close();
 
-	/** @return a new runnable stage that will handle the flow of statement in a separate Thread */
-	RunnableStage newRunnableStage();
+	/** handle the current flow and @return true if the flow has been poisoned */
+	boolean handleFlow() throws Exception;
+
+	FlowEventHandler getFlowEventHandler();
 }

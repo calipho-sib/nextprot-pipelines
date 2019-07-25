@@ -5,9 +5,8 @@ import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.stage.BaseStage;
 import org.nextprot.pipeline.statement.core.stage.DuplicableStage;
 import org.nextprot.pipeline.statement.core.stage.ElementEventHandler;
-import org.nextprot.pipeline.statement.core.stage.runnable.BaseFlowLog;
-import org.nextprot.pipeline.statement.core.stage.runnable.BaseRunnableStage;
-import org.nextprot.pipeline.statement.core.stage.runnable.FlowEventHandler;
+import org.nextprot.pipeline.statement.core.stage.handler.BaseFlowLog;
+import org.nextprot.pipeline.statement.core.stage.handler.FlowEventHandler;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -26,6 +25,7 @@ public class Demultiplexer extends BaseStage<DuplicableStage> {
 
 	private final List<DuplicableStage> nextPipedStages;
 	private final int sourceStageDuplication;
+	private int poisonedStatementReceived = 0;
 
 	/**
 	 * Creates an {@code Demultiplexer} with a given fixed number of piped stages.
@@ -114,12 +114,6 @@ public class Demultiplexer extends BaseStage<DuplicableStage> {
 	}
 
 	@Override
-	public RunnableStage newRunnableStage() {
-
-		return new RunnableStage(this);
-	}
-
-	@Override
 	protected ElementEventHandler createElementEventHandler() throws FileNotFoundException {
 
 		return new BaseStage.ElementLog(getName());
@@ -137,40 +131,28 @@ public class Demultiplexer extends BaseStage<DuplicableStage> {
 		throw new IllegalStateException("should not call nextFirstSink() in Demultiplexer");
 	}
 
-	private static class RunnableStage extends BaseRunnableStage<Demultiplexer> {
+	@Override
+	public boolean handleFlow() throws Exception {
 
-		private int poisonedStatementReceived = 0;
+		Statement current = getSinkChannel().take();
 
-		public RunnableStage(Demultiplexer demultiplexer) {
+		BlockingQueue<Statement> sourceChannel = getSourceChannel();
 
-			super(demultiplexer);
+		sourceChannel.put(current);
+
+		((FlowLog)getFlowEventHandler()).statementHandled(current, getSinkChannel(), sourceChannel);
+
+		if (current == POISONED_STATEMENT) {
+			poisonedStatementReceived++;
 		}
 
-		@Override
-		public boolean handleFlow() throws Exception {
+		return poisonedStatementReceived == countPipedStages();
+	}
 
-			Demultiplexer demultiplexer = getStage();
+	@Override
+	protected FlowEventHandler createFlowEventHandler() throws FileNotFoundException {
 
-			Statement current = demultiplexer.getSinkChannel().take();
-
-			BlockingQueue<Statement> sourceChannel = demultiplexer.getSourceChannel();
-
-			sourceChannel.put(current);
-
-			((FlowLog)getFlowEventHandler()).statementHandled(current, demultiplexer.getSinkChannel(), sourceChannel);
-
-			if (current == POISONED_STATEMENT) {
-				poisonedStatementReceived++;
-			}
-
-			return poisonedStatementReceived == demultiplexer.countPipedStages();
-		}
-
-		@Override
-		protected FlowEventHandler createFlowEventHandler() throws FileNotFoundException {
-
-			return new FlowLog(Thread.currentThread().getName());
-		}
+		return new FlowLog(Thread.currentThread().getName());
 	}
 
 	private static class FlowLog extends BaseFlowLog {

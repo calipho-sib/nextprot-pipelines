@@ -3,7 +3,6 @@ package org.nextprot.pipeline.statement.core.stage.source;
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.stage.Source;
 
-import java.util.concurrent.BlockingQueue;
 
 /**
  * This class is a source of data for a pipe of threads.
@@ -33,11 +32,5 @@ public class PumpingSource extends Source {
 	protected int extractionCapacity() {
 
 		return capacity;
-	}
-
-	@Override
-	public RunnableStage newRunnableStage() {
-
-		return new RunnableStage(this, 1, countPoisonedPillsToProduce());
 	}
 }
