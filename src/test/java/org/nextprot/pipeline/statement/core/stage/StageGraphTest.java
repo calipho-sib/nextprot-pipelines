@@ -21,6 +21,7 @@ public class StageGraphTest {
 		StageGraph graph = new StageGraph(mockSource());
 		Assert.assertEquals(1, graph.countNodes());
 		Assert.assertEquals(0, graph.countEdges());
+		Assert.assertNotNull(graph.getSource());
 	}
 
 	@Test

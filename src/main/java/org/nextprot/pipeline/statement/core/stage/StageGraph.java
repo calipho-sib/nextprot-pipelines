@@ -39,6 +39,11 @@ public class StageGraph {
 		addNode(source);
 	}
 
+	public Source getSource() {
+
+		return source;
+	}
+
 	public int countNodes() {
 
 		return graph.countNodes();
