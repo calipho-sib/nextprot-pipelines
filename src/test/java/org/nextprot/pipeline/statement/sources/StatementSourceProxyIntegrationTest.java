@@ -5,6 +5,9 @@ import org.junit.Test;
 import org.nextprot.pipeline.statement.nxflat.source.pump.HttpStatementPump;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class StatementSourceProxyIntegrationTest {
@@ -12,7 +15,7 @@ public class StatementSourceProxyIntegrationTest {
 	@Test
 	public void glyconnectProxyShouldProvideOnePump() throws IOException {
 
-		StatementSourceProxy proxy = StatementSourceProxy.GlyConnect("2019-01-22");
+		StatementSourceProxy proxy = StatementSourceProxy.GlyConnect("2019-01-22", 100, 2);
 		Stream<HttpStatementPump> pumps = proxy.createPumps();
 		Assert.assertEquals(1, pumps.count());
 	}
@@ -20,27 +23,25 @@ public class StatementSourceProxyIntegrationTest {
 	@Test
 	public void execute() throws IOException {
 
-		StatementSourceProxy proxy = StatementSourceProxy.GlyConnect("2019-01-22");
+		StatementSourceProxy proxy = StatementSourceProxy.GlyConnect("2019-01-22", 100, 2);
 
 		proxy.executePipelines(2);
 	}
 
-/*
 	@Test
 	public void bioeditorProxyShouldProvideNPumps() throws IOException {
 
-		StatementSourceProxy proxy = StatementSourceProxy.BioEditor("2019-01-22");
+		StatementSourceProxy proxy = StatementSourceProxy.BioEditor("2019-01-22", 100, 2);
 		Stream<HttpStatementPump> pumps = proxy.createPumps();
 		Assert.assertEquals(487, pumps.count());
 	}
 
+/*
 	@Test
-	public void testReadingFirstPump() throws IOException, InterruptedException {
+	public void testBioEditorExecution() throws IOException, InterruptedException {
 
-		StatementSourceProxy proxy = StatementSourceProxy.BioEditor("2019-01-22");
-		List<HttpStatementPump> pumps = proxy.createPumps()
-				.collect(Collectors.toList());
-		System.out.println(pumps.size());
+		StatementSourceProxy proxy = StatementSourceProxy.BioEditor("2019-01-22", 100, 2);
+		proxy.executePipelines(2);
 	}
 
 

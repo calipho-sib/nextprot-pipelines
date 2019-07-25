@@ -9,6 +9,7 @@ import org.nextprot.pipeline.statement.core.Pipeline;
 import org.nextprot.pipeline.statement.core.PipelineBuilder;
 import org.nextprot.pipeline.statement.core.stage.source.Pump;
 import org.nextprot.pipeline.statement.nxflat.Timer;
+import org.nextprot.pipeline.statement.nxflat.filter.NonPhenotypicVariationStatementsFilter;
 import org.nextprot.pipeline.statement.nxflat.filter.NxFlatRawTableFilter;
 import org.nextprot.pipeline.statement.nxflat.sink.NxFlatMappedTableSink;
 import org.nextprot.pipeline.statement.nxflat.source.pump.HttpStatementPump;
@@ -67,18 +68,30 @@ public class StatementSourceProxy {
 		}
 	}
 
-	public static StatementSourceProxy GlyConnect(String releaseDate) throws IOException {
+	public static StatementSourceProxy BioEditor(String releaseDate, int sourceCapacity, int duplication) throws IOException {
 
-		return new StatementSourceProxy("GlyConnect", releaseDate, new Specifications.Builder().build(),
+		return new StatementSourceProxy("BioEditor", releaseDate, new Specifications.Builder().build(),
 				pump -> new PipelineBuilder()
 						.start()
-						.source(pump, 100)
-						.split(NxFlatRawTableFilter::new, 10)
+						.source(pump, sourceCapacity)
+						.split(NonPhenotypicVariationStatementsFilter::new, duplication)
+						.filter(NxFlatRawTableFilter::new)
 						.sink(NxFlatMappedTableSink::new)
 						.build());
 	}
 
-	public static StatementSourceProxy GnomAD(String releaseDate) throws IOException {
+	public static StatementSourceProxy GlyConnect(String releaseDate, int sourceCapacity, int duplication) throws IOException {
+
+		return new StatementSourceProxy("GlyConnect", releaseDate, new Specifications.Builder().build(),
+				pump -> new PipelineBuilder()
+						.start()
+						.source(pump, sourceCapacity)
+						.split(NxFlatRawTableFilter::new, duplication)
+						.sink(NxFlatMappedTableSink::new)
+						.build());
+	}
+
+	public static StatementSourceProxy GnomAD(String releaseDate, int sourceCapacity, int duplication) throws IOException {
 
 		return new StatementSourceProxy("gnomAD", releaseDate, new Specifications.Builder()
 				.withExtraFields(Arrays.asList("CANONICAL", "ALLELE_COUNT", "ALLELE_SAMPLED"))
@@ -86,8 +99,8 @@ public class StatementSourceProxy {
 				.build(),
 				pump -> new PipelineBuilder()
 						.start()
-						.source(pump, 100)
-						.split(NxFlatRawTableFilter::new, 10)
+						.source(pump, sourceCapacity)
+						.split(NxFlatRawTableFilter::new, duplication)
 						.sink(NxFlatMappedTableSink::new)
 						.build());
 	}
@@ -102,8 +115,8 @@ public class StatementSourceProxy {
 
 		CountDownLatch latch = new CountDownLatch(pumps.size());
 
-		pumps.forEach(pump -> futures.put(pump.getUrl(),
-					executor.submit(new TimedPipelineTask(pipelineBuilder.apply(pump), latch)))
+		pumps.forEach(pump ->
+				futures.put(pump.getUrl(), executor.submit(new TimedPipelineTask(pump, pipelineBuilder, latch)))
 		);
 
 		try {
@@ -168,12 +181,15 @@ public class StatementSourceProxy {
 
 	private static class TimedPipelineTask implements Callable<Long> {
 
-		private final Pipeline pipeline;
+		private final HttpStatementPump pump;
+		private final Function<Pump<Statement>, Pipeline> pipelineBuilder;
 		private final CountDownLatch latch;
 
-		public TimedPipelineTask(Pipeline pipeline, CountDownLatch latch) {
+		public TimedPipelineTask(HttpStatementPump pump, Function<Pump<Statement>, Pipeline> pipelineBuilder,
+		                         CountDownLatch latch) {
 
-			this.pipeline = pipeline;
+			this.pump = pump;
+			this.pipelineBuilder = pipelineBuilder;
 			this.latch = latch;
 		}
 
@@ -181,6 +197,8 @@ public class StatementSourceProxy {
 		public Long call() {
 
 			Timer timer = new Timer();
+
+			Pipeline pipeline = pipelineBuilder.apply(pump);
 
 			pipeline.openValves();
 
@@ -196,4 +214,6 @@ public class StatementSourceProxy {
 			return timer.getElapsedTimeInMs();
 		}
 	}
+
+
 }
