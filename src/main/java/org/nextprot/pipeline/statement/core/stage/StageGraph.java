@@ -11,19 +11,32 @@ import org.nextprot.commons.graph.IntGraph;
 import org.nextprot.pipeline.statement.core.Pipeline;
 import org.nextprot.pipeline.statement.core.Stage;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+/**
+ * NOT THREAD SAFE
+ */
 public class StageGraph {
 
-	private static int COUNTER = 0;
+	private int counter = 0;
 
+	private final Source source;
 	private final DirectedGraph graph;
 	private final TIntObjectMap<Stage> stagesByNodeId;
 	private final TObjectIntMap<Stage> stages;
 
-	public StageGraph() {
+	public StageGraph(Source source) {
 
+		Preconditions.checkNotNull(source);
+
+		this.source = source;
 		this.graph = new IntGraph();
 		this.stagesByNodeId = new TIntObjectHashMap<>();
 		this.stages = new TObjectIntCustomHashMap<>(new Strategy());
+
+		addNode(source);
 	}
 
 	public int countNodes() {
@@ -36,17 +49,18 @@ public class StageGraph {
 		return graph.countEdges();
 	}
 
-	public void addNode(Stage stage) {
+	void addNode(Stage stage) {
 
 		Preconditions.checkNotNull(stage);
 
-		int id = COUNTER;
+		if (!stages.containsKey(stage)) {
 
-		this.graph.addNode(id);
-		stagesByNodeId.put(id, stage);
-		stages.put(stage, id);
+			this.graph.addNode(counter);
+			stagesByNodeId.put(counter, stage);
+			stages.put(stage, counter);
 
-		COUNTER++;
+			counter++;
+		}
 	}
 
 	public int getStageId(Stage stage) {
@@ -56,6 +70,11 @@ public class StageGraph {
 		}
 
 		return stages.get(stage);
+	}
+
+	public void addEdgeFromSource(Stage to) {
+
+		addEdge(source, to);
 	}
 
 	public void addEdge(Stage from, Stage to) {
@@ -77,6 +96,13 @@ public class StageGraph {
 		}
 
 		this.graph.addEdge(getStageId(from), getStageId(to));
+	}
+
+	public List<Stage> getStages() {
+
+		return IntStream.of(graph.getNodes()).boxed()
+				.map(nodeId -> stagesByNodeId.get(nodeId))
+				.collect(Collectors.toList());
 	}
 
 	private static class Strategy implements HashingStrategy<Stage> {
