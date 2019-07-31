@@ -1,4 +1,4 @@
-package org.nextprot.pipeline.statement.nxflat.source.pump;
+package org.nextprot.pipeline.statement.nxflat.pump;
 
 import org.junit.Assert;
 import org.junit.Ignore;

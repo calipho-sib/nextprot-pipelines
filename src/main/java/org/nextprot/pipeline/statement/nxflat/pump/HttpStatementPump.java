@@ -1,4 +1,4 @@
-package org.nextprot.pipeline.statement.nxflat.source.pump;
+package org.nextprot.pipeline.statement.nxflat.pump;
 
 import com.google.common.base.Preconditions;
 import org.nextprot.commons.statements.Statement;

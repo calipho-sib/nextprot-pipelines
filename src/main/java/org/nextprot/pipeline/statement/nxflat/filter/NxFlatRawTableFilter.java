@@ -2,7 +2,7 @@ package org.nextprot.pipeline.statement.nxflat.filter;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.stage.filter.BaseFilter;
-import org.nextprot.pipeline.statement.nxflat.NxFlatTable;
+import org.nextprot.pipeline.statement.nxflat.NXFlatDB;
 import org.nextprot.pipeline.statement.core.stage.handler.BaseFlowLog;
 import org.nextprot.pipeline.statement.core.stage.handler.FlowEventHandler;
 
@@ -13,7 +13,7 @@ import static org.nextprot.pipeline.statement.core.stage.Source.POISONED_STATEME
 
 public class NxFlatRawTableFilter extends BaseFilter {
 
-	private final NxFlatTable table = NxFlatTable.raw_statements;
+	private final NXFlatDB.Table table = NXFlatDB.Table.raw_statements;
 
 	public NxFlatRawTableFilter(int capacity) {
 
@@ -46,9 +46,9 @@ public class NxFlatRawTableFilter extends BaseFilter {
 
 	private static class FlowLog extends BaseFlowLog {
 
-		private final NxFlatTable table;
+		private final NXFlatDB.Table table;
 
-		private FlowLog(String threadName, NxFlatTable table) throws FileNotFoundException {
+		private FlowLog(String threadName, NXFlatDB.Table table) throws FileNotFoundException {
 
 			super(threadName);
 			this.table = table;

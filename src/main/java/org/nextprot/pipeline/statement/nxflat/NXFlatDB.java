@@ -13,7 +13,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-public enum StatementSource implements StatementSpecifications, EnumDictionarySupplier<StatementSource> {
+public enum NXFlatDB implements StatementSpecifications, EnumDictionarySupplier<NXFlatDB> {
 
 	BioEditor("neXtProt",
 			"http://kant.sib.swiss:9001/bioeditor",
@@ -31,12 +31,12 @@ public enum StatementSource implements StatementSpecifications, EnumDictionarySu
 					.build())
 	;
 
-	private static EnumConstantDictionary<StatementSource> dictionaryOfConstants =
-			new EnumConstantDictionary<StatementSource>(StatementSource.class, values()) {
+	private static EnumConstantDictionary<NXFlatDB> dictionaryOfConstants =
+			new EnumConstantDictionary<NXFlatDB>(NXFlatDB.class, values()) {
 				@Override
-				protected void updateDictionaryOfConstants(Map<String, StatementSource> dictionary) {
+				protected void updateDictionaryOfConstants(Map<String, NXFlatDB> dictionary) {
 
-					for (StatementSource source : values()) {
+					for (NXFlatDB source : values()) {
 						dictionary.put(source.toString().toLowerCase(), source);
 						dictionary.put(source.toString().toUpperCase(), source);
 					}
@@ -47,7 +47,7 @@ public enum StatementSource implements StatementSpecifications, EnumDictionarySu
 	private final String statementsUrl;
 	private final StatementSpecifications specifications;
 
-	StatementSource(String sourceName, String statementsUrl, StatementSpecifications specifications) {
+	NXFlatDB(String sourceName, String statementsUrl, StatementSpecifications specifications) {
 		this.sourceName = sourceName;
 		this.statementsUrl = statementsUrl;
 		this.specifications = specifications;
@@ -96,13 +96,19 @@ public enum StatementSource implements StatementSpecifications, EnumDictionarySu
 	}
 
 	@Override
-	public EnumConstantDictionary<StatementSource> getEnumConstantDictionary() {
+	public EnumConstantDictionary<NXFlatDB> getEnumConstantDictionary() {
 
 		return dictionaryOfConstants;
 	}
 
-	public static StatementSource valueOfKey(String value) {
+	public static NXFlatDB valueOfKey(String value) {
 
 		return dictionaryOfConstants.valueOfKey(value);
+	}
+
+	public enum Table {
+
+		raw_statements,
+		entry_mapped_statements
 	}
 }

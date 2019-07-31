@@ -11,7 +11,7 @@ import org.nextprot.pipeline.statement.core.stage.source.Pump;
 import org.nextprot.pipeline.statement.nxflat.filter.NonPhenotypicVariationStatementsFilter;
 import org.nextprot.pipeline.statement.nxflat.filter.NxFlatRawTableFilter;
 import org.nextprot.pipeline.statement.nxflat.sink.NxFlatMappedTableSink;
-import org.nextprot.pipeline.statement.nxflat.source.pump.HttpStatementPump;
+import org.nextprot.pipeline.statement.nxflat.pump.HttpStatementPump;
 import sun.net.www.protocol.http.HttpURLConnection;
 
 import java.io.IOException;

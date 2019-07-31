@@ -2,7 +2,7 @@ package org.nextprot.pipeline.statement.nxflat.sink;
 
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.stage.Sink;
-import org.nextprot.pipeline.statement.nxflat.NxFlatTable;
+import org.nextprot.pipeline.statement.nxflat.NXFlatDB;
 import org.nextprot.pipeline.statement.core.stage.handler.BaseFlowLog;
 import org.nextprot.pipeline.statement.core.stage.handler.FlowEventHandler;
 
@@ -13,7 +13,7 @@ import static org.nextprot.pipeline.statement.core.stage.Source.POISONED_STATEME
 
 public class NxFlatMappedTableSink extends Sink {
 
-	private final NxFlatTable table = NxFlatTable.entry_mapped_statements;
+	private final NXFlatDB.Table table = NXFlatDB.Table.entry_mapped_statements;
 
 	public NxFlatMappedTableSink() {
 
@@ -42,9 +42,9 @@ public class NxFlatMappedTableSink extends Sink {
 
 	private static class FlowLog extends BaseFlowLog {
 
-		private final NxFlatTable table;
+		private final NXFlatDB.Table table;
 
-		private FlowLog(String threadName, NxFlatTable table) throws FileNotFoundException {
+		private FlowLog(String threadName, NXFlatDB.Table table) throws FileNotFoundException {
 
 			super(threadName);
 			this.table = table;
