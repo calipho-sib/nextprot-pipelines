@@ -1,5 +1,6 @@
 package org.nextprot.pipeline.statement.nxflat.source.pump;
 
+import com.google.common.base.Preconditions;
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.commons.statements.reader.BufferableStatementReader;
 import org.nextprot.commons.statements.reader.BufferedJsonStatementReader;
@@ -37,6 +38,9 @@ public class HttpStatementPump implements Pump<Statement> {
 
 	public HttpStatementPump(String url, StatementSpecifications specifications,
 	                         BiFunction<String, StatementSpecifications, BufferableStatementReader> readerSupplier) throws PumpException {
+
+		Preconditions.checkNotNull(url);
+		Preconditions.checkArgument(!url.isEmpty());
 
 		this.url = url;
 		this.specifications = specifications;

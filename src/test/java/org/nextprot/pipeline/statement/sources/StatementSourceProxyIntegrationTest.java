@@ -1,6 +1,7 @@
 package org.nextprot.pipeline.statement.sources;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.nextprot.pipeline.statement.nxflat.source.pump.HttpStatementPump;
 
@@ -10,6 +11,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+// TODO: should not be integration tests
+@Ignore
 public class StatementSourceProxyIntegrationTest {
 
 	@Test

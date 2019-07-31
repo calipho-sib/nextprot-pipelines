@@ -1,15 +1,17 @@
 package org.nextprot.pipeline.statement.nxflat.source.pump;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
+// TODO: should not be integration tests
+@Ignore
 public class HttpStatementPumpTest {
 
-	@Test
-	public void sourceShouldBeEmptyWhenNotConnected() {
+	@Test(expected = IllegalArgumentException.class)
+	public void constrPumpShouldThrowExceptionWithEmptyUrl() {
 
-		HttpStatementPump pump = new HttpStatementPump("");
-
+		new HttpStatementPump("");
 	}
 
 	@Test

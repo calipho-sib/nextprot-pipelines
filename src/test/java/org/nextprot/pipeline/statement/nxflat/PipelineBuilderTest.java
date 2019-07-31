@@ -1,6 +1,7 @@
 package org.nextprot.pipeline.statement.nxflat;
 
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.Pipeline;
@@ -17,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Ignore
 public class PipelineBuilderTest {
 
 	// 250" for 100ms naps
