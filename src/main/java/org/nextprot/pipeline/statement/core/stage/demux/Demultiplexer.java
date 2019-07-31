@@ -4,7 +4,6 @@ package org.nextprot.pipeline.statement.core.stage.demux;
 import org.nextprot.commons.statements.Statement;
 import org.nextprot.pipeline.statement.core.stage.BaseStage;
 import org.nextprot.pipeline.statement.core.stage.DuplicableStage;
-import org.nextprot.pipeline.statement.core.stage.ElementEventHandler;
 import org.nextprot.pipeline.statement.core.stage.handler.BaseFlowLog;
 import org.nextprot.pipeline.statement.core.stage.handler.FlowEventHandler;
 
@@ -113,11 +112,11 @@ public class Demultiplexer extends BaseStage<DuplicableStage> {
 		nextPipedStages.clear();
 	}
 
-	@Override
+	/*@Override
 	protected ElementEventHandler createElementEventHandler() throws FileNotFoundException {
 
 		return new BaseStage.ElementLog(getName());
-	}
+	}*/
 
 	@Override
 	public Stream<DuplicableStage> getPipedStages() {

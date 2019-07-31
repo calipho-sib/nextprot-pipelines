@@ -151,8 +151,8 @@ public abstract class BaseStage<E extends Stage> implements Stage<E> {
 
 	protected ElementEventHandler createElementEventHandler() throws FileNotFoundException {
 
-		//return new ElementEventHandler.Mute();
-		return new ElementLog(getName());
+		return new ElementEventHandler.Mute();
+		//return new ElementLog(getName());
 	}
 
 	@Override
